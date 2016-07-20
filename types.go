@@ -24,6 +24,8 @@ type Telegram struct {
 	Admin      int64  `json:"admin"`      // For future, to get feedback
 	SuperGroup int64  `json:"supergroup"` // For easter eggs
 	Channel    string `json:"channel"`
+	WebhookURL  string `json:"webhook_url"`
+	WebhookPath string `json:"webhook_path"`
 }
 
 // Botan structure defines botan API settings

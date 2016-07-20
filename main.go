@@ -53,13 +53,7 @@ func init() {
 func main() {
 	startUptime := time.Now() // Set start UpTime time
 
-	// Timer updates (webhooks works only in production)
-	upd := tgbotapi.NewUpdate(0)
-	upd.Timeout = 60
-	updates, err := bot.GetUpdatesChan(upd)
-	if err != nil {
-		log.Fatalf("[Bot] Getting updates error: %+v", err)
-	}
+	updates := SetUpdater() // I have no idea how it fucking works
 
 	// Updater
 	for update = range updates {
