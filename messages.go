@@ -1,13 +1,14 @@
 package main
 
-const startMsgTpl = `Hi %s!
+const (
+	startMessage = `Hi %s!
 
 This is the official @HentaiDB bot. You can browse the Danbooru pics, GIF's and videos here.
 
 You can also use it to search and share content with your friends.
 Just type "@HentaiDBot hatsune_miku" in any chat and select the result you want to send.`
 
-const helpMsg = `<b>tag1 tag2</b>
+	helpMessage = `<b>tag1 tag2</b>
 <code>Search for posts that have tag1 and tag2.</code>
 
 <b>~tag1 ~tag2</b>
@@ -66,3 +67,7 @@ const helpMsg = `<b>tag1 tag2</b>
 - source
 - updated
 Can be sorted by both asc or desc.</code>`
+
+	noInlineResultMessage = `Sumimasen, but, unfortunately I could not find desired content. 😓
+But perhaps this it already present in @HentaiDB channel.`
+)

@@ -3,13 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/botanio/sdk/go"
+	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"io/ioutil"
 	"log"
 	"strconv"
 	"strings"
-
-	"github.com/botanio/sdk/go"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 var (
@@ -112,7 +111,7 @@ func main() {
 		if update.InlineQuery != nil {
 			// Track action
 			// It is necessary to fix <nil> tracking ChosenInlineResult. :\
-			botanio.TrackAsync(update.InlineQuery.From.ID, update, "inline", func(answer botan.Answer, err []error) {
+			botanio.TrackAsync(update.InlineQuery.From.ID, update.InlineQuery, "inline", func(answer botan.Answer, err []error) {
 				log.Printf("Asynchonous: %+v", answer)
 				appMetrika <- true
 			})
@@ -165,7 +164,7 @@ func main() {
 						// result = append(result, query)
 						continue
 					case strings.Contains(posts[i].FileURL, ".mp4"): // Just in case. Why not? ¯\_(ツ)_/¯
-						query := tgbotapi.NewInlineQueryResultVideo(update.InlineQuery.ID+strconv.Itoa(posts[i].ID), posts[i].FileURL)
+						query := tgbotapi.NewInlineQueryResultVideo(strconv.Itoa(posts[i].ID), posts[i].FileURL)
 						query.MimeType = "video/mp4"
 						query.ThumbURL = preview
 						query.Width = posts[i].Width
@@ -175,7 +174,7 @@ func main() {
 						query.ReplyMarkup = &button
 						result = append(result, query)
 					case strings.Contains(posts[i].FileURL, ".gif"):
-						query := tgbotapi.NewInlineQueryResultGIF(update.InlineQuery.ID+strconv.Itoa(posts[i].ID), posts[i].FileURL)
+						query := tgbotapi.NewInlineQueryResultGIF(strconv.Itoa(posts[i].ID), posts[i].FileURL)
 						query.ThumbURL = posts[i].FileURL
 						query.Width = posts[i].Width
 						query.Height = posts[i].Height
@@ -183,7 +182,7 @@ func main() {
 						query.ReplyMarkup = &button
 						result = append(result, query)
 					default:
-						query := tgbotapi.NewInlineQueryResultPhoto(update.InlineQuery.ID+strconv.Itoa(posts[i].ID), posts[i].FileURL)
+						query := tgbotapi.NewInlineQueryResultPhoto(strconv.Itoa(posts[i].ID), posts[i].FileURL)
 						query.ThumbURL = preview
 						query.Width = posts[i].Width
 						query.Height = posts[i].Height
@@ -194,7 +193,7 @@ func main() {
 					}
 				}
 			case len(posts) == 0: // Found nothing
-				query := tgbotapi.NewInlineQueryResultArticle(update.InlineQuery.ID, "Nobody here but us chickens!", "Sumimasen, but, unfortunately I could not find desired content. 😓\nBut perhaps this it already present in @HentaiDB channel.")
+				query := tgbotapi.NewInlineQueryResultArticle(update.InlineQuery.ID, "Nobody here but us chickens!", noInlineResultMessage)
 				query.Description = "Try search a different combination of tags."
 				result = append(result, query)
 			}
