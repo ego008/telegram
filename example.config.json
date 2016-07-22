@@ -4,8 +4,11 @@
 		"admin": 00000000,
 		"supergroup": -0000000000000,
 		"channel": "@HentaiDB"
-		"webhook_url": "https://website.com:8443/",
-		"webhook_path": "/"
+		"webhook": {
+			"set": "https://site.com/",
+			"listen": "/",
+			"serve": "0.0.0.0:8443"
+		}
 	},
 	"botan": {
 		"token": ""

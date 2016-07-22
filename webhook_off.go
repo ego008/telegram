@@ -7,8 +7,12 @@ import (
 	"log"
 )
 
-func SetUpdater() <-chan tgbotapi.Update {
+func init() {
+	bot.RemoveWebhook()
 	log.Println("Webhook mode deactivated.")
+}
+
+func SetUpdater() <-chan tgbotapi.Update {
 	upd := tgbotapi.NewUpdate(0)
 	upd.Timeout = 60
 	updates, err := bot.GetUpdatesChan(upd)

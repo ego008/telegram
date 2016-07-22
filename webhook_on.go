@@ -5,15 +5,17 @@ package main
 import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
-	"net/http"
 )
 
-func SetUpdater() <-chan tgbotapi.Update {
+func init() {
+	bot.RemoveWebhook()
 	log.Println("Webhook mode activated!")
-	if _, err := bot.SetWebhook(tgbotapi.NewWebhookWithCert(config.Telegram.WebhookURL+config.Telegram.Token, "cert.pem")); err != nil {
+}
+
+func SetUpdater() <-chan tgbotapi.Update {
+	if _, err := bot.SetWebhook(tgbotapi.NewWebhook(config.Telegram.Webhook.Set + config.Telegram.Token)); err != nil {
 		log.Fatalf("Set webhook error: %+v", err)
 	}
-	updates := bot.ListenForWebhook(config.Telegram.WebhookPath + config.Telegram.Token)
-	go http.ListenAndServeTLS("0.0.0.0:8443", "cert.pem", "key.pem", nil)
+	updates := bot.ListenForWebhook(config.Telegram.Webhook.Listen + config.Telegram.Token)
 	return updates
 }

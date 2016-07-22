@@ -20,12 +20,17 @@ type Configuration struct {
 
 // Telegram API settings
 type Telegram struct {
+	Webhook     Webhook `json:"webhook"`
 	Token      string `json:"token"`
 	Admin      int64  `json:"admin"`      // For future, to get feedback
 	SuperGroup int64  `json:"supergroup"` // For easter eggs
 	Channel    string `json:"channel"`
-	WebhookURL  string `json:"webhook_url"`
-	WebhookPath string `json:"webhook_path"`
+}
+
+type Webhook struct {
+	Set    string `json:"set"`
+	Listen string `json:"listen"`
+	Serve  string `json:"serve"`
 }
 
 // Botan structure defines botan API settings

@@ -8,6 +8,7 @@ import (
 	"github.com/valyala/fasthttp"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -53,7 +54,8 @@ func init() {
 func main() {
 	startUptime := time.Now() // Set start UpTime time
 
-	updates := SetUpdater() // I have no idea how it fucking works
+	updates := SetUpdater()
+	go http.ListenAndServe(config.Telegram.Webhook.Serve, nil) // Hell knows why it should be here, need to fix
 
 	// Updater
 	for update = range updates {
