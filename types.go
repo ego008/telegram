@@ -9,8 +9,10 @@ type Configuration struct {
 
 // Telegram API settings
 type Telegram struct {
-	Token       string `json:"token"`
-	AdminChatID int    `json:"admin_chat_id"` // For future, to get feedback
+	Token      string `json:"token"`
+	Admin      int64  `json:"admin"`      // For future, to get feedback
+	SuperGroup int64  `json:"supergroup"` // For easter eggs
+	Channel    string `json:"channel"`
 }
 
 // Botan structure defines botan API settings

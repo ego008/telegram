@@ -1,7 +1,9 @@
 {
 	"telegram": {
 		"token": "",
-		"admin_chat_id": 00000000
+		"admin": 00000000,
+		"supergroup": -0000000000000,
+		"channel": "@HentaiDB"
 	},
 	"botan": {
 		"token": ""

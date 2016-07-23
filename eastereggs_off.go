@@ -3,14 +3,20 @@
 package main
 
 import (
-	"log"
-
 	"github.com/botanio/sdk/go"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"log"
 )
 
+func init() {
+	log.Println("EASTER EGGS DEACTIVATED!")
+}
+
 // GetEasterEgg could send an easeter egg. But no.
-func GetEasterEgg(bot *tgbotapi.BotAPI, metrika botan.Botan, update tgbotapi.Update) {
-	// Do nothing, because you're not @toby3d
-	log.Println("EASTER EGGS: Not today, boy. (¬‿¬)")
+func GetEasterEgg() {
+	// Track all other messages
+	metrika.TrackAsync(update.Message.From.ID, update.Message, "Message", func(answer botan.Answer, err []error) {
+		log.Printf("Asynchonous: %+v", answer)
+		appMetrika <- true
+	})
+	<-appMetrika
 }
