@@ -16,7 +16,7 @@ var (
 	appMetrika = make(chan bool)
 	bot        *tgbotapi.BotAPI
 	config     Configuration
-	metrika    = botan.New(config.Botan.Token)
+	metrika    botan.Botan
 	resNum     = 20 // Select Gelbooru by default, remake in name search(?)
 	update     tgbotapi.Update
 )
@@ -25,24 +25,27 @@ func init() {
 	// Read configuration
 	file, err := ioutil.ReadFile("config.json")
 	if err != nil {
-		log.Fatalf("Error reading configuration file: %s", err)
+		log.Fatalf("[Configuration] Reading error: %+v", err)
 	} else {
-		log.Println("Сonfiguration file is read successfully.")
+		log.Println("[Configuration] Read successfully.")
 	}
 	// Decode configuration
 	if err = json.Unmarshal(file, &config); err != nil {
-		log.Fatalf("Error decoding configuration file: %s", err)
+		log.Fatalf("[Configuration] Decoding error: %+v", err)
 	}
 
 	// Initialize bot
 	newBot, err := tgbotapi.NewBotAPI(config.Telegram.Token)
 	if err != nil {
-		log.Panicf("Initialize bot error: %+v", err)
+		log.Panicf("[Bot] Initialize error: %+v", err)
 	} else {
 		bot = newBot
 		bot.Debug = true
-		log.Printf("Authorized as @%s", bot.Self.UserName)
+		log.Printf("[Bot] Authorized as @%s", bot.Self.UserName)
 	}
+
+	metrika = botan.New(config.Botan.Token)
+	log.Println("[Botan] ACTIVATED")
 }
 
 func main() {
@@ -51,12 +54,12 @@ func main() {
 	upd.Timeout = 60
 	updates, err := bot.GetUpdatesChan(upd)
 	if err != nil {
-		log.Fatalf("Error getting updates: %+v", err)
+		log.Fatalf("[Bot] Getting updates error: %+v", err)
 	}
 
 	// Updater
 	for update = range updates {
-		log.Printf("%+v", update)
+		log.Printf("[Bot] Update response: %+v", update)
 
 		// Chat actions
 		if update.Message != nil {
@@ -64,7 +67,7 @@ func main() {
 			case "start": // Requirement Telegram platform
 				// Track action
 				metrika.TrackAsync(update.Message.From.ID, update.Message, "/start", func(answer botan.Answer, err []error) {
-					log.Printf("Asynchonous: %+v", answer)
+					log.Printf("[Botan] /start: %+v", answer)
 					appMetrika <- true
 				})
 
@@ -73,15 +76,14 @@ func main() {
 				message.DisableWebPagePreview = true
 				message.ReplyToMessageID = update.Message.MessageID
 				if _, err := bot.Send(message); err != nil {
-					log.Printf("Error sending message: %+v", err)
+					log.Printf("[Bot] Sending message error: %+v", err)
 				}
 
-				// Send track to Yandex.AppMetrika
-				<-appMetrika
+				<-appMetrika // Send track to Yandex.AppMetrika
 			case "help": // Requirement Telegram platform
 				// Track action
 				metrika.TrackAsync(update.Message.From.ID, update.Message, "/help", func(answer botan.Answer, err []error) {
-					log.Printf("Asynchonous: %+v", answer)
+					log.Printf("[Botan] /help: %+v", answer)
 					appMetrika <- true
 				})
 
@@ -90,41 +92,37 @@ func main() {
 				message.DisableWebPagePreview = true
 				message.ReplyToMessageID = update.Message.MessageID
 				if _, err := bot.Send(message); err != nil {
-					log.Printf("Error sending message: %+v", err)
+					log.Printf("[Bot] Sending message error: %+v", err)
 				}
 
-				// Send track to Yandex.AppMetrika
-				<-appMetrika
+				<-appMetrika // Send track to Yandex.AppMetrika
 			case "cheatsheet":
 				// Track action
 				metrika.TrackAsync(update.Message.From.ID, update.Message, "/cheatsheet", func(answer botan.Answer, err []error) {
-					log.Printf("Asynchonous: %+v", answer)
+					log.Printf("[Botan] /cheatsheet: %+v", answer)
 					appMetrika <- true
 				})
 
 				// For now - get Cheat Sheet from Gelbooru
-				// It will be transferred to command like /cheatsheet
 				message := tgbotapi.NewMessage(update.Message.Chat.ID, cheatSheetMessage)
 				message.ParseMode = "markdown"
 				message.DisableWebPagePreview = true
 				message.ReplyToMessageID = update.Message.MessageID
 				if _, err := bot.Send(message); err != nil {
-					log.Printf("Error sending message: %+v", err)
+					log.Printf("[Bot] Sending message error: %+v", err)
 				}
 
-				// Send track to Yandex.AppMetrika
-				<-appMetrika
+				<-appMetrika // Send track to Yandex.AppMetrika
 			default:
-				GetEasterEgg() // Secret actions and commands
+				GetEasterEgg() // Secret actions and commands ;)
 			}
 		}
 
 		// Inline actions
 		if update.InlineQuery != nil {
 			// Track action
-			// It is necessary to fix <nil> tracking ChosenInlineResult. :\
 			metrika.TrackAsync(update.InlineQuery.From.ID, update.InlineQuery, "Search", func(answer botan.Answer, err []error) {
-				log.Printf("Asynchonous: %+v", answer)
+				log.Printf("[Botan] Search: %+v", answer)
 				appMetrika <- true
 			})
 
@@ -159,10 +157,10 @@ func main() {
 						rating = "Unknown"
 					}
 
-					// // URL-button with a direct link to result
+					// URL-button with a direct link to result
 					botanStatus, botanURL, err := fasthttp.Get(nil, "https://api.botan.io/s/?token="+config.Botan.Token+"&url="+posts[i].FileURL+"&user_ids="+strconv.Itoa(update.InlineQuery.From.ID))
 					if err != nil || botanStatus != 200 {
-						log.Printf("Generate Botan-url error (use original url): %+v", err)
+						log.Printf("[Botan] Generate URL error (use a direct link): %+v", err)
 						botanURL = []byte(posts[i].FileURL)
 					}
 					button := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(tgbotapi.NewInlineKeyboardButtonURL("Original image", string(botanURL))))
@@ -226,7 +224,7 @@ func main() {
 			}
 
 			if _, err := bot.AnswerInlineQuery(inlineConfig); err != nil {
-				log.Printf("Answer inline-query error: %+v", err)
+				log.Printf("[Bot] Answer inline-query error: %+v", err)
 			}
 
 			<-appMetrika // Send track to Yandex.AppMetrika
@@ -234,7 +232,7 @@ func main() {
 
 		if update.ChosenInlineResult != nil {
 			metrika.TrackAsync(update.ChosenInlineResult.From.ID, update.ChosenInlineResult, "Find", func(answer botan.Answer, err []error) {
-				log.Printf("Asynchonous: %+v", answer)
+				log.Printf("[Botan] Find: %+v", answer)
 				appMetrika <- true
 			})
 			<-appMetrika // Send track to Yandex.AppMetrika

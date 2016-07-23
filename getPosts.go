@@ -19,7 +19,7 @@ func getPosts(tags string, pid string) []Post {
 	}
 	_, resp, err := fasthttp.Get(nil, repository)
 	if err != nil {
-		log.Printf("Error in GET request: %s", err)
+		log.Printf("[Bot] GET request error: %+v", err)
 	}
 	var obj []Post
 	json.NewDecoder(bytes.NewReader(resp)).Decode(&obj)
