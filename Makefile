@@ -1,4 +1,4 @@
-release:
+development:
 	go build
 
 production:

@@ -9,7 +9,7 @@ Search content from popular repositories in inline-mode.
 
 ## Requirements
 - [Golang bindings for the Telegram Bot API](https://github.com/go-telegram-bot-api/telegram-bot-api)
-- [Botan SDK](https://github.com/botanio/sdk/go)
+- [Botan SDK](https://github.com/botanio/sdk#go)
 
 ## Documentation
 - [Contributors](CONTRIBUTORS.md)
