@@ -1,7 +1,8 @@
 # HentaiDB
 > [Official bot](https://telegram.me/HentaiDBot) for [HentaiDB](https://telegram.me/HentaiDB) project in [Telegram](https://telegram.org), written on GoLang.
 
-[![License](https://img.shields.io/npm/l/express.svg)](https://opensource.org/licenses/MIT)
+[![License](https://img.shields.io/npm/l/express.svg?maxAge=2592000)](LICENSE.md)
+[![Beerpay](https://beerpay.io/toby3d/HentaiDBot/badge.svg?style=flat)](https://beerpay.io/toby3d/HentaiDBot)
 [![Go Report Card](https://goreportcard.com/badge/github.com/toby3d/HentaiDBot)](https://goreportcard.com/report/github.com/toby3d/HentaiDBot)
 [![Build Status](https://travis-ci.org/toby3d/HentaiDBot.svg)](https://travis-ci.org/toby3d/HentaiDBot)
 
