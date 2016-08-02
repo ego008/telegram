@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/botanio/sdk/go"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/valyala/fasthttp"
 	"io/ioutil"
 	"log"
 	"strconv"
@@ -59,17 +58,20 @@ func main() {
 
 	// Updater
 	for update = range updates {
-		log.Printf("[Bot] Update response: %+v", update)
+		log.Printf("[Bot] Update response: %+v", updates)
 
 		// Chat actions
 		if update.Message != nil {
 			switch update.Message.Command() {
 			case "start": // Requirement Telegram platform
 				// Track action
-				metrika.TrackAsync(update.Message.From.ID, update.Message, "/start", func(answer botan.Answer, err []error) {
-					log.Printf("[Botan] /start: %+v", answer)
+				metrika.TrackAsync(update.Message.From.ID, MetrikaMessage{update.Message}, "/start", func(answer botan.Answer, err []error) {
+					log.Printf("[Botan] Track /start %s", answer.Status)
 					appMetrika <- true
 				})
+
+				// Force feedback
+				bot.Send(tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatTyping))
 
 				message := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf(startMessage, update.Message.From.FirstName))
 				message.ParseMode = "markdown"
@@ -82,10 +84,13 @@ func main() {
 				<-appMetrika // Send track to Yandex.AppMetrika
 			case "help": // Requirement Telegram platform
 				// Track action
-				metrika.TrackAsync(update.Message.From.ID, update.Message, "/help", func(answer botan.Answer, err []error) {
-					log.Printf("[Botan] /help: %+v", answer)
+				metrika.TrackAsync(update.Message.From.ID, MetrikaMessage{update.Message}, "/help", func(answer botan.Answer, err []error) {
+					log.Printf("[Botan] Track /help %s", answer.Status)
 					appMetrika <- true
 				})
+
+				// Force feedback
+				bot.Send(tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatTyping))
 
 				message := tgbotapi.NewMessage(update.Message.Chat.ID, helpMessage)
 				message.ParseMode = "markdown"
@@ -98,10 +103,13 @@ func main() {
 				<-appMetrika // Send track to Yandex.AppMetrika
 			case "cheatsheet":
 				// Track action
-				metrika.TrackAsync(update.Message.From.ID, update.Message, "/cheatsheet", func(answer botan.Answer, err []error) {
-					log.Printf("[Botan] /cheatsheet: %+v", answer)
+				metrika.TrackAsync(update.Message.From.ID, MetrikaMessage{update.Message}, "/cheatsheet", func(answer botan.Answer, err []error) {
+					log.Printf("[Botan] Track /cheatsheet %s", answer.Status)
 					appMetrika <- true
 				})
+
+				// Force feedback
+				bot.Send(tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatTyping))
 
 				// For now - get Cheat Sheet from Gelbooru
 				message := tgbotapi.NewMessage(update.Message.Chat.ID, cheatSheetMessage)
@@ -113,16 +121,55 @@ func main() {
 				}
 
 				<-appMetrika // Send track to Yandex.AppMetrika
+			case "feedback":
+				// Track action
+				metrika.TrackAsync(update.Message.From.ID, MetrikaMessage{update.Message}, "/feedback", func(answer botan.Answer, err []error) {
+					log.Printf("[Botan] Track /feedback %s", answer.Status)
+					appMetrika <- true
+				})
+
+				// Force feedback
+				bot.Send(tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatTyping))
+
+				// Stop empty spamming
+				if update.Message.CommandArguments() != "" {
+					// Send Thanks to Sender
+					message := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf(feedbackAnswer, update.Message.From.FirstName))
+					message.ReplyToMessageID = update.Message.MessageID
+					if _, err := bot.Send(message); err != nil {
+						log.Printf("[Bot] Sending message error: %+v", err)
+					}
+
+					// Send message to admin
+					feedbackText := fmt.Sprintf(feedbackMessage, update.Message.CommandArguments(), update.Message.From.UserName)
+					feedback := tgbotapi.NewMessage(config.Telegram.Admin, feedbackText)
+					feedback.ParseMode = "markdown"
+					feedback.DisableWebPagePreview = true
+					if _, err := bot.Send(feedback); err != nil {
+						log.Printf("[Bot] Sending message error: %+v", err)
+					} else {
+						log.Println("[Bot] Feedback send successfully!")
+					}
+				} else {
+					message := tgbotapi.NewMessage(update.Message.Chat.ID, feedbackEmpty) // Send WTF?!
+					message.ReplyToMessageID = update.Message.MessageID
+					if _, err := bot.Send(message); err != nil {
+						log.Printf("[Bot] Sending message error: %+v", err)
+					}
+				}
+
+				<-appMetrika // Send track to Yandex.AppMetrika
 			default:
-				GetEasterEgg() // Secret actions and commands ;)
+				// Secret actions and commands ;)
+				GetEasterEgg()
 			}
 		}
 
 		// Inline actions
 		if update.InlineQuery != nil {
 			// Track action
-			metrika.TrackAsync(update.InlineQuery.From.ID, update.InlineQuery, "Search", func(answer botan.Answer, err []error) {
-				log.Printf("[Botan] Search: %+v", answer)
+			metrika.TrackAsync(update.InlineQuery.From.ID, MetrikaInlineQuery{update.InlineQuery}, "Search", func(answer botan.Answer, err []error) {
+				log.Printf("[Botan] Track Search %s", answer.Status)
 				appMetrika <- true
 			})
 
@@ -157,13 +204,7 @@ func main() {
 						rating = "Unknown"
 					}
 
-					// URL-button with a direct link to result
-					botanStatus, botanURL, err := fasthttp.Get(nil, "https://api.botan.io/s/?token="+config.Botan.Token+"&url="+posts[i].FileURL+"&user_ids="+strconv.Itoa(update.InlineQuery.From.ID))
-					if err != nil || botanStatus != 200 {
-						log.Printf("[Botan] Generate URL error (use a direct link): %+v", err)
-						botanURL = []byte(posts[i].FileURL)
-					}
-					button := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(tgbotapi.NewInlineKeyboardButtonURL("Original image", string(botanURL))))
+					button := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(tgbotapi.NewInlineKeyboardButtonURL("Original image", posts[i].FileURL)))
 
 					switch {
 					case strings.Contains(posts[i].FileURL, ".webm"): // It is necessary to get around error 403 when requesting video :|
@@ -173,7 +214,7 @@ func main() {
 						// query.ThumbURL = preview
 						// query.Width = posts[i].Width
 						// query.Height = posts[i].Height
-						// query.Title = "by " + strings.Title(posts[i].Owner)
+						// query.Title = "Video by " + strings.Title(posts[i].Owner)
 						// query.Description = "Rating: " + rating + "\nScore: " + strconv.Itoa(posts[i].Score) + "\nTags: " + posts[i].Tags
 						// query.ReplyMarkup = &button
 						// result = append(result, query)
@@ -184,24 +225,26 @@ func main() {
 						query.ThumbURL = preview
 						query.Width = posts[i].Width
 						query.Height = posts[i].Height
-						query.Title = "by " + strings.Title(posts[i].Owner)
+						query.Title = "Video by " + strings.Title(posts[i].Owner)
 						query.Description = "Rating: " + rating + "\nScore: " + strconv.Itoa(posts[i].Score) + "\nTags: " + posts[i].Tags
 						query.ReplyMarkup = &button
 						result = append(result, query)
+
 					case strings.Contains(posts[i].FileURL, ".gif"):
 						query := tgbotapi.NewInlineQueryResultGIF(strconv.Itoa(posts[i].ID), posts[i].FileURL)
 						query.ThumbURL = posts[i].FileURL
 						query.Width = posts[i].Width
 						query.Height = posts[i].Height
-						query.Title = "by " + strings.Title(posts[i].Owner)
+						query.Title = "Animation by " + strings.Title(posts[i].Owner)
 						query.ReplyMarkup = &button
 						result = append(result, query)
+
 					default:
 						query := tgbotapi.NewInlineQueryResultPhoto(strconv.Itoa(posts[i].ID), posts[i].FileURL)
 						query.ThumbURL = preview
 						query.Width = posts[i].Width
 						query.Height = posts[i].Height
-						query.Title = "by " + strings.Title(posts[i].Owner)
+						query.Title = "Image by " + strings.Title(posts[i].Owner)
 						query.Description = "Rating: " + rating + "\nScore: " + strconv.Itoa(posts[i].Score) + "\nTags: " + posts[i].Tags
 						query.ReplyMarkup = &button
 						result = append(result, query)
@@ -231,8 +274,8 @@ func main() {
 		}
 
 		if update.ChosenInlineResult != nil {
-			metrika.TrackAsync(update.ChosenInlineResult.From.ID, update.ChosenInlineResult, "Find", func(answer botan.Answer, err []error) {
-				log.Printf("[Botan] Find: %+v", answer)
+			metrika.TrackAsync(update.ChosenInlineResult.From.ID, MetrikaChosenInlineResult{update.ChosenInlineResult}, "Find", func(answer botan.Answer, err []error) {
+				log.Printf("[Botan] Track Find %s", answer.Status)
 				appMetrika <- true
 			})
 			<-appMetrika // Send track to Yandex.AppMetrika

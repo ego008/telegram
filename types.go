@@ -1,5 +1,7 @@
 package main
 
+import "github.com/go-telegram-bot-api/telegram-bot-api"
+
 // Configuration is a main config
 type Configuration struct {
 	Telegram Telegram   `json:"telegram"`
@@ -56,4 +58,16 @@ type Post struct {
 	Tags         string `json:"tags"`
 	Width        int    `json:"width"`
 	FileURL      string `json:"file_url"`
+}
+
+type MetrikaMessage struct {
+	*tgbotapi.Message
+}
+
+type MetrikaInlineQuery struct {
+	*tgbotapi.InlineQuery
+}
+
+type MetrikaChosenInlineResult struct {
+	*tgbotapi.ChosenInlineResult
 }
