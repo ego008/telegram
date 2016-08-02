@@ -62,8 +62,8 @@ func main() {
 
 		// Chat actions
 		if update.Message != nil {
-			switch update.Message.Command() {
-			case "start": // Requirement Telegram platform
+			switch true {
+			case update.Message.Command() == "start" && (update.Message.Chat.IsPrivate() || bot.IsMessageToMe(*update.Message)): // Requirement Telegram platform
 				// Track action
 				metrika.TrackAsync(update.Message.From.ID, MetrikaMessage{update.Message}, "/start", func(answer botan.Answer, err []error) {
 					log.Printf("[Botan] Track /start %s", answer.Status)
@@ -82,7 +82,7 @@ func main() {
 				}
 
 				<-appMetrika // Send track to Yandex.AppMetrika
-			case "help": // Requirement Telegram platform
+			case update.Message.Command() == "help" && (update.Message.Chat.IsPrivate() || bot.IsMessageToMe(*update.Message)): // Requirement Telegram platform
 				// Track action
 				metrika.TrackAsync(update.Message.From.ID, MetrikaMessage{update.Message}, "/help", func(answer botan.Answer, err []error) {
 					log.Printf("[Botan] Track /help %s", answer.Status)
@@ -101,7 +101,7 @@ func main() {
 				}
 
 				<-appMetrika // Send track to Yandex.AppMetrika
-			case "cheatsheet":
+			case update.Message.Command() == "cheatsheet" && (update.Message.Chat.IsPrivate()  bot.IsMessageToMe(*update.Message)):
 				// Track action
 				metrika.TrackAsync(update.Message.From.ID, MetrikaMessage{update.Message}, "/cheatsheet", func(answer botan.Answer, err []error) {
 					log.Printf("[Botan] Track /cheatsheet %s", answer.Status)
@@ -121,7 +121,7 @@ func main() {
 				}
 
 				<-appMetrika // Send track to Yandex.AppMetrika
-			case "feedback":
+			case update.Message.Command() == "feedback" && (update.Message.Chat.IsPrivate() || bot.IsMessageToMe(*update.Message)):
 				// Track action
 				metrika.TrackAsync(update.Message.From.ID, MetrikaMessage{update.Message}, "/feedback", func(answer botan.Answer, err []error) {
 					log.Printf("[Botan] Track /feedback %s", answer.Status)
