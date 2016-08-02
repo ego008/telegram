@@ -101,7 +101,7 @@ func main() {
 				}
 
 				<-appMetrika // Send track to Yandex.AppMetrika
-			case update.Message.Command() == "cheatsheet" && (update.Message.Chat.IsPrivate()  bot.IsMessageToMe(*update.Message)):
+			case update.Message.Command() == "cheatsheet" && (update.Message.Chat.IsPrivate() || bot.IsMessageToMe(*update.Message)):
 				// Track action
 				metrika.TrackAsync(update.Message.From.ID, MetrikaMessage{update.Message}, "/cheatsheet", func(answer botan.Answer, err []error) {
 					log.Printf("[Botan] Track /cheatsheet %s", answer.Status)
