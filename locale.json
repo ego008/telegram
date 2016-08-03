@@ -1,0 +1,110 @@
+[{
+	"name": "🇬🇧 English",
+	"translate": {
+		"commands": {
+			"start": "Hi, %s!\nI'm the official bot of @HentaiDB project.\n\nYou can search images and GIF's in Gelbooru through me. Just type `@HentaiDBot hatsune_miku` in any chat and select result which you want to send. 😏\n\nTell me /cheatsheet here to get a cheat sheet of advanced search.\n\nI become better due to support of volunteers, to which you can join in [GitHub-repository](https://github.com/toby3d/HentaiDBot). ☺️",
+			"help": "/cheatsheet - Get cheat sheet of advanced search in Gelbooru.",
+			"cheatsheet": "*tag1 tag2*\nSearch for posts that have `tag1` and `tag2`.\n\n*~tag1 ~tag2*\nSearch for posts that have `tag1` or `tag2`. (Currently does not work)\n\n*night~*\nFuzzy search for the tag `night`. This will return results such as `night fight bright` and so on according to the [Levenshtein distance](http://en.wikipedia.org/wiki/Levenshtein_distance).\n\n*-tag1*\nSearch for posts that don't have `tag1`.\n\n*ta∗1*\nSearch for posts with tags that starts with `ta` and ends with `1`.\n\n*user:bob*\nSearch for posts uploaded by the user `Bob`.\n\n*md5:foo*\nSearch for posts with the MD5 hash `foo`.\n\n*md5:foo∗*\nSearch for posts whose MD5 starts with the MD5 hash `foo`.\n\n*rating:questionable*\nSearch for posts that are rated `questionable`.\n\n*-rating:questionable*\nSearch for posts that are not rated `questionable`.\n\n*parent:1234*\nSearch for posts that have `1234` as a parent (and include post `1234`).\n\n*rating:questionable rating:safe*\nIn general, combining the same metatags (the ones that have colons in them) will not work.\n\n*rating:questionable parent:100*\nYou can combine different metatags, however.\n\n*width:>=1000 height:>1000*\nFind images with a width greater than or equal to `1000` and a height greater than `1000`.\n\n*score:>=10*\nFind images with a score greater than or equal to `10`. This value is updated once daily at 12AM CST.\n\n*sort:updated:desc*\nSort posts by their most recently updated order.\n\n*Other sortable types:*\n• `id`\n• `score`\n• `rating`\n• `user`\n• `height`\n• `width`\n• `parent`\n• `source`\n• `updated`\nCan be sorted by both `asc` or `desc`.",
+			"feedback": {
+				"message": "*New feedback message!*\n%s\n- @%s",
+				"question": "I really want to help you. 😔\nWhat is wrong with me?",
+				"answer": "Thanks for you feedback, %s! ☺️\nSenpai sure to notice you!",
+				"empty": "I can't bother Senpai without reason. 😕\nDescribe your feedback a different way."
+			}
+		},
+		"inline": {
+			"result": {
+				"title": "%s by %s",
+				"description": "Rating: %s\nScore: %s\nTags: %s"
+			},
+			"no_result": {
+				"title": "Nobody here but us chickens!",
+				"description": "Try search a different combination of tags.",
+				"message": "Sumimasen, but, unfortunately I could not find desired content. 😓\nBut perhaps this it already present in @HentaiDB channel or his official group."
+			}
+		},
+		"rating": {
+			"s": "safe",
+			"e": "explicit",
+			"q": "questionable",
+			"not_set": "unknown"
+		},
+		"buttons": {
+			"video": "Original video",
+			"gif": "Original animation",
+			"image": "Original image",
+			"share": "Share",
+			"settings": "Settings",
+			"feedback": "Contact us",
+			"achievements": "Achievements",
+			"help": "Help",
+			"cheatsheet": "Cheat Sheet",
+			"enable": "Enable",
+			"disable": "Disable",
+			"cancel": "Cancel",
+			"language": "Language"
+		},
+		"achievements": [{
+			"title": "%s hidden achievements remaining",
+			"description": "Details for each achievement will be revealed once unlocked"
+		}],
+		"video": "video",
+		"image": "image",
+		"animation": "animation"
+	}
+},
+{
+	"name": "🇷🇺 Русский",
+	"translate": {
+		"commands": {
+			"start": "Привет, %s!\nЯ официальный бот проекта @HentaiDB.\n\nТы можешь осуществлять поиск изображений и GIF в Gelbooru через меня. Просто набери `@HentaiDBot hatsune_miku` в любом чате и выбери результат, который хочешь отправить. 😏\n\nСкажи мне /help здесь, чтобы получить шпаргалку продвинутого поиска.\n\nЯ становлюсь лучше благодаря поддержке волонтеров, к которым ты можешь присоединиться в [GitHub-репозитории](https://github.com/toby3d/HentaiDBot). ☺️",
+			"help": "/cheatsheet - Получить шпаргалку продвинутого поиска по Gelbooru.",
+			"cheatsheet": "*tag1 tag2*\nИскать посты с тегами `tag1` и `tag2`.\n\n*~tag1 ~tag2*\nИскать посты с тегом `tag1` или `tag2`. (В настоящее время не работает)\n\n*night~*\nНечеткий поиск по тегу `night`. Это вернёт результаты, такие как `night fight bright` и так далее в соответствии с [Расстоянием Левенштейна](http://en.wikipedia.org/wiki/Levenshtein_distance).\n\n*-tag1*\nИскать посты не содержащие тег `tag1`.\n\n*ta∗1*\nИскать посты с тегами, начинающиеся с `ta` и оканчивающиеся на `1`.\n\n*user:bob*\nИскать посты загруженные пользователем `Bob`.\n\n*md5:foo*\nИскать посты с MD5 хэшем `foo`.\n\n*md5:foo∗*\nИскать посты, MD5 хэш которого начинается с `foo`.\n\n*rating:questionable*\nИскать посты с рейтингом `questionable`.\n\n*-rating:questionable*\nИскать посты без рейтинга `questionable`.\n\n*parent:1234*\nИскать посты имеющие `1234` в качестве родителя (включая пост `1234`).\n\n*rating:questionable rating:safe*\nВ целом, комбинации тех же мета-тегов (в которых содержатся двоеточие) не будут работать.\n\n*rating:questionable parent:100*\nВпрочем, ты можешь комбинировать разные мета-теги.\n\n*width:>=1000 height:>1000*\nИскать изображения с шириной больше, либо равной `1000` и высотой больше `1000`.\n\n*score:>=10*\nИскать посты со счётом больше, либо равным `10`. Значение обновляется ежедневно в 12AM CST.\n\n*sort:updated:desc*\nСортировка сообщений в совсем недавно обновленном порядке.\n\n*Другие сортируемые типы:*\n• `id`\n• `score`\n• `rating`\n• `user`\n• `height`\n• `width`\n• `parent`\n• `source`\n• `updated`\nМожет быть отсортировано по алфавиту (`asc`) или наоборот (`desc`).",
+			"feedback": {
+				"message": "*Новый отзыв!*\n%s\n- @%s",
+				"question": "Я правда хочу помочь тебе. 😔\nЧто со мной не так?",
+				"answer": "Спасибо за твой отзыв, %s! ☺️\nСенпай обязательно его рассмотрит!",
+				"empty": "Я не могу беспокоить Сенпая просто так. 😕\nОпиши свой отзыв иным образом."
+			}
+		},
+		"inline": {
+			"result": {
+				"title": "%s от %s",
+				"description": "Рейтинг: %s\nСчёт: %s\nТеги: %s"
+			},
+			"no_result": {
+				"title": "Здесь никого, кроме нас, цыплят!",
+				"description": "Попробуй выполнить поиск с другой комбинацией тегов.",
+				"message": "Sumimasen, но, к сожалению, я не смогла найти нужный контент. 😓\nНо, возможно, он уже есть в канале @HentaiDB или его официальной группе."
+			}
+		},
+		"rating": {
+			"s": "безопасный",
+			"e": "откровенный",
+			"q": "сомнительный",
+			"not_set": "неизвестный"
+		},
+		"buttons": {
+			"video": "Оригинал видео",
+			"gif": "Оригинал анимации",
+			"image": "Оригинал изображения",
+			"share": "Поделиться",
+			"settings": "Настройки",
+			"feedback": "Обратная связь",
+			"achievements": "Достижения",
+			"help": "Помощь",
+			"cheatsheet": "Шпаргалка",
+			"enable": "Включить",
+			"disable": "Выключить",
+			"cancel": "Отмена",
+			"language": "Язык"
+		},
+		"achievements": [{
+			"title": "Скрытых достижений осталось: %s",
+			"description": "Информация о каждом достижении будет доступна после его получения"
+		}],		
+		"video": "видео",
+		"image": "изображение",
+		"animation": "анимация"
+	}
+}]
