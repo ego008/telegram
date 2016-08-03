@@ -121,44 +121,6 @@ func main() {
 				}
 
 				<-appMetrika // Send track to Yandex.AppMetrika
-			case update.Message.Command() == "feedback" && (update.Message.Chat.IsPrivate() || bot.IsMessageToMe(*update.Message)):
-				// Track action
-				metrika.TrackAsync(update.Message.From.ID, MetrikaMessage{update.Message}, "/feedback", func(answer botan.Answer, err []error) {
-					log.Printf("[Botan] Track /feedback %s", answer.Status)
-					appMetrika <- true
-				})
-
-				// Force feedback
-				bot.Send(tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatTyping))
-
-				// Stop empty spamming
-				if update.Message.CommandArguments() != "" {
-					// Send Thanks to Sender
-					message := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf(feedbackAnswer, update.Message.From.FirstName))
-					message.ReplyToMessageID = update.Message.MessageID
-					if _, err := bot.Send(message); err != nil {
-						log.Printf("[Bot] Sending message error: %+v", err)
-					}
-
-					// Send message to admin
-					feedbackText := fmt.Sprintf(feedbackMessage, update.Message.CommandArguments(), update.Message.From.UserName)
-					feedback := tgbotapi.NewMessage(config.Telegram.Admin, feedbackText)
-					feedback.ParseMode = "markdown"
-					feedback.DisableWebPagePreview = true
-					if _, err := bot.Send(feedback); err != nil {
-						log.Printf("[Bot] Sending message error: %+v", err)
-					} else {
-						log.Println("[Bot] Feedback send successfully!")
-					}
-				} else {
-					message := tgbotapi.NewMessage(update.Message.Chat.ID, feedbackEmpty) // Send WTF?!
-					message.ReplyToMessageID = update.Message.MessageID
-					if _, err := bot.Send(message); err != nil {
-						log.Printf("[Bot] Sending message error: %+v", err)
-					}
-				}
-
-				<-appMetrika // Send track to Yandex.AppMetrika
 			default:
 				// Secret actions and commands ;)
 				GetEasterEgg()
