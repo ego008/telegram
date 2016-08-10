@@ -2,6 +2,15 @@ package main
 
 import "github.com/go-telegram-bot-api/telegram-bot-api"
 
+// Arguments for getPosts()
+type Request struct {
+	Limit    int
+	PageID   int
+	Tags     string
+	ChangeID int
+	ID       int
+}
+
 // Configuration is a main config
 type Configuration struct {
 	Telegram Telegram   `json:"telegram"`

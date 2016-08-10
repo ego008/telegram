@@ -5,10 +5,14 @@ import (
 	"fmt"
 	"github.com/botanio/sdk/go"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/valyala/fasthttp"
 	"io/ioutil"
 	"log"
+	"math/rand"
+	"path"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var (
@@ -48,6 +52,8 @@ func init() {
 }
 
 func main() {
+	startUptime := time.Now() // Set start time
+
 	// Timer updates (webhooks works only in production)
 	upd := tgbotapi.NewUpdate(0)
 	upd.Timeout = 60
@@ -121,10 +127,67 @@ func main() {
 				}
 
 				<-appMetrika // Send track to Yandex.AppMetrika
-			default:
-				// Secret actions and commands ;)
-				GetEasterEgg()
+			case update.Message.Command() == "random" && (update.Message.Chat.IsPrivate() || bot.IsMessageToMe(*update.Message)):
+				// Track action
+				metrika.TrackAsync(update.Message.From.ID, MetrikaMessage{update.Message}, "/random", func(answer botan.Answer, err []error) {
+					log.Printf("[Botan] Track /random %s", answer.Status)
+					appMetrika <- true
+				})
+
+				bot.Send(tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatUploadPhoto)) // Force feedback
+
+				randomSource := rand.NewSource(time.Now().UnixNano()) // Maximum randomizing dice
+				totalPosts := getPosts(Request{ID: 0})                // Get last upload post
+				random := rand.New(randomSource)                      // Create magical dice
+				var randomFile []Post
+
+				for {
+					randomPost := random.Intn(totalPosts[0].ID)    // Generate a random ID number to last post
+					randomFile = getPosts(Request{ID: randomPost}) // Call to selected ID
+					if len(randomFile) > 0 && checkType(randomFile[0].Image, ".webm", ".mp4", ".gif") == false {
+						break
+					}
+					log.Println("[Bot] This is not image. Reroll dice!")
+				}
+
+				_, body, err := fasthttp.Get(nil, randomFile[0].FileURL)
+				if err != nil {
+					log.Printf("[Bot] Get random image by URL error: %+v", err)
+				}
+				bytes := tgbotapi.FileBytes{Name: randomFile[0].Image, Bytes: body}
+				message := tgbotapi.NewPhotoUpload(update.Message.Chat.ID, bytes)
+				// message.Caption = ""
+				message.ReplyToMessageID = update.Message.MessageID
+				message.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(tgbotapi.NewInlineKeyboardButtonURL("Original image", randomFile[0].FileURL)))
+				if _, err := bot.Send(message); err != nil {
+					log.Printf("[Bot] Sending message error: %+v", err)
+				}
+
+				<-appMetrika // Send track to Yandex.AppMetrika
+			case update.Message.Command() == "info" && (update.Message.Chat.IsPrivate() || bot.IsMessageToMe(*update.Message)):
+				// Track action
+				metrika.TrackAsync(update.Message.From.ID, MetrikaMessage{update.Message}, "/info", func(answer botan.Answer, err []error) {
+					log.Printf("[Botan] Track /info %s", answer.Status)
+					appMetrika <- true
+				})
+
+				bot.Send(tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatUploadPhoto)) // Force feedback
+
+				uptime := time.Since(startUptime).String()
+
+				// For now - get Cheat Sheet from Gelbooru
+				message := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf(infoMessage, uptime))
+				message.ParseMode = "markdown"
+				message.DisableWebPagePreview = true
+				message.ReplyToMessageID = update.Message.MessageID
+				if _, err := bot.Send(message); err != nil {
+					log.Printf("[Bot] Sending message error: %+v", err)
+				}
+
+				<-appMetrika // Send track to Yandex.AppMetrika
 			}
+			// Secret actions and commands ;)
+			GetEasterEgg()
 		}
 
 		// Inline actions
@@ -139,10 +202,10 @@ func main() {
 			var posts []Post
 			var resultPage int
 			if len(update.InlineQuery.Offset) > 0 {
-				posts = getPosts(update.InlineQuery.Query, update.InlineQuery.Offset)
 				resultPage, _ = strconv.Atoi(update.InlineQuery.Offset)
+				posts = getPosts(Request{PageID: resultPage, Tags: update.InlineQuery.Query})
 			} else {
-				posts = getPosts(update.InlineQuery.Query, "")
+				posts = getPosts(Request{Tags: update.InlineQuery.Query})
 			}
 
 			// Analysis of results
@@ -191,7 +254,6 @@ func main() {
 						query.Description = "Rating: " + rating + "\nScore: " + strconv.Itoa(posts[i].Score) + "\nTags: " + posts[i].Tags
 						query.ReplyMarkup = &button
 						result = append(result, query)
-
 					case strings.Contains(posts[i].FileURL, ".gif"):
 						query := tgbotapi.NewInlineQueryResultGIF(strconv.Itoa(posts[i].ID), posts[i].FileURL)
 						query.ThumbURL = posts[i].FileURL
@@ -200,7 +262,6 @@ func main() {
 						query.Title = "Animation by " + strings.Title(posts[i].Owner)
 						query.ReplyMarkup = &button
 						result = append(result, query)
-
 					default:
 						query := tgbotapi.NewInlineQueryResultPhoto(strconv.Itoa(posts[i].ID), posts[i].FileURL)
 						query.ThumbURL = preview
@@ -243,4 +304,14 @@ func main() {
 			<-appMetrika // Send track to Yandex.AppMetrika
 		}
 	}
+}
+
+func checkType(name string, extensions ...string) bool {
+	for _, v := range extensions {
+		if v == path.Ext(name) {
+			return true
+		}
+	}
+
+	return false
 }
