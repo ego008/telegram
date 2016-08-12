@@ -47,12 +47,12 @@ func init() {
 		log.Printf("[Bot] Authorized as @%s", bot.Self.UserName)
 	}
 
-	metrika = botan.New(config.Botan.Token)
+	metrika = botan.New(config.Botan.Token) // Initialize botan
 	log.Println("[Botan] ACTIVATED")
 }
 
 func main() {
-	startUptime := time.Now() // Set start time
+	startUptime := time.Now() // Set start UpTime time
 
 	// Timer updates (webhooks works only in production)
 	upd := tgbotapi.NewUpdate(0)
@@ -76,13 +76,20 @@ func main() {
 					appMetrika <- true
 				})
 
-				// Force feedback
-				bot.Send(tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatTyping))
+				bot.Send(tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatTyping)) // Force feedback
 
 				message := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf(startMessage, update.Message.From.FirstName))
 				message.ParseMode = "markdown"
 				message.DisableWebPagePreview = true
 				message.ReplyToMessageID = update.Message.MessageID
+				if update.Message.Chat.IsPrivate() == true {
+					message.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
+						tgbotapi.NewInlineKeyboardRow(
+							// Showing tutorial button only in private chat for demonstration work
+							tgbotapi.NewInlineKeyboardButtonSwitch("See how to do this!", "hatsune_miku rating:safe"),
+						),
+					)
+				}
 				if _, err := bot.Send(message); err != nil {
 					log.Printf("[Bot] Sending message error: %+v", err)
 				}
@@ -95,8 +102,7 @@ func main() {
 					appMetrika <- true
 				})
 
-				// Force feedback
-				bot.Send(tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatTyping))
+				bot.Send(tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatTyping)) // Force feedback
 
 				message := tgbotapi.NewMessage(update.Message.Chat.ID, helpMessage)
 				message.ParseMode = "markdown"
@@ -114,8 +120,7 @@ func main() {
 					appMetrika <- true
 				})
 
-				// Force feedback
-				bot.Send(tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatTyping))
+				bot.Send(tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatTyping)) // Force feedback
 
 				// For now - get Cheat Sheet from Gelbooru
 				message := tgbotapi.NewMessage(update.Message.Chat.ID, cheatSheetMessage)
@@ -142,7 +147,7 @@ func main() {
 				var randomFile []Post
 
 				for {
-					randomPost := random.Intn(totalPosts[0].ID)    // Generate a random ID number to last post
+					randomPost := random.Intn(totalPosts[0].ID)    // Generate a random ID number from first to last ID post
 					randomFile = getPosts(Request{ID: randomPost}) // Call to selected ID
 					if len(randomFile) > 0 && checkType(randomFile[0].Image, ".webm", ".mp4", ".gif") == false {
 						break
@@ -150,15 +155,35 @@ func main() {
 					log.Println("[Bot] This is not image. Reroll dice!")
 				}
 
+				var button tgbotapi.InlineKeyboardMarkup
+				if update.Message.Chat.IsPrivate() == true {
+					button = tgbotapi.NewInlineKeyboardMarkup(
+						tgbotapi.NewInlineKeyboardRow(
+							tgbotapi.NewInlineKeyboardButtonURL("Original image", randomFile[0].FileURL),
+						),
+						tgbotapi.NewInlineKeyboardRow(
+							tgbotapi.NewInlineKeyboardButtonSwitch("Share", "id:"+strconv.Itoa(randomFile[0].ID)),
+						),
+					)
+				} else {
+					button = tgbotapi.NewInlineKeyboardMarkup(
+						tgbotapi.NewInlineKeyboardRow(
+							tgbotapi.NewInlineKeyboardButtonURL("Original image", randomFile[0].FileURL),
+						),
+					)
+				}
+
 				_, body, err := fasthttp.Get(nil, randomFile[0].FileURL)
 				if err != nil {
 					log.Printf("[Bot] Get random image by URL error: %+v", err)
 				}
 				bytes := tgbotapi.FileBytes{Name: randomFile[0].Image, Bytes: body}
+
 				message := tgbotapi.NewPhotoUpload(update.Message.Chat.ID, bytes)
 				// message.Caption = ""
 				message.ReplyToMessageID = update.Message.MessageID
-				message.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(tgbotapi.NewInlineKeyboardButtonURL("Original image", randomFile[0].FileURL)))
+				message.ReplyMarkup = button
+
 				if _, err := bot.Send(message); err != nil {
 					log.Printf("[Bot] Sending message error: %+v", err)
 				}
@@ -185,9 +210,9 @@ func main() {
 				}
 
 				<-appMetrika // Send track to Yandex.AppMetrika
+			default:
+				GetEasterEgg() // Secret actions and commands ;)
 			}
-			// Secret actions and commands ;)
-			GetEasterEgg()
 		}
 
 		// Inline actions
@@ -229,7 +254,11 @@ func main() {
 						rating = "Unknown"
 					}
 
-					button := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(tgbotapi.NewInlineKeyboardButtonURL("Original image", posts[i].FileURL)))
+					button := tgbotapi.NewInlineKeyboardMarkup(
+						tgbotapi.NewInlineKeyboardRow(
+							tgbotapi.NewInlineKeyboardButtonURL("Original image", posts[i].FileURL),
+						),
+					)
 
 					switch {
 					case strings.Contains(posts[i].FileURL, ".webm"): // It is necessary to get around error 403 when requesting video :|
