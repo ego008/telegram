@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"github.com/botanio/sdk/go"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
@@ -10,6 +11,8 @@ import (
 	"log"
 	"net/http"
 	"math/rand"
+	"net/http"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -43,7 +46,6 @@ func init() {
 		log.Panicf("[Bot] Initialize error: %+v", err)
 	} else {
 		bot = newBot
-		bot.Debug = true
 		log.Printf("[Bot] Authorized as @%s", bot.Self.UserName)
 	}
 
@@ -54,8 +56,28 @@ func init() {
 func main() {
 	startUptime := time.Now() // Set start UpTime time
 
-	updates := SetUpdater()
-	go http.ListenAndServe(config.Telegram.Webhook.Serve, nil) // Hell knows why it should be here, need to fix
+	debugMode := flag.Bool("debug", false, "enable debug logs")
+	webhookMode := flag.Bool("webhook", false, "enable webhooks support")
+	flag.Parse()
+
+	bot.Debug = *debugMode
+
+	updates := make(<-chan tgbotapi.Update)
+	if *webhookMode == true {
+		if _, err := bot.SetWebhook(tgbotapi.NewWebhook(config.Telegram.Webhook.Set + config.Telegram.Token)); err != nil {
+			log.Printf("Set webhook error: %+v", err)
+		}
+		updates = bot.ListenForWebhook(config.Telegram.Webhook.Listen + config.Telegram.Token)
+		go http.ListenAndServe(config.Telegram.Webhook.Serve, nil)
+	} else {
+		upd := tgbotapi.NewUpdate(0)
+		upd.Timeout = 60
+		updater, err := bot.GetUpdatesChan(upd)
+		if err != nil {
+			log.Printf("[Bot] Getting updates error: %+v", err)
+		}
+		updates = updater
+	}
 
 	// Updater
 	for update = range updates {

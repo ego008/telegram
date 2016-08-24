@@ -1,9 +1,9 @@
 {
 	"telegram": {
 		"token": "",
-		"admin": 00000000,
-		"supergroup": -0000000000000,
-		"channel": "@HentaiDB"
+		"admin": 0,
+		"supergroup": -0,
+		"channel": "@HentaiDB",
 		"webhook": {
 			"set": "https://site.com/",
 			"listen": "/",
