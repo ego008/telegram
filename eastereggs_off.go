@@ -12,7 +12,7 @@ func init() {
 }
 
 // GetEasterEgg could send an easeter egg. But no.
-func GetEasterEgg() {
+func getEasterEgg() {
 	switch {
 	case update.Message.Chat.IsPrivate() || (update.Message.Chat.ID == config.Telegram.SuperGroup && bot.IsMessageToMe(*update.Message)):
 		// Track all other messages

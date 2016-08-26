@@ -139,7 +139,7 @@ func main() {
 					appMetrika <- true
 				})
 
-				bot.Send(tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatUploadPhoto)) // Force feedback
+				bot.Send(tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatUploadDocument)) // Force feedback
 
 				randomSource := rand.NewSource(time.Now().UnixNano()) // Maximum randomizing dice
 				totalPosts := getPosts(Request{ID: 0})                // Get last upload post
@@ -149,8 +149,8 @@ func main() {
 				for {
 					randomPost := random.Intn(totalPosts[0].ID)    // Generate a random ID number from first to last ID post
 					randomFile = getPosts(Request{ID: randomPost}) // Call to selected ID
-					if len(randomFile) > 0 && checkType(randomFile[0].Image, ".webm", ".mp4", ".gif") == false {
-						break
+					if len(randomFile) > 0 {
+						break // If post is NOT blocked or erroneous
 					}
 					log.Println("[Bot] This is not image. Reroll dice!")
 				}
@@ -179,13 +179,34 @@ func main() {
 				}
 				bytes := tgbotapi.FileBytes{Name: randomFile[0].Image, Bytes: body}
 
-				message := tgbotapi.NewPhotoUpload(update.Message.Chat.ID, bytes)
-				// message.Caption = ""
-				message.ReplyToMessageID = update.Message.MessageID
-				message.ReplyMarkup = button
+				switch {
+				case strings.Contains(randomFile[0].FileURL, ".mp4"):
+					bot.Send(tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatUploadVideo)) // Force feedback
 
-				if _, err := bot.Send(message); err != nil {
-					log.Printf("[Bot] Sending message error: %+v", err)
+					message := tgbotapi.NewVideoUpload(update.Message.Chat.ID, bytes)
+					message.ReplyToMessageID = update.Message.MessageID
+					message.ReplyMarkup = &button
+					if _, err := bot.Send(message); err != nil {
+						log.Printf("[Bot] Sending message error: %+v", err)
+					}
+				case strings.Contains(randomFile[0].FileURL, ".gif") || strings.Contains(randomFile[0].FileURL, ".webm"):
+					bot.Send(tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatUploadDocument)) // Force feedback
+
+					message := tgbotapi.NewDocumentUpload(update.Message.Chat.ID, bytes)
+					message.ReplyToMessageID = update.Message.MessageID
+					message.ReplyMarkup = &button
+					if _, err := bot.Send(message); err != nil {
+						log.Printf("[Bot] Sending message error: %+v", err)
+					}
+				default:
+					bot.Send(tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatUploadPhoto)) // Force feedback
+
+					message := tgbotapi.NewPhotoUpload(update.Message.Chat.ID, bytes)
+					message.ReplyToMessageID = update.Message.MessageID
+					message.ReplyMarkup = &button
+					if _, err := bot.Send(message); err != nil {
+						log.Printf("[Bot] Sending message error: %+v", err)
+					}
 				}
 
 				<-appMetrika // Send track to Yandex.AppMetrika
@@ -211,7 +232,7 @@ func main() {
 
 				<-appMetrika // Send track to Yandex.AppMetrika
 			default:
-				GetEasterEgg() // Secret actions and commands ;)
+				getEasterEgg() // Secret actions and commands ;)
 			}
 		}
 
@@ -262,7 +283,7 @@ func main() {
 
 					switch {
 					case strings.Contains(posts[i].FileURL, ".webm"): // It is necessary to get around error 403 when requesting video :|
-						// query := tgbotapi.NewInlineQueryResultVideo(update.InlineQuery.ID+strconv.Itoa(posts[i].ID), posts[i].FileURL) // Does not work
+						// query := tgbotapi.NewInlineQueryResultVideo(strconv.Itoa(i), posts[i].FileURL) // Does not work
 						// query.MimeType = "text/html" // Link on widget-page?
 						// query.MimeType = "video/mp4" // Does not work for .webm
 						// query.ThumbURL = preview
@@ -274,7 +295,7 @@ func main() {
 						// result = append(result, query)
 						continue
 					case strings.Contains(posts[i].FileURL, ".mp4"): // Just in case. Why not? ¯\_(ツ)_/¯
-						query := tgbotapi.NewInlineQueryResultVideo(strconv.Itoa(posts[i].ID), posts[i].FileURL)
+						query := tgbotapi.NewInlineQueryResultVideo(strconv.Itoa(i), posts[i].FileURL)
 						query.MimeType = "video/mp4"
 						query.ThumbURL = preview
 						query.Width = posts[i].Width
@@ -284,7 +305,7 @@ func main() {
 						query.ReplyMarkup = &button
 						result = append(result, query)
 					case strings.Contains(posts[i].FileURL, ".gif"):
-						query := tgbotapi.NewInlineQueryResultGIF(strconv.Itoa(posts[i].ID), posts[i].FileURL)
+						query := tgbotapi.NewInlineQueryResultGIF(strconv.Itoa(i), posts[i].FileURL)
 						query.ThumbURL = posts[i].FileURL
 						query.Width = posts[i].Width
 						query.Height = posts[i].Height
@@ -292,7 +313,7 @@ func main() {
 						query.ReplyMarkup = &button
 						result = append(result, query)
 					default:
-						query := tgbotapi.NewInlineQueryResultPhoto(strconv.Itoa(posts[i].ID), posts[i].FileURL)
+						query := tgbotapi.NewInlineQueryResultPhoto(strconv.Itoa(i), posts[i].FileURL)
 						query.ThumbURL = preview
 						query.Width = posts[i].Width
 						query.Height = posts[i].Height
@@ -333,14 +354,4 @@ func main() {
 			<-appMetrika // Send track to Yandex.AppMetrika
 		}
 	}
-}
-
-func checkType(name string, extensions ...string) bool {
-	for _, v := range extensions {
-		if v == path.Ext(name) {
-			return true
-		}
-	}
-
-	return false
 }

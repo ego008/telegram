@@ -16,9 +16,6 @@ Search content from popular repositories in inline-mode.
 - [myutils](https://github.com/kirillDanshin/myutils)
 
 ## Documentation
-- [Contributors](CONTRIBUTORS.md)
+- [Contributors](CONTRIBUTORS.md) and Patrons!
 - [License](LICENSE.md)
 - [ToDo](https://gist.github.com/toby3d/b5bcc86409cc8093849da450c7ba2008)
-
-# Devotees patrons
-Nobody's here... [Be the first!](https://www.patreon.com/bePatron?rid=568461&patAmt=5.0&u=2561978&exp=1)
