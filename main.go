@@ -368,5 +368,13 @@ func main() {
 			})
 			<-appMetrika // Send track to Yandex.AppMetrika
 		}
+
+		if update.CallbackQuery != nil {
+			metrika.TrackAsync(update.ChosenInlineResult.From.ID, MetrikaCallbackQuery{update.CallbackQuery}, "Action", func(answer botan.Answer, err []error) {
+				log.Printf("[Botan] Track Find %s", answer.Status)
+				appMetrika <- true
+			})
+			<-appMetrika // Send track to Yandex.AppMetrika
+		}
 	}
 }
