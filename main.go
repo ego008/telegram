@@ -14,21 +14,34 @@ import (
 var (
 	bot        *tgbotapi.BotAPI
 	config     Configuration
+	locale     Localization
 	metrika    botan.Botan
 	appMetrika = make(chan bool)
 )
 
 func init() {
 	// Read configuration
-	file, err := ioutil.ReadFile("config.json")
+	configFile, err := ioutil.ReadFile("config.json")
 	if err != nil {
 		log.Fatalf("[Configuration] Reading error: %+v", err)
 	} else {
 		log.Println("[Configuration] Read successfully!")
 	}
 	// Decode configuration
-	if err = json.Unmarshal(file, &config); err != nil {
+	if err = json.Unmarshal(configFile, &config); err != nil {
 		log.Fatalf("[Configuration] Decoding error: %+v", err)
+	}
+
+	// Read localization
+	localeFile, err := ioutil.ReadFile("locale.json")
+	if err != nil {
+		log.Fatalf("[Localization] Reading error: %+v", err)
+	} else {
+		log.Println("[Localization] Read successfully.")
+	}
+	// Decode localization
+	if err = json.Unmarshal(localeFile, &locale); err != nil {
+		log.Fatalf("[Localization] Decoding error: %+v", err)
 	}
 
 	// Initialize bot
