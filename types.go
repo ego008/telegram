@@ -22,7 +22,7 @@ type (
 	// Telegram API settings
 	Telegram struct {
 		Token      string  `json:"token"`
-		Admin      int64   `json:"admin"`      // For future, to get feedback
+		Admin      int     `json:"admin"`      // For future, to get feedback
 		SuperGroup int64   `json:"supergroup"` // For easter eggs
 		Channel    string  `json:"channel"`
 		Webhook    Webhook `json:"webhook"`
