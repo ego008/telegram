@@ -4,6 +4,7 @@ package main
 
 import (
 	"github.com/botanio/sdk/go"
+	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
 )
 
@@ -12,11 +13,11 @@ func init() {
 }
 
 // GetEasterEgg could send an easeter egg. But no.
-func getEasterEgg() {
+func getEasterEgg(message *tgbotapi.Message) {
 	switch {
-	case update.Message.Chat.IsPrivate() || (update.Message.Chat.ID == config.Telegram.SuperGroup && bot.IsMessageToMe(*update.Message)):
+	case message.Chat.IsPrivate() || (message.Chat.ID == config.Telegram.SuperGroup && bot.IsMessageToMe(*message)):
 		// Track all other messages
-		metrika.TrackAsync(update.Message.From.ID, MetrikaMessage{update.Message}, "Message", func(answer botan.Answer, err []error) {
+		metrika.TrackAsync(message.From.ID, MetrikaMessage{message}, "Message", func(answer botan.Answer, err []error) {
 			log.Printf("[Botan] Track Message %s", answer.Status)
 			appMetrika <- true
 		})
