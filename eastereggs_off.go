@@ -9,11 +9,11 @@ import (
 )
 
 func init() {
-	log.Println("[Easter eggs] DEACTIVATED")
+	log.Println("[Easter eggs] Deactivated")
 }
 
 // GetEasterEgg could send an easeter egg. But no.
-func getEasterEgg(message *tgbotapi.Message) {
+func getEggMessage(message *tgbotapi.Message, metrika botan.Botan, appMetrika chan bool) {
 	switch {
 	case message.Chat.IsPrivate() || (message.Chat.ID == config.Telegram.SuperGroup && bot.IsMessageToMe(*message)):
 		// Track all other messages
@@ -21,9 +21,9 @@ func getEasterEgg(message *tgbotapi.Message) {
 			log.Printf("[Botan] Track Message %s", answer.Status)
 			appMetrika <- true
 		})
+
 		<-appMetrika
 	default:
 		// If Message from ofiicial group - skip trash tracking data
-		log.Println("[Botan] Skip Message in official group")
 	}
 }

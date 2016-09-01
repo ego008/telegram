@@ -9,26 +9,26 @@ import (
 
 func getInlineResults(inline *tgbotapi.InlineQuery, cacheTime int) {
 	// Check result pages
-	var posts []Post
+	var post []Post
 	var resultPage int
-	if len(update.InlineQuery.Offset) > 0 {
-		resultPage, _ = strconv.Atoi(update.InlineQuery.Offset)
-		posts = getPosts(Request{PageID: resultPage, Tags: update.InlineQuery.Query})
+	if len(inline.Offset) > 0 {
+		resultPage, _ = strconv.Atoi(inline.Offset)
+		post = getPosts(Request{PageID: resultPage, Tags: inline.Query})
 	} else {
-		posts = getPosts(Request{Tags: update.InlineQuery.Query})
+		post = getPosts(Request{Tags: inline.Query})
 	}
 
 	// Analysis of results
 	var result []interface{}
 	switch {
-	case len(posts) > 0:
-		for i := 0; i < len(posts); i++ {
+	case len(post) > 0:
+		for i := 0; i < len(post); i++ {
 			// Universal(?) preview url
-			preview := config.Resource[resNum].Settings.URL + config.Resource[resNum].Settings.ThumbsDir + posts[i].Directory + config.Resource[resNum].Settings.ThumbsPart + posts[i].Hash + ".jpg"
+			preview := config.Resource[20].Settings.URL + config.Resource[20].Settings.ThumbsDir + post[i].Directory + config.Resource[20].Settings.ThumbsPart + post[i].Hash + ".jpg"
 
 			// Rating
 			var rating string
-			switch posts[i].Rating {
+			switch post[i].Rating {
 			case "s":
 				rating = "Safe"
 			case "e":
@@ -41,65 +41,65 @@ func getInlineResults(inline *tgbotapi.InlineQuery, cacheTime int) {
 
 			button := tgbotapi.NewInlineKeyboardMarkup(
 				tgbotapi.NewInlineKeyboardRow(
-					tgbotapi.NewInlineKeyboardButtonURL("Original image", posts[i].FileURL),
+					tgbotapi.NewInlineKeyboardButtonURL("Original image", post[i].FileURL),
 				),
 			)
 
 			switch {
-			case strings.Contains(posts[i].FileURL, ".webm"): // It is necessary to get around error 403 when requesting video :|
-				// query := tgbotapi.NewInlineQueryResultVideo(strconv.Itoa(i), posts[i].FileURL) // Does not work
-				// query.MimeType = "text/html" // Link on widget-page?
-				// query.MimeType = "video/mp4" // Does not work for .webm
-				// query.ThumbURL = preview
-				// query.Width = posts[i].Width
-				// query.Height = posts[i].Height
-				// query.Title = "Video by " + strings.Title(posts[i].Owner)
-				// query.Description = "Rating: " + rating + "\nScore: " + strconv.Itoa(posts[i].Score) + "\nTags: " + posts[i].Tags
-				// query.ReplyMarkup = &button
-				// result = append(result, query)
+			case strings.Contains(post[i].FileURL, ".webm"): // It is necessary to get around error 403 when requesting video :|
+				// video := tgbotapi.NewInlineQueryResultVideo(strconv.Itoa(i), post[i].FileURL) // Does not work
+				// video.MimeType = "text/html" // Link on widget-page?
+				// video.MimeType = "video/mp4" // Does not work for .webm
+				// video.ThumbURL = preview
+				// video.Width = post[i].Width
+				// video.Height = post[i].Height
+				// video.Title = "Video by " + strings.Title(post[i].Owner)
+				// video.Description = "Rating: " + rating + "\nScore: " + strconv.Itoa(post[i].Score) + "\nTags: " + post[i].Tags
+				// video.ReplyMarkup = &button
+				// result = append(result, video)
 				continue
-			case strings.Contains(posts[i].FileURL, ".mp4"): // Just in case. Why not? ¯\_(ツ)_/¯
-				query := tgbotapi.NewInlineQueryResultVideo(strconv.Itoa(i), posts[i].FileURL)
-				query.MimeType = "video/mp4"
-				query.ThumbURL = preview
-				query.Width = posts[i].Width
-				query.Height = posts[i].Height
-				query.Title = "Video by " + strings.Title(posts[i].Owner)
-				query.Description = "Rating: " + rating + "\nScore: " + strconv.Itoa(posts[i].Score) + "\nTags: " + posts[i].Tags
-				query.ReplyMarkup = &button
-				result = append(result, query)
-			case strings.Contains(posts[i].FileURL, ".gif"):
-				query := tgbotapi.NewInlineQueryResultGIF(strconv.Itoa(i), posts[i].FileURL)
-				query.ThumbURL = posts[i].FileURL
-				query.Width = posts[i].Width
-				query.Height = posts[i].Height
-				query.Title = "Animation by " + strings.Title(posts[i].Owner)
-				query.ReplyMarkup = &button
-				result = append(result, query)
+			case strings.Contains(post[i].FileURL, ".mp4"): // Just in case. Why not? ¯\_(ツ)_/¯
+				video := tgbotapi.NewInlineQueryResultVideo(strconv.Itoa(i), post[i].FileURL)
+				video.MimeType = "video/mp4"
+				video.ThumbURL = preview
+				video.Width = post[i].Width
+				video.Height = post[i].Height
+				video.Title = "Video by " + strings.Title(post[i].Owner)
+				video.Description = "Rating: " + rating + "\nScore: " + strconv.Itoa(post[i].Score) + "\nTags: " + post[i].Tags
+				video.ReplyMarkup = &button
+				result = append(result, video)
+			case strings.Contains(post[i].FileURL, ".gif"):
+				gif := tgbotapi.NewInlineQueryResultGIF(strconv.Itoa(i), post[i].FileURL)
+				gif.ThumbURL = post[i].FileURL
+				gif.Width = post[i].Width
+				gif.Height = post[i].Height
+				gif.Title = "Animation by " + strings.Title(post[i].Owner)
+				gif.ReplyMarkup = &button
+				result = append(result, gif)
 			default:
-				query := tgbotapi.NewInlineQueryResultPhoto(strconv.Itoa(i), posts[i].FileURL)
-				query.ThumbURL = preview
-				query.Width = posts[i].Width
-				query.Height = posts[i].Height
-				query.Title = "Image by " + strings.Title(posts[i].Owner)
-				query.Description = "Rating: " + rating + "\nScore: " + strconv.Itoa(posts[i].Score) + "\nTags: " + posts[i].Tags
-				query.ReplyMarkup = &button
-				result = append(result, query)
+				image := tgbotapi.NewInlineQueryResultPhoto(strconv.Itoa(i), post[i].FileURL)
+				image.ThumbURL = preview
+				image.Width = post[i].Width
+				image.Height = post[i].Height
+				image.Title = "Image by " + strings.Title(post[i].Owner)
+				image.Description = "Rating: " + rating + "\nScore: " + strconv.Itoa(post[i].Score) + "\nTags: " + post[i].Tags
+				image.ReplyMarkup = &button
+				result = append(result, image)
 			}
 		}
-	case len(posts) == 0: // Found nothing
-		query := tgbotapi.NewInlineQueryResultArticle(update.InlineQuery.ID, noInlineResultTitle, noInlineResultMessage)
-		query.Description = noInlineResultDescription
-		result = append(result, query)
+	case len(post) == 0: // Found nothing
+		empty := tgbotapi.NewInlineQueryResultArticle(inline.ID, noInlineResultTitle, noInlineResultMessage)
+		empty.Description = noInlineResultDescription
+		result = append(result, empty)
 	}
 
 	// Configure inline-mode
 	inlineConfig := tgbotapi.InlineConfig{}
-	inlineConfig.InlineQueryID = update.InlineQuery.ID
+	inlineConfig.InlineQueryID = inline.ID
 	inlineConfig.IsPersonal = true
 	inlineConfig.CacheTime = cacheTime
 	inlineConfig.Results = result
-	if len(posts) == 50 {
+	if len(post) == 50 {
 		inlineConfig.NextOffset = strconv.Itoa(resultPage + 1) // If available next page of results
 	}
 

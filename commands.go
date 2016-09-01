@@ -12,7 +12,10 @@ import (
 )
 
 func sendHello(message *tgbotapi.Message) {
-	bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatTyping)) // Force feedback
+	// Force feedback
+	if _, err := bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatTyping)); err != nil {
+		log.Printf("[Bot] ChatAction send error^ %+v", err)
+	}
 
 	answer := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf(startMessage, message.From.FirstName))
 	answer.ParseMode = "markdown"
@@ -32,7 +35,10 @@ func sendHello(message *tgbotapi.Message) {
 }
 
 func sendHelp(message *tgbotapi.Message) {
-	bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatTyping)) // Force feedback
+	// Force feedback
+	if _, err := bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatTyping)); err != nil {
+		log.Printf("[Bot] ChatAction send error^ %+v", err)
+	}
 
 	answer := tgbotapi.NewMessage(message.Chat.ID, helpMessage)
 	answer.ParseMode = "markdown"
@@ -44,7 +50,10 @@ func sendHelp(message *tgbotapi.Message) {
 }
 
 func sendCheatSheet(message *tgbotapi.Message) {
-	bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatTyping)) // Force feedback
+	// Force feedback
+	if _, err := bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatTyping)); err != nil {
+		log.Printf("[Bot] ChatAction send error^ %+v", err)
+	}
 
 	// For now - get Cheat Sheet from Gelbooru
 	answer := tgbotapi.NewMessage(message.Chat.ID, cheatSheetMessage)
@@ -57,7 +66,10 @@ func sendCheatSheet(message *tgbotapi.Message) {
 }
 
 func sendRandomPost(message *tgbotapi.Message) {
-	bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatUploadDocument)) // Force feedback
+	// Force feedback
+	if _, err := bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatUploadDocument)); err != nil {
+		log.Printf("[Bot] ChatAction send error^ %+v", err)
+	}
 
 	randomSource := rand.NewSource(time.Now().UnixNano()) // Maximum randomizing dice
 	totalPosts := getPosts(Request{ID: 0})                // Get last upload post
@@ -74,7 +86,7 @@ func sendRandomPost(message *tgbotapi.Message) {
 	}
 
 	var button tgbotapi.InlineKeyboardMarkup
-	if message.Chat.IsPrivate() == true {
+	if message.Chat.IsPrivate() == true { // Add share-button if chat is private
 		button = tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
 				tgbotapi.NewInlineKeyboardButtonURL("Original image", randomFile[0].FileURL),
@@ -99,7 +111,10 @@ func sendRandomPost(message *tgbotapi.Message) {
 
 	switch {
 	case strings.Contains(randomFile[0].FileURL, ".mp4"):
-		bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatUploadVideo)) // Force feedback
+		// Force feedback
+		if _, err := bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatUploadVideo)); err != nil {
+			log.Printf("[Bot] ChatAction send error^ %+v", err)
+		}
 
 		video := tgbotapi.NewVideoUpload(message.Chat.ID, bytes)
 		video.ReplyToMessageID = message.MessageID
@@ -108,7 +123,10 @@ func sendRandomPost(message *tgbotapi.Message) {
 			log.Printf("[Bot] Sending message error: %+v", err)
 		}
 	case strings.Contains(randomFile[0].FileURL, ".gif") || strings.Contains(randomFile[0].FileURL, ".webm"):
-		bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatUploadDocument)) // Force feedback
+		// Force feedback
+		if _, err := bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatUploadDocument)); err != nil {
+			log.Printf("[Bot] ChatAction send error^ %+v", err)
+		}
 
 		gif := tgbotapi.NewDocumentUpload(message.Chat.ID, bytes)
 		gif.ReplyToMessageID = message.MessageID
@@ -117,7 +135,10 @@ func sendRandomPost(message *tgbotapi.Message) {
 			log.Printf("[Bot] Sending message error: %+v", err)
 		}
 	default:
-		bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatUploadPhoto)) // Force feedback
+		// Force feedback
+		if _, err := bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatUploadPhoto)); err != nil {
+			log.Printf("[Bot] ChatAction send error^ %+v", err)
+		}
 
 		image := tgbotapi.NewPhotoUpload(message.Chat.ID, bytes)
 		image.ReplyToMessageID = message.MessageID
@@ -129,7 +150,10 @@ func sendRandomPost(message *tgbotapi.Message) {
 }
 
 func sendBotInfo(message *tgbotapi.Message, startUptime time.Time) {
-	bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatUploadPhoto)) // Force feedback
+	// Force feedback
+	if _, err := bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatTyping)); err != nil {
+		log.Printf("[Bot] ChatAction send error^ %+v", err)
+	}
 
 	uptime := time.Since(startUptime).String()
 
@@ -144,7 +168,10 @@ func sendBotInfo(message *tgbotapi.Message, startUptime time.Time) {
 }
 
 func sendTelegramFileID(message *tgbotapi.Message) {
-	bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatTyping)) // Force feedback
+	// Force feedback
+	if _, err := bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatTyping)); err != nil {
+		log.Printf("[Bot] ChatAction send error^ %+v", err)
+	}
 
 	var fileID string
 	switch {

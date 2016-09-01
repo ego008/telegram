@@ -12,12 +12,8 @@ import (
 )
 
 var (
-	appMetrika = make(chan bool)
-	bot        *tgbotapi.BotAPI
-	config     Configuration
-	metrika    botan.Botan
-	resNum     = 20 // Select Gelbooru by default, remake in name search(?)
-	update     tgbotapi.Update
+	bot    *tgbotapi.BotAPI
+	config Configuration
 )
 
 func init() {
@@ -41,25 +37,26 @@ func init() {
 		bot = newBot
 		log.Printf("[Bot] Authorized as @%s", bot.Self.UserName)
 	}
-
-	metrika = botan.New(config.Botan.Token) // Initialize botan
-	log.Println("[Botan] ACTIVATED")
 }
 
 func main() {
-	startUptime := time.Now() // Set start UpTime time
-
 	debugMode := flag.Bool("debug", false, "enable debug logs")
 	webhookMode := flag.Bool("webhook", false, "enable webhooks support")
 	cacheTime := flag.Int("cache", 0, "cache time in seconds for inline-search results")
 	flag.Parse()
 
+	// Initialize botan
+	appMetrika := make(chan bool)
+	metrika := botan.New(config.Botan.Token)
+
+	startUptime := time.Now() // Set start UpTime time
 	bot.Debug = *debugMode
 
 	updates := make(<-chan tgbotapi.Update)
 	if *webhookMode == true {
+		log.Println("[Bot] Webhook activated")
 		if _, err := bot.SetWebhook(tgbotapi.NewWebhook(config.Telegram.Webhook.Set + config.Telegram.Token)); err != nil {
-			log.Printf("Set webhook error: %+v", err)
+			log.Printf("[Bot] Set webhook error: %+v", err)
 		}
 		updates = bot.ListenForWebhook(config.Telegram.Webhook.Listen + config.Telegram.Token)
 		go http.ListenAndServe(config.Telegram.Webhook.Serve, nil)
@@ -74,11 +71,12 @@ func main() {
 	}
 
 	// Updater
-	for update = range updates {
+	for update := range updates {
 		log.Printf("[Bot] Update response: %+v", updates)
 
 		// Chat actions
-		if update.Message != nil {
+		switch {
+		case update.Message != nil:
 			switch {
 			case update.Message.Command() == "start" && (update.Message.Chat.IsPrivate() || bot.IsMessageToMe(*update.Message)): // Requirement Telegram platform
 				// Track action
@@ -131,14 +129,11 @@ func main() {
 
 				<-appMetrika // Send track to Yandex.AppMetrika
 			case update.Message.Chat.IsPrivate() && update.Message.From.ID == config.Telegram.Admin:
-				go sendTelegramFileID(update.Message)
+				go sendTelegramFileID(update.Message) // Admin feature
 			default:
-				go getEasterEgg(update.Message) // Secret actions and commands ;)
+				go getEggMessage(update.Message, metrika, appMetrika) // Secret actions and commands ;)
 			}
-		}
-
-		// Inline actions
-		if update.InlineQuery != nil && len(update.InlineQuery.Query) <= 255 { // Just don't update results if query exceeds the maximum length
+		case update.InlineQuery != nil && len(update.InlineQuery.Query) <= 255: // Just don't update results if query exceeds the maximum length
 			// Track action
 			metrika.TrackAsync(update.InlineQuery.From.ID, MetrikaInlineQuery{update.InlineQuery}, "Search", func(answer botan.Answer, err []error) {
 				log.Printf("[Botan] Track Search %s", answer.Status)
@@ -148,21 +143,19 @@ func main() {
 			go getInlineResults(update.InlineQuery, *cacheTime)
 
 			<-appMetrika // Send track to Yandex.AppMetrika
-		}
-
-		if update.ChosenInlineResult != nil {
+		case update.ChosenInlineResult != nil:
 			metrika.TrackAsync(update.ChosenInlineResult.From.ID, MetrikaChosenInlineResult{update.ChosenInlineResult}, "Find", func(answer botan.Answer, err []error) {
 				log.Printf("[Botan] Track Find %s", answer.Status)
 				appMetrika <- true
 			})
-			<-appMetrika // Send track to Yandex.AppMetrika
-		}
 
-		if update.CallbackQuery != nil {
+			<-appMetrika // Send track to Yandex.AppMetrika
+		case update.CallbackQuery != nil:
 			metrika.TrackAsync(update.ChosenInlineResult.From.ID, MetrikaCallbackQuery{update.CallbackQuery}, "Action", func(answer botan.Answer, err []error) {
-				log.Printf("[Botan] Track Find %s", answer.Status)
+				log.Printf("[Botan] Track Action %s", answer.Status)
 				appMetrika <- true
 			})
+
 			<-appMetrika // Send track to Yandex.AppMetrika
 		}
 	}

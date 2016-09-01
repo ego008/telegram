@@ -11,7 +11,7 @@ import (
 
 // Universal(?) function obtain content
 func getPosts(req Request) []Post {
-	repository := myutils.Concat(config.Resource[resNum].Settings.URL, "index.php?page=dapi&s=post&q=index&json=1") // JSON API with 50 results (Telegram limit)
+	repository := myutils.Concat(config.Resource[20].Settings.URL, "index.php?page=dapi&s=post&q=index&json=1") // JSON API with 50 results (Telegram limit)
 	if req.Limit == 0 {
 		req.Limit = 50
 	}
