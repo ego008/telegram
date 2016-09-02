@@ -21,11 +21,16 @@ type (
 
 	// Telegram API settings
 	Telegram struct {
-		Token      string  `json:"token"`
-		Admin      int     `json:"admin"`      // For future, to get feedback
-		SuperGroup int64   `json:"supergroup"` // For easter eggs
-		Channel    string  `json:"channel"`
-		Webhook    Webhook `json:"webhook"`
+		Token   string  `json:"token"`
+		Admin   int     `json:"admin"` // For future, to get feedback
+		Group   int64   `json:"group"` // For easter eggs
+		Invite  Invite  `json:"invite"`
+		Webhook Webhook `json:"webhook"`
+	}
+
+	Invite struct {
+		Group   string `json:"group"`
+		Channel string `json:"channel"`
 	}
 
 	Webhook struct {

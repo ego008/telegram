@@ -2,8 +2,11 @@
 	"telegram": {
 		"token": "",
 		"admin": 0,
-		"supergroup": -0,
-		"channel": "@HentaiDB",
+		"group": 0,
+		"invite": {
+			"channel": "https://telegram.me/HentaiDB",
+			"group": "https://telegram.me/joinchat/AkuYYz7PW2FfAKpzVLby7A"
+		},
 		"webhook": {
 			"set": "https://site.com/",
 			"listen": "/",

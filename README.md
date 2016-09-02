@@ -14,6 +14,7 @@ Search content from popular repositories in inline-mode.
 - [Botan SDK](https://github.com/botanio/sdk#go)
 - [fasthttp](https://github.com/valyala/fasthttp)
 - [myutils](https://github.com/kirillDanshin/myutils)
+- [durafmt](https://github.com/hako/durafmt)
 
 ## Documentation
 - [Contributors](CONTRIBUTORS.md) and Patrons!

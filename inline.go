@@ -1,21 +1,28 @@
 package main
 
 import (
+	"github.com/botanio/sdk/go"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
 	"strconv"
 	"strings"
 )
 
-func getInlineResults(inline *tgbotapi.InlineQuery, cacheTime int) {
+func getInlineResults(cacheTime int, inline *tgbotapi.InlineQuery) {
+	// Track action
+	metrika.TrackAsync(inline.From.ID, MetrikaInlineQuery{inline}, "Search", func(answer botan.Answer, err []error) {
+		log.Printf("[Botan] Track Search %s", answer.Status)
+		appMetrika <- true
+	})
+
 	// Check result pages
 	var post []Post
 	var resultPage int
 	if len(inline.Offset) > 0 {
 		resultPage, _ = strconv.Atoi(inline.Offset)
-		post = getPosts(Request{PageID: resultPage, Tags: inline.Query})
+		post = getPosts(Request{Limit: 50, PageID: resultPage, Tags: inline.Query})
 	} else {
-		post = getPosts(Request{Tags: inline.Query})
+		post = getPosts(Request{Limit: 50, Tags: inline.Query})
 	}
 
 	// Analysis of results
@@ -99,11 +106,33 @@ func getInlineResults(inline *tgbotapi.InlineQuery, cacheTime int) {
 	inlineConfig.IsPersonal = true
 	inlineConfig.CacheTime = cacheTime
 	inlineConfig.Results = result
+	// If available next page of results
 	if len(post) == 50 {
-		inlineConfig.NextOffset = strconv.Itoa(resultPage + 1) // If available next page of results
+		resultPage++
+		inlineConfig.NextOffset = strconv.Itoa(resultPage)
 	}
 
 	if _, err := bot.AnswerInlineQuery(inlineConfig); err != nil {
 		log.Printf("[Bot] Answer inline-query error: %+v", err)
 	}
+
+	<-appMetrika // Send track to Yandex.AppMetrika
+}
+
+func sendInlineResult(result *tgbotapi.ChosenInlineResult) {
+	metrika.TrackAsync(result.From.ID, MetrikaChosenInlineResult{result}, "Find", func(answer botan.Answer, err []error) {
+		log.Printf("[Botan] Track Find %s", answer.Status)
+		appMetrika <- true
+	})
+
+	<-appMetrika // Send track to Yandex.AppMetrika
+}
+
+func getCallbackAction(callback *tgbotapi.CallbackQuery) {
+	metrika.TrackAsync(callback.From.ID, MetrikaCallbackQuery{callback}, "Action", func(answer botan.Answer, err []error) {
+		log.Printf("[Botan] Track Action %s", answer.Status)
+		appMetrika <- true
+	})
+
+	<-appMetrika // Send track to Yandex.AppMetrika
 }

@@ -12,8 +12,10 @@ import (
 )
 
 var (
-	bot    *tgbotapi.BotAPI
-	config Configuration
+	bot        *tgbotapi.BotAPI
+	config     Configuration
+	metrika    botan.Botan
+	appMetrika = make(chan bool)
 )
 
 func init() {
@@ -22,7 +24,7 @@ func init() {
 	if err != nil {
 		log.Fatalf("[Configuration] Reading error: %+v", err)
 	} else {
-		log.Println("[Configuration] Read successfully.")
+		log.Println("[Configuration] Read successfully!")
 	}
 	// Decode configuration
 	if err = json.Unmarshal(file, &config); err != nil {
@@ -32,24 +34,24 @@ func init() {
 	// Initialize bot
 	newBot, err := tgbotapi.NewBotAPI(config.Telegram.Token)
 	if err != nil {
-		log.Panicf("[Bot] Initialize error: %+v", err)
+		log.Fatalf("[Bot] Initialize error: %+v", err)
 	} else {
 		bot = newBot
 		log.Printf("[Bot] Authorized as @%s", bot.Self.UserName)
 	}
+
+	metrika = botan.New(config.Botan.Token) // Initialize botan
 }
 
 func main() {
+	startUptime := time.Now()
+
 	debugMode := flag.Bool("debug", false, "enable debug logs")
 	webhookMode := flag.Bool("webhook", false, "enable webhooks support")
 	cacheTime := flag.Int("cache", 0, "cache time in seconds for inline-search results")
 	flag.Parse()
 
-	// Initialize botan
-	appMetrika := make(chan bool)
-	metrika := botan.New(config.Botan.Token)
-
-	startUptime := time.Now() // Set start UpTime time
+	bot.RemoveWebhook()
 	bot.Debug = *debugMode
 
 	updates := make(<-chan tgbotapi.Update)
@@ -72,91 +74,42 @@ func main() {
 
 	// Updater
 	for update := range updates {
-		log.Printf("[Bot] Update response: %+v", updates)
-
-		// Chat actions
 		switch {
 		case update.Message != nil:
 			switch {
-			case update.Message.Command() == "start" && (update.Message.Chat.IsPrivate() || bot.IsMessageToMe(*update.Message)): // Requirement Telegram platform
-				// Track action
-				metrika.TrackAsync(update.Message.From.ID, MetrikaMessage{update.Message}, "/start", func(answer botan.Answer, err []error) {
-					log.Printf("[Botan] Track /start %s", answer.Status)
-					appMetrika <- true
-				})
-
+			case checkCommand("start", update.Message): // Requirement Telegram platform
 				go sendHello(update.Message)
-
-				<-appMetrika // Send track to Yandex.AppMetrika
-			case update.Message.Command() == "help" && (update.Message.Chat.IsPrivate() || bot.IsMessageToMe(*update.Message)): // Requirement Telegram platform
-				// Track action
-				metrika.TrackAsync(update.Message.From.ID, MetrikaMessage{update.Message}, "/help", func(answer botan.Answer, err []error) {
-					log.Printf("[Botan] Track /help %s", answer.Status)
-					appMetrika <- true
-				})
-
+			case checkCommand("help", update.Message): // Requirement Telegram platform
 				go sendHelp(update.Message)
-
-				<-appMetrika // Send track to Yandex.AppMetrika
-			case update.Message.Command() == "cheatsheet" && (update.Message.Chat.IsPrivate() || bot.IsMessageToMe(*update.Message)):
-				// Track action
-				metrika.TrackAsync(update.Message.From.ID, MetrikaMessage{update.Message}, "/cheatsheet", func(answer botan.Answer, err []error) {
-					log.Printf("[Botan] Track /cheatsheet %s", answer.Status)
-					appMetrika <- true
-				})
-
+			case checkCommand("cheatsheet", update.Message):
 				go sendCheatSheet(update.Message)
-
-				<-appMetrika // Send track to Yandex.AppMetrika
-			case update.Message.Command() == "random" && (update.Message.Chat.IsPrivate() || bot.IsMessageToMe(*update.Message)):
-				// Track action
-				metrika.TrackAsync(update.Message.From.ID, MetrikaMessage{update.Message}, "/random", func(answer botan.Answer, err []error) {
-					log.Printf("[Botan] Track /random %s", answer.Status)
-					appMetrika <- true
-				})
-
+			case checkCommand("random", update.Message):
 				go sendRandomPost(update.Message)
-
-				<-appMetrika // Send track to Yandex.AppMetrika
-			case update.Message.Command() == "info" && (update.Message.Chat.IsPrivate() || bot.IsMessageToMe(*update.Message)):
-				// Track action
-				metrika.TrackAsync(update.Message.From.ID, MetrikaMessage{update.Message}, "/info", func(answer botan.Answer, err []error) {
-					log.Printf("[Botan] Track /info %s", answer.Status)
-					appMetrika <- true
-				})
-
+			case checkCommand("info", update.Message):
 				go sendBotInfo(update.Message, startUptime)
-
-				<-appMetrika // Send track to Yandex.AppMetrika
+			case checkCommand("donate", update.Message):
+				go sendDonate(update.Message)
 			case update.Message.Chat.IsPrivate() && update.Message.From.ID == config.Telegram.Admin:
-				go sendTelegramFileID(update.Message) // Admin feature
+				go sendTelegramFileID(update.Message) // Admin feature without tracking
 			default:
-				go getEggMessage(update.Message, metrika, appMetrika) // Secret actions and commands ;)
+				go getEggMessage(update.Message) // Secret actions and commands ;)
 			}
 		case update.InlineQuery != nil && len(update.InlineQuery.Query) <= 255: // Just don't update results if query exceeds the maximum length
-			// Track action
-			metrika.TrackAsync(update.InlineQuery.From.ID, MetrikaInlineQuery{update.InlineQuery}, "Search", func(answer botan.Answer, err []error) {
-				log.Printf("[Botan] Track Search %s", answer.Status)
-				appMetrika <- true
-			})
-
-			go getInlineResults(update.InlineQuery, *cacheTime)
-
-			<-appMetrika // Send track to Yandex.AppMetrika
+			go getInlineResults(*cacheTime, update.InlineQuery)
 		case update.ChosenInlineResult != nil:
-			metrika.TrackAsync(update.ChosenInlineResult.From.ID, MetrikaChosenInlineResult{update.ChosenInlineResult}, "Find", func(answer botan.Answer, err []error) {
-				log.Printf("[Botan] Track Find %s", answer.Status)
-				appMetrika <- true
-			})
-
-			<-appMetrika // Send track to Yandex.AppMetrika
+			go sendInlineResult(update.ChosenInlineResult)
 		case update.CallbackQuery != nil:
-			metrika.TrackAsync(update.ChosenInlineResult.From.ID, MetrikaCallbackQuery{update.CallbackQuery}, "Action", func(answer botan.Answer, err []error) {
-				log.Printf("[Botan] Track Action %s", answer.Status)
-				appMetrika <- true
-			})
-
-			<-appMetrika // Send track to Yandex.AppMetrika
+			go getCallbackAction(update.CallbackQuery)
 		}
 	}
+}
+
+// Any message in private or correct message from groups
+func checkCommand(command string, message *tgbotapi.Message) bool {
+	isCommand := message.Command() == command
+	isPrivate := message.Chat.IsPrivate()
+	isGroup := message.Chat.IsGroup()
+	isSuperGroup := message.Chat.IsSuperGroup()
+	isMessageToMe := bot.IsMessageToMe(*message)
+	return isCommand && (isPrivate || ((isGroup || isSuperGroup) && isMessageToMe))
 }
