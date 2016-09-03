@@ -45,11 +45,11 @@ func init() {
 	}
 
 	// Initialize bot
-	newBot, err := tgbotapi.NewBotAPI(config.Telegram.Token)
+	teleBot, err := tgbotapi.NewBotAPI(config.Telegram.Token)
 	if err != nil {
 		log.Fatalf("[Bot] Initialize error: %+v", err)
 	} else {
-		bot = newBot
+		bot = teleBot
 		log.Printf("[Bot] Authorized as @%s", bot.Self.UserName)
 	}
 

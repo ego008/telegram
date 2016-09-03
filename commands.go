@@ -28,11 +28,11 @@ func sendHello(message *tgbotapi.Message) {
 	tutorialButton := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
 			// Showing tutorial button for demonstration work
-			tgbotapi.NewInlineKeyboardButtonSwitch("See how to do this!", "hatsune_miku rating:safe"),
+			tgbotapi.NewInlineKeyboardButtonSwitch(locale.English.Buttons.FastStart, "hatsune_miku rating:safe"),
 		),
 	)
 
-	reply := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf(startMessage, message.From.FirstName, bot.Self.UserName))
+	reply := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf(locale.English.Messages.Start, message.From.FirstName, bot.Self.UserName))
 	reply.ParseMode = "markdown"
 	reply.DisableWebPagePreview = true
 	reply.ReplyToMessageID = message.MessageID
@@ -57,7 +57,7 @@ func sendHelp(message *tgbotapi.Message) {
 		log.Printf("[Bot] ChatAction send error: %+v", err)
 	}
 
-	reply := tgbotapi.NewMessage(message.Chat.ID, helpMessage)
+	reply := tgbotapi.NewMessage(message.Chat.ID, locale.English.Messages.Help)
 	reply.ParseMode = "markdown"
 	reply.DisableWebPagePreview = true
 	reply.ReplyToMessageID = message.MessageID
@@ -81,7 +81,7 @@ func sendCheatSheet(message *tgbotapi.Message) {
 	}
 
 	// For now - get Cheat Sheet from Gelbooru
-	reply := tgbotapi.NewMessage(message.Chat.ID, cheatSheetMessage)
+	reply := tgbotapi.NewMessage(message.Chat.ID, locale.English.Messages.CheatSheet)
 	reply.ParseMode = "markdown"
 	reply.DisableWebPagePreview = true
 	reply.ReplyToMessageID = message.MessageID
@@ -130,14 +130,14 @@ func sendRandomPost(message *tgbotapi.Message) {
 		originalLink := getBotanURL(message.From.ID, randomFile[0].FileURL)
 		inlineKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonURL("Original", originalLink),
-				tgbotapi.NewInlineKeyboardButtonSwitch("Share", "id:"+strconv.Itoa(randomFile[0].ID)),
+				tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Original, originalLink),
+				tgbotapi.NewInlineKeyboardButtonSwitch(locale.English.Buttons.Share, "id:"+strconv.Itoa(randomFile[0].ID)),
 			),
 		)
 	} else {
 		inlineKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonURL("Original image", randomFile[0].FileURL),
+				tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Original, randomFile[0].FileURL),
 			),
 		)
 	}
@@ -204,16 +204,16 @@ func sendBotInfo(message *tgbotapi.Message, startUptime time.Time) {
 
 	inlineKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonURL("📢 Channel", config.Telegram.Invite.Channel),
-			tgbotapi.NewInlineKeyboardButtonURL("👥 Group", config.Telegram.Invite.Group),
+			tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Channel, config.Telegram.Invite.Channel),
+			tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Group, config.Telegram.Invite.Group),
 		),
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonURL("Rate ⭐️⭐️⭐️⭐️⭐️", "https://telegram.me/storebot?start="+bot.Self.UserName),
+			tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Rate, "https://telegram.me/storebot?start="+bot.Self.UserName),
 		),
 	)
 
 	photo := tgbotapi.NewPhotoShare(message.Chat.ID, "AgADAgADs8YxG2OYSwJdP213y5L1A68qcQ0ABHvDI3ToOjngT6cBAAEC")
-	photo.Caption = fmt.Sprintf(infoMessage, "1.1 Aikawa Jun", uptime.String())
+	photo.Caption = fmt.Sprintf(locale.English.Messages.Info, "1.1 Aikawa Jun", uptime.String())
 	photo.ReplyToMessageID = message.MessageID
 	photo.ReplyMarkup = &inlineKeyboard
 	if _, err := bot.Send(photo); err != nil {
@@ -239,11 +239,11 @@ func sendDonate(message *tgbotapi.Message) {
 
 	inlineKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonURL("💸 Become a patron!", patreonURL),
+			tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Patreon, patreonURL),
 		),
 	)
 
-	reply := tgbotapi.NewMessage(message.Chat.ID, donateMessage)
+	reply := tgbotapi.NewMessage(message.Chat.ID, locale.English.Messages.Donate)
 	reply.ParseMode = "markdown"
 	reply.DisableWebPagePreview = true
 	reply.ReplyToMessageID = message.MessageID
