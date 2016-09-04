@@ -10,7 +10,7 @@
 			"channel": "📢 Channel",
 			"cheatsheet": "Cheat Sheet",
 			"disable": "Disable",
-			"donate": "💸 Become a patron",
+			"donate": "💸 Donate!",
 			"enable": "Enable",
 			"fast_start": "See how to do this!",
 			"feedback": "💌 Contact us",
@@ -25,10 +25,13 @@
 			"share": "🗣 Share"
 		},
 		"inline": {
+			"hidden_result": {
+				"title": "WebM not supported yet 😔",
+				"description": "Support creator through Patreon to accelerate this upgrade development!"
+			},
 			"no_result": {
 				"title": "Nobody here but us chickens!",
-				"description": "Try search a different combination of tags.",
-				"message": "Sumimasen, but, unfortunately I could not find desired content. 😓\nBut perhaps this it already present in @HentaiDB channel or his official group."
+				"description": "Try search a different combination of tags."
 			},
 			"result": {
 				"title": "%s by %s",
@@ -66,7 +69,7 @@
 			"channel": "📢 Канал",
 			"cheatsheet": "Шпаргалка",
 			"disable": "Выключить",
-			"donate": "💸 Стать патреоновцем!",
+			"donate": "💸 Поддержать!",
 			"enable": "Включить",
 			"fast_start": "Смотри как это делается!",
 			"feedback": "💌 Обратная связь",
@@ -81,10 +84,13 @@
 			"share": "🗣 Поделиться"
 		},
 		"inline": {
+			"hidden_result": {
+				"title": "WebM пока не поддерживается 😔",
+				"description": "Поддержи создателя через Patreon чтобы ускорить разработку этого улучшения!"
+			},
 			"no_result": {
 				"title": "Здесь никого, кроме нас, цыплят!",
-				"description": "Попробуй выполнить поиск с другой комбинацией тегов.",
-				"message": "Sumimasen, но, к сожалению, я не смогла найти нужный контент. 😓\nНо, возможно, он уже есть в канале @HentaiDB или его официальной группе."
+				"description": "Попробуй выполнить поиск с другой комбинацией тегов."
 			},
 			"result": {
 				"title": "%s от %s",

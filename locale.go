@@ -43,14 +43,9 @@ type (
 	}
 
 	Inline struct {
-		NoResult NoInlineResult `json:"no_result"`
-		Result   InlineResult   `json:"result"`
-	}
-
-	NoInlineResult struct {
-		Title       string `json:"title"`
-		Description string `json:"description"`
-		Message     string `json:"message"`
+		HiddenResult InlineResult `json:"hidden_result"`
+		NoResult     InlineResult `json:"no_result"`
+		Result       InlineResult `json:"result"`
 	}
 
 	InlineResult struct {

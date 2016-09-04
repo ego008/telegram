@@ -47,26 +47,30 @@ func getInlineResults(cacheTime int, inline *tgbotapi.InlineQuery) {
 				rating = locale.English.Rating.Unknown
 			}
 
-			resultButton := tgbotapi.NewInlineKeyboardMarkup(
+			resultKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 				tgbotapi.NewInlineKeyboardRow(
 					tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Original, post[i].FileURL),
 				),
 			)
-			resultDescription := fmt.Sprintf(locale.English.Inline.Result.Description, &rating, post[i].Tags)
 
 			switch {
-			case strings.Contains(post[i].FileURL, ".webm"): // It is necessary to get around error 403 when requesting video :|
-				// video := tgbotapi.NewInlineQueryResultVideo(strconv.Itoa(post[i].ID), post[i].FileURL) // Does not work
-				// video.MimeType = "text/html" // Link on widget-page?
-				// video.MimeType = "video/mp4" // Does not work for .webm
-				// video.ThumbURL = preview
-				// video.Width = post[i].Width
-				// video.Height = post[i].Height
-				// video.Title = "Video by " + strings.Title(post[i].Owner)
-				// video.Description = "Rating: " + rating + "\nScore: " + strconv.Itoa(post[i].Score) + "\nTags: " + post[i].Tags
-				// video.ReplyMarkup = &button
-				// result = append(result, video)
-				continue
+			case strings.Contains(post[i].FileURL, ".webm"): // Not support yet. Show tip about "hidden" result
+				videoKeyboard := tgbotapi.NewInlineKeyboardMarkup(
+					tgbotapi.NewInlineKeyboardRow(
+						tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Original, post[i].FileURL),
+						tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Donate, config.Links.Donate),
+					),
+				)
+
+				messageText := fmt.Sprintf("*%s*\n%s", locale.English.Inline.HiddenResult.Title, locale.English.Inline.HiddenResult.Description)
+				video := tgbotapi.NewInlineQueryResultArticleMarkdown(strconv.Itoa(post[i].ID), locale.English.Inline.HiddenResult.Title, messageText)
+				video.URL = post[i].FileURL
+				video.Description = locale.English.Inline.HiddenResult.Description
+				video.ThumbURL = preview
+				video.ThumbWidth = post[i].Width
+				video.ThumbHeight = post[i].Height
+				video.ReplyMarkup = &videoKeyboard
+				result = append(result, video)
 			case strings.Contains(post[i].FileURL, ".mp4"): // Just in case. Why not? ¯\_(ツ)_/¯
 				video := tgbotapi.NewInlineQueryResultVideo(strconv.Itoa(post[i].ID), post[i].FileURL)
 				video.MimeType = "video/mp4"
@@ -74,8 +78,8 @@ func getInlineResults(cacheTime int, inline *tgbotapi.InlineQuery) {
 				video.Width = post[i].Width
 				video.Height = post[i].Height
 				video.Title = fmt.Sprintf(locale.English.Inline.Result.Title, strings.Title(locale.English.Types.Video), post[i].Owner)
-				video.Description = resultDescription
-				video.ReplyMarkup = &resultButton
+				video.Description = fmt.Sprintf(locale.English.Inline.Result.Description, &rating, post[i].Tags)
+				video.ReplyMarkup = &resultKeyboard
 				result = append(result, video)
 			case strings.Contains(post[i].FileURL, ".gif"):
 				gif := tgbotapi.NewInlineQueryResultGIF(strconv.Itoa(post[i].ID), post[i].FileURL)
@@ -83,7 +87,7 @@ func getInlineResults(cacheTime int, inline *tgbotapi.InlineQuery) {
 				gif.Width = post[i].Width
 				gif.Height = post[i].Height
 				gif.Title = fmt.Sprintf(locale.English.Inline.Result.Title, strings.Title(locale.English.Types.Animation), post[i].Owner)
-				gif.ReplyMarkup = &resultButton
+				gif.ReplyMarkup = &resultKeyboard
 				result = append(result, gif)
 			default:
 				image := tgbotapi.NewInlineQueryResultPhoto(strconv.Itoa(post[i].ID), post[i].FileURL)
@@ -91,14 +95,23 @@ func getInlineResults(cacheTime int, inline *tgbotapi.InlineQuery) {
 				image.Width = post[i].Width
 				image.Height = post[i].Height
 				image.Title = fmt.Sprintf(locale.English.Inline.Result.Title, strings.Title(locale.English.Types.Image), post[i].Owner)
-				image.Description = resultDescription
-				image.ReplyMarkup = &resultButton
+				image.Description = fmt.Sprintf(locale.English.Inline.Result.Description, &rating, post[i].Tags)
+				image.ReplyMarkup = &resultKeyboard
 				result = append(result, image)
 			}
 		}
 	case len(post) == 0: // Found nothing
-		empty := tgbotapi.NewInlineQueryResultArticle(inline.ID, locale.English.Inline.NoResult.Title, locale.English.Inline.NoResult.Message)
+		emptyKeyboard := tgbotapi.NewInlineKeyboardMarkup(
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Channel, config.Links.Channel),
+				tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Group, config.Links.Group),
+			),
+		)
+
+		emptyMessage := fmt.Sprintf("*%s*\n%s", locale.English.Inline.NoResult.Title, locale.English.Inline.NoResult.Description)
+		empty := tgbotapi.NewInlineQueryResultArticleMarkdown(inline.ID, locale.English.Inline.NoResult.Title, emptyMessage)
 		empty.Description = locale.English.Inline.NoResult.Description
+		empty.ReplyMarkup = &emptyKeyboard
 		result = append(result, empty)
 	}
 
