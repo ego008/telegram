@@ -14,17 +14,23 @@ type (
 
 	// Configuration is a main config
 	Configuration struct {
+		Version  Version    `json:"version"`
 		Telegram Telegram   `json:"telegram"`
 		Botan    Botan      `json:"botan"`
+		Links    Links      `json:"links"`
 		Resource []Resource `json:"resources"`
+	}
+
+	Version struct {
+		Name  string `json:"name"`
+		Photo string `json:"photo"`
 	}
 
 	// Telegram API settings
 	Telegram struct {
-		Token   string  `json:"token"`
 		Admin   int     `json:"admin"` // For future, to get feedback
 		Group   int64   `json:"group"` // For easter eggs
-		Invite  Invite  `json:"invite"`
+		Token   string  `json:"token"`
 		Webhook Webhook `json:"webhook"`
 	}
 
@@ -42,6 +48,13 @@ type (
 	// Botan structure defines botan API settings
 	Botan struct {
 		Token string `json:"token"`
+	}
+
+	Links struct {
+		Channel string `json:"channel"`
+		Donate  string `json:"donate"`
+		Group   string `json:"group"`
+		Rate    string `json:"rate"`
 	}
 
 	// Resource structure

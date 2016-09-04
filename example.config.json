@@ -1,12 +1,12 @@
 {
+	"version": {
+		"name": "1.1 \"Aikawa Jun\"",
+		"photo": ""
+	},
 	"telegram": {
-		"token": "",
 		"admin": 0,
 		"group": 0,
-		"invite": {
-			"channel": "https://telegram.me/HentaiDB",
-			"group": "https://telegram.me/joinchat/AkuYYz7PW2FfAKpzVLby7A"
-		},
+		"token": "",
 		"webhook": {
 			"set": "https://site.com/",
 			"listen": "/",
@@ -15,6 +15,12 @@
 	},
 	"botan": {
 		"token": ""
+	},
+	"links": {
+		"group": "https://telegram.me/joinchat/AkuYYz7PW2FfAKpzVLby7A",
+		"donate": "https://patreon.com/toby3d",
+		"channel": "https://telegram.me/HentaiDB",
+		"rate": "https://telegram.me/storebot?start="
 	},
 	"resources": [
 		{

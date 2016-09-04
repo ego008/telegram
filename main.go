@@ -102,7 +102,7 @@ func main() {
 				go sendBotInfo(update.Message, startUptime)
 			case checkCommand("donate", update.Message):
 				go sendDonate(update.Message)
-			case update.Message.Chat.IsPrivate() && update.Message.From.ID == config.Telegram.Admin:
+			case update.Message.Chat.IsPrivate() && update.Message.From.ID == config.Telegram.Admin && update.Message.Text == "":
 				go sendTelegramFileID(update.Message) // Admin feature without tracking
 			default:
 				go getEggMessage(update.Message) // Secret actions and commands ;)

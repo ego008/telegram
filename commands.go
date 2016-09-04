@@ -204,16 +204,16 @@ func sendBotInfo(message *tgbotapi.Message, startUptime time.Time) {
 
 	inlineKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Channel, config.Telegram.Invite.Channel),
-			tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Group, config.Telegram.Invite.Group),
+			tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Channel, config.Links.Channel),
+			tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Group, config.Links.Group),
 		),
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Rate, "https://telegram.me/storebot?start="+bot.Self.UserName),
+			tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Rate, config.Links.Rate+bot.Self.UserName),
 		),
 	)
 
-	photo := tgbotapi.NewPhotoShare(message.Chat.ID, "AgADAgADs8YxG2OYSwJdP213y5L1A68qcQ0ABHvDI3ToOjngT6cBAAEC")
-	photo.Caption = fmt.Sprintf(locale.English.Messages.Info, "1.1 Aikawa Jun", uptime.String())
+	photo := tgbotapi.NewPhotoShare(message.Chat.ID, config.Version.Photo)
+	photo.Caption = fmt.Sprintf(locale.English.Messages.Info, config.Version.Name, uptime.String())
 	photo.ReplyToMessageID = message.MessageID
 	photo.ReplyMarkup = &inlineKeyboard
 	if _, err := bot.Send(photo); err != nil {
@@ -235,11 +235,11 @@ func sendDonate(message *tgbotapi.Message) {
 		log.Printf("[Bot] ChatAction send error: %+v", err)
 	}
 
-	patreonURL := getBotanURL(message.From.ID, "https://patreon.com/toby3d")
+	donateURL := getBotanURL(message.From.ID, config.Links.Donate)
 
 	inlineKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Patreon, patreonURL),
+			tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Donate, donateURL),
 		),
 	)
 
@@ -261,13 +261,38 @@ func sendTelegramFileID(message *tgbotapi.Message) {
 		log.Printf("[Bot] ChatAction send error: %+v", err)
 	}
 
-	var fileID string
+	var uploadFileInfo string
 	switch {
-	case message.Audio != nil:
-		fileID = message.Audio.FileID
+	case message.Audio != nil && strings.Contains(message.Audio.MimeType, "ogg") != true: // Upload file As Audio
+		uploadFileInfo = fmt.Sprintf("ID: %s", message.Audio.FileID)
+	case message.Audio != nil && strings.Contains(message.Audio.MimeType, "ogg") == true: // Upload file as Voice
+		if _, err := bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatRecordAudio)); err != nil {
+			log.Printf("[Bot] ChatAction send error: %+v", err)
+		}
+
+		url, err := bot.GetFileDirectURL(message.Audio.FileID)
+		if err != nil {
+			log.Printf("ERROR: %+v", err)
+		}
+
+		_, body, err := fasthttp.Get(nil, url)
+		if err != nil {
+			log.Printf("Get file error: %+v", err)
+		}
+		bytes := tgbotapi.FileBytes{Name: message.Audio.FileID, Bytes: body}
+
+		voice := tgbotapi.NewVoiceUpload(message.Chat.ID, bytes)
+		voice.Duration = message.Audio.Duration
+		voice.ReplyToMessageID = message.MessageID
+		resp, err := bot.Send(voice)
+		if err != nil {
+			log.Printf("Sending message error: %+v", err)
+		}
+
+		uploadFileInfo = fmt.Sprintf("ID: %s\nDuration: %d", resp.Voice.FileID, resp.Voice.Duration)
 	case message.Document != nil:
-		fileID = message.Document.FileID
-	case message.Photo != nil:
+		uploadFileInfo = fmt.Sprintf("ID: %s", message.Document.FileID)
+	case message.Photo != nil: // Get large file ID
 		photo := *message.Photo
 		id := 0
 		for i, v := range photo {
@@ -275,16 +300,16 @@ func sendTelegramFileID(message *tgbotapi.Message) {
 				id = i
 			}
 		}
-		fileID = photo[id].FileID
+		uploadFileInfo = fmt.Sprintf("ID: %s", photo[id].FileID)
 	case message.Sticker != nil:
-		fileID = message.Sticker.FileID
+		uploadFileInfo = fmt.Sprintf("ID: %s", message.Sticker.FileID)
 	case message.Video != nil:
-		fileID = message.Video.FileID
+		uploadFileInfo = fmt.Sprintf("ID: %s", message.Video.FileID)
 	case message.Voice != nil:
-		fileID = message.Voice.FileID
+		uploadFileInfo = fmt.Sprintf("ID: %s", message.Voice.FileID)
 	}
-	if fileID != "" {
-		reply := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("ID: %s", fileID))
+	if uploadFileInfo != "" {
+		reply := tgbotapi.NewMessage(message.Chat.ID, uploadFileInfo)
 		reply.ReplyToMessageID = message.MessageID
 		if _, err := bot.Send(reply); err != nil {
 			log.Printf("[Bot] Sending message error: %+v", err)
