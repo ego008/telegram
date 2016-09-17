@@ -12,7 +12,7 @@
 			"disable": "Disable",
 			"donate": "💸 Donate!",
 			"enable": "Enable",
-			"fast_start": "See how to do this!",
+			"fast_start": "👁 Let me try!",
 			"feedback": "💌 Contact us",
 			"group": "👥 Group",
 			"help": "Help",
@@ -43,7 +43,7 @@
 			"donate": "*No one has supported hosting and bot development.* 😔\nSupport creator through Patreon and write your name here!",
 			"help": "/cheatsheet - get cheat sheet of advanced search in Gelbooru;\n/random - get a totally random post from Gelbooru;\n/donate - list of patrons and way to write your name in history;\n/info - authorship and official communities;",
 			"info": "Creator: @toby3d\nVersion: %s\nRepository: https://github.com/toby3d/HentaiDBot\nUptime: %s",
-			"start": "Hi, %s!\nI'm the official bot of @HentaiDB project.\n\nYou can search images and GIF's in Gelbooru through me. Just type `@%s hatsune_miku` in any chat and select result which you want to send. 😏\n\nTell me /cheatsheet here to get a cheat sheet of advanced search.\n\nI become better due to support of volunteers (/info) and patrons (/donate). Enjoy! ☺️"
+			"start": "Hi, %s!\nI'm the official bot of @HentaiDB project.\n\nYou can search images and GIF's in Gelbooru through me. Just type `@%s hatsune_miku` in any chat and select post which you want to send. *Don't hit Send*, just wait for results. 😏\n\nLet me know if you need a /cheatsheet of advanced search or other /help to me. Enjoy! ☺️"
 		},
 		"name": "🇬🇧 English",
 		"rating": {
@@ -71,7 +71,7 @@
 			"disable": "Выключить",
 			"donate": "💸 Поддержать!",
 			"enable": "Включить",
-			"fast_start": "Смотри как это делается!",
+			"fast_start": "👁 Дай мне попробовать!",
 			"feedback": "💌 Обратная связь",
 			"group": "👥 Группа",
 			"help": "Помощь",
@@ -102,7 +102,7 @@
 			"donate": "*Никто не поддержал хостинг и разработку бота.* 😔\nПоддержи автора через Patreon и впиши своё имя сюда!",
 			"help": "/cheatsheet - получить шпаргалку продвинутого поиска по Gelbooru;\n/random - получить абсолютно случайный пост из Gelbooru;\n/donate - список патреоновцев и способы вписать своё имя в историю;\n/info - авторство и официальные сообщества;",
 			"info": "Создатель: @toby3d\nВерсия: %s\nРепозиторий: https://github.com/toby3d/HentaiDBot\nUptime: %s",
-			"start": "Привет, %s!\nЯ официальный бот проекта @HentaiDB.\n\nТы можешь осуществлять поиск изображений и GIF в Gelbooru через меня. Просто набери `@%s hatsune_miku` в любом чате и выбери результат, который хочешь отправить. 😏\n\nСкажи мне /help здесь, чтобы получить шпаргалку продвинутого поиска.\n\nЯ становлюсь лучше благодаря поддержке волонтеров (/info) и патреоновцам (/donate). Наслаждайся!  ☺️"
+			"start": "Привет, %s!\nЯ официальный бот проекта @HentaiDB.\n\nТы можешь осуществлять поиск изображений и GIF в Gelbooru через меня. Просто набери `@%s hatsune_miku` в любом чате и выбери результат, который хочешь отправить. *Не нажимай Отправить*, просто дождись результатов. 😏\n\nДай знать, если тебе нужен /cheatsheet продвинутого поиска или иной /help со мной. Наслаждайся!  ☺️"
 		},
 		"name": "🇷🇺 Русский",
 		"rating": {

@@ -1,4 +1,4 @@
-// +build !easterEggs
+// +build !eggs
 
 package main
 

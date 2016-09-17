@@ -3,27 +3,12 @@ package main
 import "github.com/go-telegram-bot-api/telegram-bot-api"
 
 type (
-	// Arguments for getPosts()
-	Request struct {
-		Limit    int
-		PageID   int
-		Tags     string
-		ChangeID int
-		ID       int
-	}
-
 	// Configuration is a main config
 	Configuration struct {
-		Version  Version    `json:"version"`
 		Telegram Telegram   `json:"telegram"`
 		Botan    Botan      `json:"botan"`
 		Links    Links      `json:"links"`
 		Resource []Resource `json:"resources"`
-	}
-
-	Version struct {
-		Name  string `json:"name"`
-		Photo string `json:"photo"`
 	}
 
 	// Telegram API settings
@@ -32,11 +17,6 @@ type (
 		Group   int64   `json:"group"` // For easter eggs
 		Token   string  `json:"token"`
 		Webhook Webhook `json:"webhook"`
-	}
-
-	Invite struct {
-		Group   string `json:"group"`
-		Channel string `json:"channel"`
 	}
 
 	Webhook struct {
@@ -75,26 +55,6 @@ type (
 		AddPath    string `json:"addpath,omniempty"` // ???
 	}
 
-	// Post defines a structure for Danbooru only(?)
-	Post struct {
-		Directory    string `json:"directory"`
-		Hash         string `json:"hash"`
-		Height       int    `json:"height"`
-		ID           int    `json:"id"`
-		Image        string `json:"image"`
-		Change       int    `json:"change"`
-		Owner        string `json:"owner"`
-		ParentID     int    `json:"parent_id"`
-		Rating       string `json:"rating"`
-		Sample       string `json:"sample"`
-		SampleHeight int    `json:"sample_height"`
-		SampleWidth  int    `json:"sample_width"`
-		Score        int    `json:"score"`
-		Tags         string `json:"tags"`
-		Width        int    `json:"width"`
-		FileURL      string `json:"file_url"`
-	}
-
 	MetrikaMessage struct {
 		*tgbotapi.Message
 	}
@@ -105,9 +65,5 @@ type (
 
 	MetrikaChosenInlineResult struct {
 		*tgbotapi.ChosenInlineResult
-	}
-
-	MetrikaCallbackQuery struct {
-		*tgbotapi.CallbackQuery
 	}
 )

@@ -10,6 +10,37 @@ import (
 	"strconv"
 )
 
+type (
+	// Arguments for getPosts()
+	Request struct {
+		Limit    int
+		PageID   int
+		Tags     string
+		ChangeID int
+		ID       int
+	}
+
+	// Post defines a structure for Danbooru only(?)
+	Post struct {
+		Directory    string `json:"directory"`
+		Hash         string `json:"hash"`
+		Height       int    `json:"height"`
+		ID           int    `json:"id"`
+		Image        string `json:"image"`
+		Change       int    `json:"change"`
+		Owner        string `json:"owner"`
+		ParentID     int    `json:"parent_id"`
+		Rating       string `json:"rating"`
+		Sample       string `json:"sample"`
+		SampleHeight int    `json:"sample_height"`
+		SampleWidth  int    `json:"sample_width"`
+		Score        int    `json:"score"`
+		Tags         string `json:"tags"`
+		Width        int    `json:"width"`
+		FileURL      string `json:"file_url"`
+	}
+)
+
 // Universal(?) function obtain content
 func getPosts(req Request) []Post {
 	repository := myutils.Concat(config.Resource[20].Settings.URL, "index.php?page=dapi&s=post&q=index&json=1")
