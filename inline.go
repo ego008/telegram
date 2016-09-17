@@ -33,19 +33,7 @@ func getInlineResults(cacheTime int, inline *tgbotapi.InlineQuery) {
 		for i := 0; i < len(post); i++ {
 			// Universal(?) preview url
 			preview := config.Resource[20].Settings.URL + config.Resource[20].Settings.ThumbsDir + post[i].Directory + config.Resource[20].Settings.ThumbsPart + post[i].Hash + ".jpg"
-
-			// Rating
-			var rating string
-			switch post[i].Rating {
-			case "s":
-				rating = locale.English.Rating.Safe
-			case "e":
-				rating = locale.English.Rating.Explicit
-			case "q":
-				rating = locale.English.Rating.Questionable
-			default:
-				rating = locale.English.Rating.Unknown
-			}
+			post[i].Rating = setResultRating(post[i].Rating)
 
 			resultKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 				tgbotapi.NewInlineKeyboardRow(
@@ -78,7 +66,7 @@ func getInlineResults(cacheTime int, inline *tgbotapi.InlineQuery) {
 				video.Width = post[i].Width
 				video.Height = post[i].Height
 				video.Title = fmt.Sprintf(locale.English.Inline.Result.Title, strings.Title(locale.English.Types.Video), post[i].Owner)
-				video.Description = fmt.Sprintf(locale.English.Inline.Result.Description, &rating, post[i].Tags)
+				video.Description = fmt.Sprintf(locale.English.Inline.Result.Description, post[i].Rating, post[i].Tags)
 				video.ReplyMarkup = &resultKeyboard
 				result = append(result, video)
 			case strings.Contains(post[i].FileURL, ".gif"):
@@ -95,7 +83,7 @@ func getInlineResults(cacheTime int, inline *tgbotapi.InlineQuery) {
 				image.Width = post[i].Width
 				image.Height = post[i].Height
 				image.Title = fmt.Sprintf(locale.English.Inline.Result.Title, strings.Title(locale.English.Types.Image), post[i].Owner)
-				image.Description = fmt.Sprintf(locale.English.Inline.Result.Description, &rating, post[i].Tags)
+				image.Description = fmt.Sprintf(locale.English.Inline.Result.Description, post[i].Rating, post[i].Tags)
 				image.ReplyMarkup = &resultKeyboard
 				result = append(result, image)
 			}
@@ -134,6 +122,19 @@ func getInlineResults(cacheTime int, inline *tgbotapi.InlineQuery) {
 	<-appMetrika // Send track to Yandex.AppMetrika
 }
 
+func setResultRating(rating string) string {
+	switch rating {
+	case "s":
+		return locale.English.Rating.Safe
+	case "e":
+		return locale.English.Rating.Explicit
+	case "q":
+		return locale.English.Rating.Questionable
+	default:
+		return locale.English.Rating.Unknown
+	}
+}
+
 func sendInlineResult(result *tgbotapi.ChosenInlineResult) {
 	metrika.TrackAsync(result.From.ID, MetrikaChosenInlineResult{result}, "Find", func(answer botan.Answer, err []error) {
 		log.Printf("[Botan] Track Find %s", answer.Status)
@@ -143,6 +144,7 @@ func sendInlineResult(result *tgbotapi.ChosenInlineResult) {
 	<-appMetrika // Send track to Yandex.AppMetrika
 }
 
+/*
 func getCallbackAction(callback *tgbotapi.CallbackQuery) {
 	metrika.TrackAsync(callback.From.ID, MetrikaCallbackQuery{callback}, "Action", func(answer botan.Answer, err []error) {
 		log.Printf("[Botan] Track Action %s", answer.Status)
@@ -151,3 +153,4 @@ func getCallbackAction(callback *tgbotapi.CallbackQuery) {
 
 	<-appMetrika // Send track to Yandex.AppMetrika
 }
+*/

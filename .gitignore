@@ -60,7 +60,7 @@ cert.pem
 key.pem
 
 # Easter eggs
-eastereggs_on.go
+eggs_on.go
 eggs.json
 
 # Build

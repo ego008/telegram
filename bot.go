@@ -3,11 +3,13 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"github.com/botanio/sdk/go"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -89,19 +91,21 @@ func main() {
 	for update := range updates {
 		switch {
 		case update.Message != nil:
+			lowerCommand := strings.ToLower(update.Message.Command())
 			switch {
-			case checkCommand("start", update.Message): // Requirement Telegram platform
-				go sendHello(update.Message)
-			case checkCommand("help", update.Message): // Requirement Telegram platform
-				go sendHelp(update.Message)
-			case checkCommand("cheatsheet", update.Message):
-				go sendCheatSheet(update.Message)
-			case checkCommand("random", update.Message):
+			case checkCommand(update.Message, "start"): // Requirement Telegram platform
+				messageText := fmt.Sprintf(locale.English.Messages.Start, update.Message.From.FirstName, bot.Self.UserName)
+				go sendSimpleMessage(update.Message, lowerCommand, messageText)
+			case checkCommand(update.Message, "help"): // Requirement Telegram platform
+				go sendSimpleMessage(update.Message, lowerCommand, locale.English.Messages.Help)
+			case checkCommand(update.Message, "cheatsheet"):
+				go sendSimpleMessage(update.Message, lowerCommand, locale.English.Messages.CheatSheet)
+			case checkCommand(update.Message, "random"):
 				go sendRandomPost(update.Message)
-			case checkCommand("info", update.Message):
+			case checkCommand(update.Message, "info"):
 				go sendBotInfo(update.Message, startUptime)
-			case checkCommand("donate", update.Message):
-				go sendDonate(update.Message)
+			case checkCommand(update.Message, "donate"):
+				go sendSimpleMessage(update.Message, lowerCommand, locale.English.Messages.Donate)
 			case update.Message.Chat.IsPrivate() && update.Message.From.ID == config.Telegram.Admin && update.Message.Text == "":
 				go sendTelegramFileID(update.Message) // Admin feature without tracking
 			default:
@@ -111,15 +115,15 @@ func main() {
 			go getInlineResults(*cacheTime, update.InlineQuery)
 		case update.ChosenInlineResult != nil:
 			go sendInlineResult(update.ChosenInlineResult)
-		case update.CallbackQuery != nil:
-			go getCallbackAction(update.CallbackQuery)
+			// case update.CallbackQuery != nil:
+			// 	go getCallbackAction(update.CallbackQuery)
 		}
 	}
 }
 
 // Any message in private or correct message from groups
-func checkCommand(command string, message *tgbotapi.Message) bool {
-	isCommand := message.Command() == command
+func checkCommand(message *tgbotapi.Message, command string) bool {
+	isCommand := strings.ToLower(message.Command()) == command
 	isPrivate := message.Chat.IsPrivate()
 	isGroup := message.Chat.IsGroup()
 	isSuperGroup := message.Chat.IsSuperGroup()

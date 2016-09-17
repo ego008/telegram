@@ -13,10 +13,15 @@ import (
 	"time"
 )
 
-func sendHello(message *tgbotapi.Message) {
+const (
+	modeMarkdown = "markdown"
+	//modeHTML     = "html"
+)
+
+func sendSimpleMessage(message *tgbotapi.Message, command string, text string) {
 	// Track action
-	metrika.TrackAsync(message.From.ID, MetrikaMessage{message}, "/start", func(answer botan.Answer, err []error) {
-		log.Printf("[Botan] Track /start %s", answer.Status)
+	metrika.TrackAsync(message.From.ID, MetrikaMessage{message}, "/"+command, func(answer botan.Answer, err []error) {
+		log.Printf("[Botan] Track /%s %s", command, answer.Status)
 		appMetrika <- true
 	})
 
@@ -25,66 +30,36 @@ func sendHello(message *tgbotapi.Message) {
 		log.Printf("[Bot] ChatAction send error: %+v", err)
 	}
 
-	tutorialButton := tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			// Showing tutorial button for demonstration work
-			tgbotapi.NewInlineKeyboardButtonSwitch(locale.English.Buttons.FastStart, "hatsune_miku rating:safe"),
-		),
-	)
-
-	reply := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf(locale.English.Messages.Start, message.From.FirstName, bot.Self.UserName))
-	reply.ParseMode = "markdown"
+	reply := tgbotapi.NewMessage(message.Chat.ID, text)
+	reply.ParseMode = modeMarkdown
 	reply.DisableWebPagePreview = true
 	reply.ReplyToMessageID = message.MessageID
-	reply.ReplyMarkup = &tutorialButton
 
-	if _, err := bot.Send(reply); err != nil {
-		log.Printf("[Bot] Sending message error: %+v", err)
+	switch command {
+	case "start":
+		inlineKeyboard := tgbotapi.NewInlineKeyboardMarkup(
+			tgbotapi.NewInlineKeyboardRow(
+				// Showing tutorial button for demonstration work
+				tgbotapi.NewInlineKeyboardButtonSwitch(locale.English.Buttons.FastStart, "hatsune_miku rating:safe"),
+			),
+		)
+		reply.ReplyMarkup = &inlineKeyboard
+	case "donate":
+		var donateURL string
+		if message.Chat.IsPrivate() {
+			donateURL = getBotanURL(message.From.ID, config.Links.Donate)
+		} else {
+			donateURL = config.Links.Donate
+		}
+
+		inlineKeyboard := tgbotapi.NewInlineKeyboardMarkup(
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Donate, donateURL),
+			),
+		)
+		reply.ReplyMarkup = &inlineKeyboard
 	}
 
-	<-appMetrika // Send track to Yandex.AppMetrika
-}
-
-func sendHelp(message *tgbotapi.Message) {
-	// Track action
-	metrika.TrackAsync(message.From.ID, MetrikaMessage{message}, "/help", func(answer botan.Answer, err []error) {
-		log.Printf("[Botan] Track /help %s", answer.Status)
-		appMetrika <- true
-	})
-
-	// Force feedback
-	if _, err := bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatTyping)); err != nil {
-		log.Printf("[Bot] ChatAction send error: %+v", err)
-	}
-
-	reply := tgbotapi.NewMessage(message.Chat.ID, locale.English.Messages.Help)
-	reply.ParseMode = "markdown"
-	reply.DisableWebPagePreview = true
-	reply.ReplyToMessageID = message.MessageID
-	if _, err := bot.Send(reply); err != nil {
-		log.Printf("[Bot] Sending message error: %+v", err)
-	}
-
-	<-appMetrika // Send track to Yandex.AppMetrika
-}
-
-func sendCheatSheet(message *tgbotapi.Message) {
-	// Track action
-	metrika.TrackAsync(message.From.ID, MetrikaMessage{message}, "/cheatsheet", func(answer botan.Answer, err []error) {
-		log.Printf("[Botan] Track /cheatsheet %s", answer.Status)
-		appMetrika <- true
-	})
-
-	// Force feedback
-	if _, err := bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatTyping)); err != nil {
-		log.Printf("[Bot] ChatAction send error: %+v", err)
-	}
-
-	// For now - get Cheat Sheet from Gelbooru
-	reply := tgbotapi.NewMessage(message.Chat.ID, locale.English.Messages.CheatSheet)
-	reply.ParseMode = "markdown"
-	reply.DisableWebPagePreview = true
-	reply.ReplyToMessageID = message.MessageID
 	if _, err := bot.Send(reply); err != nil {
 		log.Printf("[Bot] Sending message error: %+v", err)
 	}
@@ -123,7 +98,10 @@ func sendRandomPost(message *tgbotapi.Message) {
 	if err != nil {
 		log.Printf("[Bot] Get random image by URL error: %+v", err)
 	}
-	bytes := tgbotapi.FileBytes{Name: randomFile[0].Image, Bytes: body}
+	bytes := tgbotapi.FileBytes{
+		Name:  randomFile[0].Image,
+		Bytes: body,
+	}
 
 	var inlineKeyboard tgbotapi.InlineKeyboardMarkup
 	if message.Chat.IsPrivate() == true { // Add share-button if chat is private
@@ -217,38 +195,6 @@ func sendBotInfo(message *tgbotapi.Message, startUptime time.Time) {
 	photo.ReplyToMessageID = message.MessageID
 	photo.ReplyMarkup = &inlineKeyboard
 	if _, err := bot.Send(photo); err != nil {
-		log.Printf("[Bot] Sending message error: %+v", err)
-	}
-
-	<-appMetrika // Send track to Yandex.AppMetrika
-}
-
-func sendDonate(message *tgbotapi.Message) {
-	// Track action
-	metrika.TrackAsync(message.From.ID, MetrikaMessage{message}, "/donate", func(answer botan.Answer, err []error) {
-		log.Printf("[Botan] Track /donate %s", answer.Status)
-		appMetrika <- true
-	})
-
-	// Force feedback
-	if _, err := bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatTyping)); err != nil {
-		log.Printf("[Bot] ChatAction send error: %+v", err)
-	}
-
-	donateURL := getBotanURL(message.From.ID, config.Links.Donate)
-
-	inlineKeyboard := tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Donate, donateURL),
-		),
-	)
-
-	reply := tgbotapi.NewMessage(message.Chat.ID, locale.English.Messages.Donate)
-	reply.ParseMode = "markdown"
-	reply.DisableWebPagePreview = true
-	reply.ReplyToMessageID = message.MessageID
-	reply.ReplyMarkup = &inlineKeyboard
-	if _, err := bot.Send(reply); err != nil {
 		log.Printf("[Bot] Sending message error: %+v", err)
 	}
 

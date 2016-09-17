@@ -34,11 +34,6 @@ type (
 		Webhook Webhook `json:"webhook"`
 	}
 
-	Invite struct {
-		Group   string `json:"group"`
-		Channel string `json:"channel"`
-	}
-
 	Webhook struct {
 		Set    string `json:"set"`
 		Listen string `json:"listen"`
@@ -107,7 +102,9 @@ type (
 		*tgbotapi.ChosenInlineResult
 	}
 
-	MetrikaCallbackQuery struct {
-		*tgbotapi.CallbackQuery
-	}
+	/*
+		MetrikaCallbackQuery struct {
+			*tgbotapi.CallbackQuery
+		}
+	*/
 )
