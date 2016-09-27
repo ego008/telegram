@@ -1,12 +1,22 @@
 {
 	"telegram": {
+		"admin": 0,
+		"group": 0,
 		"token": "",
-		"admin": 00000000,
-		"supergroup": -0000000000000,
-		"channel": "@HentaiDB"
+		"webhook": {
+			"set": "https://site.com/",
+			"listen": "/",
+			"serve": "0.0.0.0:8443"
+		}
 	},
 	"botan": {
 		"token": ""
+	},
+	"links": {
+		"group": "https://telegram.me/joinchat/AkuYYz7PW2FfAKpzVLby7A",
+		"donate": "https://patreon.com/toby3d",
+		"channel": "https://telegram.me/HentaiDB",
+		"rate": "https://telegram.me/storebot?start="
 	},
 	"resources": [
 		{
