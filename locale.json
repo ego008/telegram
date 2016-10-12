@@ -116,5 +116,123 @@
 			"animation": "анимация",
 			"video": "видео"
 		}
+	},
+	"tchinese": {
+		"achievements": [{
+			"title": "剩餘 %s 個隱藏的成就",
+			"description": "相關訊息會在每個成就解鎖後說明"
+		}],
+		"buttons": {
+			"achievements": "🏆 成就",
+			"cancel": "取消",
+			"channel": "📢 頻道",
+			"cheatsheet": "用法總彙",
+			"disable": "停用",
+			"donate": "💸 贊助！",
+			"enable": "啟用",
+			"fast_start": "👁 讓我試試！",
+			"feedback": "💌 聯絡我們",
+			"group": "👥 群組",
+			"help": "說明",
+			"language": "語系",
+			"more": "更多",
+			"original": "💾 原圖",
+			"random": "🎲 隨機",
+			"rate": "評分 ⭐️⭐️⭐️⭐️⭐️",
+			"settings": "⚙ 設定",
+			"share": "🗣 分享"
+		},
+		"inline": {
+			"hidden_result": {
+				"title": "WebM 還不支援 😔",
+				"description": "在 Patreon 支援原作者來加快開發速度吧！"
+			},
+			"no_result": {
+				"title": "雖然沒有任何東西在這但還有你的鳥！",
+				"description": "請試著用不同的標籤組合搜尋。"
+			},
+			"result": {
+				"title": "%s 原作者為 %s",
+				"description": "評分：%s\n標籤：%s"
+			}
+		},
+		"messages": {
+			"cheatsheet": "*標籤一 標籤二*\n用以搜尋帶有 `標籤一` 和 `標籤二` 的文章。\n\n*~標籤一 ~標籤二*\n用來搜尋帶有 `標籤一` 或者是 `標籤二` 的文章。（目前還不支援）\n\n*夜晚~*\n模糊搜尋 `夜晚` 標籤。這將會使得符合 `夜晚 傍晚 晚上` 或者是任何符合[萊文斯坦距離](http://en.wikipedia.org/wiki/Levenshtein_distance)的文章都成為搜尋結果。\n\n*-標籤一*\n搜尋沒有 `標籤一` 的文章。\n\n*標∗一*\n用以搜尋 `標` 開頭然後 `一` 結尾的文章。\n\n*user:bob*\n搜尋使用者 `Bob` 發表的任何文章。\n\n*md5:foo*\用以搜尋 MD5 碼是 `foo` 的文章。\n\n*md5:foo∗*\n用以搜尋開 MD5 碼開頭是 `foo` 的文章。\n\n*rating:questionable*\n搜尋被評級為 `questionable` 的文章。\n\n*-rating:questionable*\n用以搜尋沒有被評級為 `questionable` 的文章。\n\n*parent:1234*\n用以搜尋父文章是 `1234` 的文章（同時包含 `1234` 的文章）。\n\n*rating:questionable rating:safe*\n你沒有辦法使用這種方式，因為有兩個重複的標籤。\n\n*rating:questionable parent:100*\n不過你可以將不同標籤組合在一起。\n\n*width:>=1000 height:>1000*\n尋找寬度大於或是等於 `1000` 而且高度大於 `1000` 的圖片。\n\n*score:>=10*\n搜尋分數大於或是等於 `10` 的圖片。這個數值會在每天的 12AM CST 更新。\n\n*sort:updated:desc*\n由最新排序為主。\n\n*其他的排序方式：*\n• `id`\n• `score`\n• `rating`\n• `user`\n• `height`\n• `width`\n• `parent`\n• `source`\n• `updated`\n這些都可以由 `asc` 或是 `desc` 排序。",
+			"donate": "*沒有人提供架設伺服器和機器人開發的費用呢。* 😔\n在 Patreon 上贊助原作者然後在此寫下你的大名吧！",
+			"help": "/cheatsheet - 得知在 Gelbooru 中進階搜尋的用法；\n/random - 從 Gelbooru 中選出一篇隨機文章；\n/donate - 贊助者的清單，還有你的名字如何出現在這；\n/info - 作者聯繫方式還有官方社群；",
+			"info": "原作者：@toby3d\n版本：%s\n倉庫：https://github.com/toby3d/HentaiDBot\n已上線時間：%s",
+			"start": "嗨，%s！\n我是 @HentaiDB 計劃的官方機器人。\n\n你可以透過我搜尋 Gelbooru 的圖片或是 GIF。你只需要在任何聊天中輸入 `@%s hatsune_miku` 然後選擇你想發送的文章，*但是你不用按下送出鈕*，你只需要稍微等一下就會有結果了。😏\n\n你可以透過 /cheatsheet 得知進階搜尋的用法，或者是對我說聲 /help 也行。盡情享受吧！☺️"
+		},
+		"name": "🇹🇼 正體中文",
+		"rating": {
+			"explicit": "暴露的",
+			"questionable": "具疑問性",
+			"safe": "安全",
+			"unknown": "未知"
+		},
+		"types": {
+			"image": "圖片",
+			"animation": "動畫",
+			"video": "影片"
+		}
+	},
+	"schinese": {
+		"achievements": [{
+			"title": "剩余 %s 个隐藏的成就",
+			"description": "相关信息会在每个成就解锁后说明"
+		}],
+		"buttons": {
+			"achievements": "🏆 成就",
+			"cancel": "取消",
+			"channel": "📢 频道",
+			"cheatsheet": "用法总汇",
+			"disable": "停用",
+			"donate": "💸 赞助！",
+			"enable": "启用",
+			"fast_start": "👁 让我试试！",
+			"feedback": "💌 联络我们",
+			"group": "👥 群组",
+			"help": "说明",
+			"language": "语系",
+			"more": "更多",
+			"original": "💾 原图",
+			"random": "🎲 随机",
+			"rate": "评分 ⭐️⭐️⭐️⭐️⭐️",
+			"settings": "⚙ 设定",
+			"share": "🗣 分享"
+		},
+		"inline": {
+			"hidden_result": {
+				"title": "WebM 还不支援 😔",
+				"description": "在 Patreon 支援原作者来加快开发速度吧！"
+			},
+			"no_result": {
+				"title": "虽然没有任何东西在这但还有你的鸟！",
+				"description": "请试着用不同的标签组合搜寻。"
+			},
+			"result": {
+				"title": "%s 原作者为 %s",
+				"description": "评分：%s\n标签：%s"
+			}
+		},
+		"messages": {
+			"cheatsheet": "*标签一 标签二*\n用以搜寻带有 `标签一` 和 `标签二` 的文章。\n\n*~标签一 ~标签二*\n用来搜寻带有 `标签一` 或者是 `标签二` 的文章。（目前还不支援）\n\n*夜晚~*\n模糊搜寻 `夜晚` 标签。这将会使得符合 `夜晚 傍晚 晚上` 或者是任何符合[莱文斯坦距离](http://en.wikipedia.org/wiki/Levenshtein_distance)的文章都成为搜寻结果。\n\n*-标签一*\n搜寻没有 `标签一` 的文章。\n\n*标∗一*\n用以搜寻 `标` 开头然后 `一` 结尾的文章。\n\n*user:bob*\n搜寻使用者 `Bob` 发表的任何文章。\n\n*md5:foo*\用以搜寻 MD5 码是 `foo` 的文章。\n\n*md5:foo∗*\n用以搜寻开 MD5 码开头是 `foo` 的文章。\n\n*rating:questionable*\n搜寻被评级为 `questionable` 的文章。\n\n*-rating:questionable*\n用以搜寻没有被评级为 `questionable` 的文章。\n\n*parent:1234*\n用以搜寻父文章是 `1234` 的文章（同时包含 `1234` 的文章）。\n\n*rating:questionable rating:safe*\n你没有办法使用这种方式，因为有两个重复的标签。\n\n*rating:questionable parent:100*\n不过你可以将不同标签组合在一起。\n\n*width:>=1000 height:>1000*\n寻找宽度大于或是等于 `1000` 而且高度大于 `1000` 的图片。\n\n*score:>=10*\n搜寻分数大于或是等于 `10` 的图片。这个数值会在每天的 12AM CST 更新。\n\n*sort:updated:desc*\n由最新排序为主。\n\n*其他的排序方式：*\n• `id`\n• `score`\n• `rating`\n• `user`\n• `height`\n• `width`\n• `parent`\n• `source`\n• `updated`\n这些都可以由 `asc` 或是 `desc` 排序。",
+			"donate": "*没有人提供架设服务器和机器人开发的费用呢。* 😔\n在 Patreon 上赞助原作者然后在此写下你的大名吧！",
+			"help": "/cheatsheet - 得知在 Gelbooru 中进阶搜寻的用法；\n/random - 从 Gelbooru 中选出一篇随机文章；\n/donate - 赞助者的清单，还有你的名字如何出现在这；\n/info - 作者联系方式还有官方社群；",
+			"info": "原作者：@toby3d\n版本：%s\n仓库：https://github.com/toby3d/HentaiDBot\n已上线时间：%s",
+			"start": "嗨，%s！\n我是 @HentaiDB 计划的官方机器人。\n\n你可以透过我搜寻 Gelbooru 的图片或是 GIF。你只需要在任何聊天中输入 `@%s hatsune_miku` 然后选择你想发送的文章，*但是你不用按下送出钮*，你只需要稍微等一下就会有结果了。😏\n\n你可以透过 /cheatsheet 得知进阶搜寻的用法，或者是对我说声 /help 也行。尽情享受吧！☺️"
+		},
+		"name": "🇨🇳 简体中文",
+		"rating": {
+			"explicit": "暴露的",
+			"questionable": "具疑问性",
+			"safe": "安全",
+			"unknown": "未知"
+		},
+		"types": {
+			"image": "图片",
+			"animation": "动画",
+			"video": "视频"
+		}
 	}
 }
