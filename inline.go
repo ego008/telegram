@@ -11,6 +11,8 @@ import (
 
 var results []interface{}
 
+const BlushBoard = "http://beta.hentaidb.pw"
+
 func getInlineResults(cacheTime int, inline *tgbotapi.InlineQuery) {
 	// Track action
 	metrika.TrackAsync(inline.From.ID, MetrikaInlineQuery{inline}, "Search", func(answer botan.Answer, err []error) {
@@ -88,36 +90,35 @@ func inlineResult(post Post) {
 
 	switch {
 	case strings.Contains(post.FileURL, ".webm"): // Not support yet. Show tip about "hidden" result
-		videoKeyboard := tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Original, post.FileURL),
-				tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Donate, config.Links.Donate),
-			),
-		)
-		messageText := fmt.Sprintf("*%s*\n%s", locale.English.Inline.HiddenResult.Title, locale.English.Inline.HiddenResult.Description)
-		video := tgbotapi.NewInlineQueryResultArticleMarkdown(strconv.Itoa(post.ID), locale.English.Inline.HiddenResult.Title, messageText)
-		video.URL = post.FileURL
-		video.Description = locale.English.Inline.HiddenResult.Description
+		video := tgbotapi.NewInlineQueryResultVideo(strconv.Itoa(post.ID), BlushBoard+"/embed/"+post.Hash)
+		video.MimeType = "text/html"
 		video.ThumbURL = preview
-		video.ThumbWidth = post.Width
-		video.ThumbHeight = post.Height
-		video.ReplyMarkup = &videoKeyboard
+		video.Title = fmt.Sprintf(locale.English.Inline.Result.Title, strings.Title(locale.English.Types.Video), post.Owner)
+		video.Width = post.Width
+		video.Height = post.Height
+		video.Description = fmt.Sprintf(locale.English.Inline.Result.Description, post.Rating, post.Tags)
+		videoURL := BlushBoard + "/hash/" + post.Hash
+		video.InputMessageContent = tgbotapi.InputTextMessageContent{
+			Text:                  fmt.Sprintf(locale.English.Messages.BlushBoard, strings.Title(locale.English.Types.Video), post.Owner, videoURL),
+			ParseMode:             parseMarkdown,
+			DisableWebPagePreview: false,
+		}
 		results = append(results, video)
 	case strings.Contains(post.FileURL, ".mp4"): // Just in case. Why not? ¯\_(ツ)_/¯
 		video := tgbotapi.NewInlineQueryResultVideo(strconv.Itoa(post.ID), post.FileURL)
 		video.MimeType = "video/mp4"
 		video.ThumbURL = preview
+		video.Title = fmt.Sprintf(locale.English.Inline.Result.Title, strings.Title(locale.English.Types.Video), post.Owner)
 		video.Width = post.Width
 		video.Height = post.Height
-		video.Title = fmt.Sprintf(locale.English.Inline.Result.Title, strings.Title(locale.English.Types.Video), post.Owner)
 		video.Description = fmt.Sprintf(locale.English.Inline.Result.Description, post.Rating, post.Tags)
 		video.ReplyMarkup = &resultKeyboard
 		results = append(results, video)
 	case strings.Contains(post.FileURL, ".gif"):
 		gif := tgbotapi.NewInlineQueryResultGIF(strconv.Itoa(post.ID), post.FileURL)
-		gif.ThumbURL = post.FileURL
 		gif.Width = post.Width
 		gif.Height = post.Height
+		gif.ThumbURL = post.FileURL
 		gif.Title = fmt.Sprintf(locale.English.Inline.Result.Title, strings.Title(locale.English.Types.Animation), post.Owner)
 		gif.ReplyMarkup = &resultKeyboard
 		results = append(results, gif)

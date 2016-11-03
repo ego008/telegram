@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	modeMarkdown = "markdown"
-	//modeHTML     = "html"
+	parseMarkdown    = "markdown"
+	parseHTML        = "html"
 	versionCover     = "AgADAgADO8cxG2OYSwL1_YNSINBpb48ycQ0ABF4-pz5UE6UE1DYCAAEC"
 	versionCodeName  = "2.0 \"Busujima Saeko\""
 	demonstrationGIF = "BQADAgADNwYAAmOYSwLFYMl_HVAaDwI"
@@ -53,6 +53,8 @@ func commandActions(message *tgbotapi.Message) {
 		go sendBotInfo(message)
 	case "donate":
 		go sendSimpleMessage(message, lowerCommand, locale.English.Messages.Donate)
+	default:
+		go sendEggAction(message)
 	}
 }
 
@@ -69,7 +71,7 @@ func sendSimpleMessage(message *tgbotapi.Message, command string, text string) {
 	}
 
 	reply := tgbotapi.NewMessage(message.Chat.ID, text)
-	reply.ParseMode = modeMarkdown
+	reply.ParseMode = parseMarkdown
 	reply.DisableWebPagePreview = true
 	reply.ReplyToMessageID = message.MessageID
 

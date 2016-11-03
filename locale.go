@@ -43,9 +43,8 @@ type (
 	}
 
 	Inline struct {
-		HiddenResult InlineResult `json:"hidden_result"`
-		NoResult     InlineResult `json:"no_result"`
-		Result       InlineResult `json:"result"`
+		NoResult InlineResult `json:"no_result"`
+		Result   InlineResult `json:"result"`
 	}
 
 	InlineResult struct {
@@ -54,6 +53,7 @@ type (
 	}
 
 	Messages struct {
+		BlushBoard string `json:"blushboard"`
 		CheatSheet string `json:"cheatsheet"`
 		Donate     string `json:"donate"`
 		Help       string `json:"help"`
