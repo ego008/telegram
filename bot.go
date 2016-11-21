@@ -3,19 +3,21 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"github.com/botanio/sdk/go"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
+	b "github.com/botanio/sdk/go"
+	t "github.com/go-telegram-bot-api/telegram-bot-api"
+	r "gopkg.in/dancannon/gorethink.v2"
 	"io/ioutil"
 	"log"
 	"net/http"
 )
 
 var (
-	bot        *tgbotapi.BotAPI
-	config     Configuration
-	locale     Localization
-	metrika    botan.Botan
 	appMetrika = make(chan bool)
+	bot        *t.BotAPI
+	config     Configuration
+	db         *r.Session
+	locale     Localization
+	metrika    b.Botan
 )
 
 func init() {
@@ -43,8 +45,18 @@ func init() {
 		log.Fatalf("[Localization] Decoding error: %+v", err)
 	}
 
+	// Initialize RethinkDB
+	if rethink, err := r.Connect(r.ConnectOpts{
+		Address:  config.DataBase.Address,
+		Database: config.DataBase.DataBase,
+	}); err != nil {
+		log.Fatalln(err)
+	} else {
+		db = rethink
+	}
+
 	// Initialize bot
-	teleBot, err := tgbotapi.NewBotAPI(config.Telegram.Token)
+	teleBot, err := t.NewBotAPI(config.Telegram.Token)
 	if err != nil {
 		log.Fatalf("[Bot] Initialize error: %+v", err)
 	} else {
@@ -52,7 +64,7 @@ func init() {
 		log.Printf("[Bot] Authorized as @%s", bot.Self.UserName)
 	}
 
-	metrika = botan.New(config.Botan.Token) // Initialize botan
+	metrika = b.New(config.Botan.Token) // Initialize botan
 }
 
 func main() {
@@ -64,33 +76,35 @@ func main() {
 	bot.RemoveWebhook()
 	bot.Debug = *debugMode
 
-	updates := make(<-chan tgbotapi.Update)
+	updates := make(<-chan t.Update)
 	updates = setUpdates(*webhookMode)
 
 	// Updater
 	for update := range updates {
 		switch {
 		case update.Message != nil:
-			go sendMessages(update.Message)
+			go getMessages(update.Message)
 		case update.InlineQuery != nil && len(update.InlineQuery.Query) <= 255: // Just don't update results if query exceeds the maximum length
 			go getInlineResults(*cacheTime, update.InlineQuery)
 		case update.ChosenInlineResult != nil:
-			go sendInlineResult(update.ChosenInlineResult)
+			go trackInlineResult(update.ChosenInlineResult)
+		case update.CallbackQuery != nil:
+			go checkCallbackQuery(update.CallbackQuery)
 		}
 	}
 }
 
-func setUpdates(isWebhook bool) <-chan tgbotapi.Update {
+func setUpdates(isWebhook bool) <-chan t.Update {
 	if isWebhook == true {
 		log.Println("[Bot] Webhook activated")
-		if _, err := bot.SetWebhook(tgbotapi.NewWebhook(config.Telegram.Webhook.Set + config.Telegram.Token)); err != nil {
+		if _, err := bot.SetWebhook(t.NewWebhook(config.Telegram.Webhook.Set + config.Telegram.Token)); err != nil {
 			log.Fatalf("[Bot] Set webhook error: %+v", err)
 		}
 		go http.ListenAndServe(config.Telegram.Webhook.Serve, nil)
 		updates := bot.ListenForWebhook(config.Telegram.Webhook.Listen + config.Telegram.Token)
 		return updates
 	} else {
-		upd := tgbotapi.NewUpdate(0)
+		upd := t.NewUpdate(0)
 		upd.Timeout = 60
 		updates, err := bot.GetUpdatesChan(upd)
 		if err != nil {

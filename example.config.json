@@ -1,4 +1,9 @@
 {
+	"database": {
+		"address": "172.17.0.1:28015",
+		"database": "debug",
+		"table": "table"
+	},
 	"telegram": {
 		"admin": 0,
 		"group": 0,

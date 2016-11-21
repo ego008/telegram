@@ -3,10 +3,10 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/kirillDanshin/myutils"
-	"github.com/valyala/fasthttp"
+	"fmt"
+	f "github.com/valyala/fasthttp"
 	"log"
-	"net/url"
+	// "net/url"
 	"strconv"
 )
 
@@ -43,24 +43,30 @@ type (
 
 // Universal(?) function obtain content
 func getPosts(req Request) []Post {
-	repository := myutils.Concat(config.Resource[20].Settings.URL, "index.php?page=dapi&s=post&q=index&json=1")
+	var args f.Args
+	args.Add("page", "dapi")
+	args.Add("s", "post")
+	args.Add("q", "index")
+	args.Add("json", strconv.Itoa(1))
 	switch {
 	case req.Limit > 0:
-		repository = myutils.Concat(repository, "&limit=", strconv.Itoa(req.Limit))
+		args.Add("limit", strconv.Itoa(req.Limit))
 		fallthrough
 	case req.PageID > 0:
-		repository = myutils.Concat(repository, "&pid=", strconv.Itoa(req.PageID))
-		fallthrough
-	case req.Tags != "":
-		repository = myutils.Concat(repository, "&tags=", url.QueryEscape(req.Tags))
+		args.Add("pid", strconv.Itoa(req.PageID))
 		fallthrough
 	case req.ChangeID > 0:
-		repository = myutils.Concat(repository, "&cid=", strconv.Itoa(req.ChangeID))
+		args.Add("cid", strconv.Itoa(req.ChangeID))
 		fallthrough
 	case req.ID > 0:
-		repository = myutils.Concat(repository, "&id=", strconv.Itoa(req.ID))
+		args.Add("id", strconv.Itoa(req.ID))
+		fallthrough
+	case req.Tags != "":
+		args.Add("tags", req.Tags)
 	}
-	_, resp, err := fasthttp.Get(nil, repository)
+	repository := fmt.Sprintf("%s/index.php?%s", config.Resource[20].Settings.URL, args.String())
+	log.Println(repository)
+	_, resp, err := f.Get(nil, repository)
 	if err != nil {
 		log.Printf("[Bot] GET request error: %+v", err)
 	}

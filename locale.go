@@ -2,8 +2,10 @@ package main
 
 type (
 	Localization struct {
-		English Translation `json:"english"`
-		Russian Translation `json:"russian"`
+		English  Translation `json:"english"`
+		Russian  Translation `json:"russian"`
+		TChinese Translation `json:"tchinese"`
+		SChinese Translation `json:"schinese"`
 	}
 
 	Translation struct {
@@ -17,8 +19,8 @@ type (
 	}
 
 	Achievements struct {
-		Title       string `json:"title"`
 		Description string `json:"description"`
+		Title       string `json:"title"`
 	}
 
 	Buttons struct {
@@ -48,8 +50,8 @@ type (
 	}
 
 	InlineResult struct {
-		Title       string `json:"title"`
 		Description string `json:"description"`
+		Title       string `json:"title"`
 	}
 
 	Messages struct {
@@ -69,8 +71,8 @@ type (
 	}
 
 	Types struct {
-		Image     string `json:"image"`
 		Animation string `json:"animation"`
+		Image     string `json:"image"`
 		Video     string `json:"video"`
 	}
 )
