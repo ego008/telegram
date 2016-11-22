@@ -5,10 +5,10 @@
 	},
 	{
 		"id": "status_on",
-		"translation": ""
+		"translation": "開啟"
 	},
 	{
 		"id": "status_off",
-		"translation": ""
+		"translation": "關閉"
 	}
 ]

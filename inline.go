@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	b "github.com/botanio/sdk/go"
 	t "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/nicksnyder/go-i18n/i18n"
 	"log"
 	"strconv"
 	"strings"
@@ -14,16 +14,16 @@ var results []interface{}
 const BlushBoard = "http://beta.hentaidb.pw"
 
 func getInlineResults(cacheTime int, inline *t.InlineQuery) {
+	locale := checkLanguage(inline.From)
+
 	// Track action
 	metrika.TrackAsync(inline.From.ID, MetrikaInlineQuery{inline}, "Search", func(answer b.Answer, err []error) {
 		log.Printf("[Botan] Track Search %s", answer.Status)
 		appMetrika <- true
 	})
 
-	lang := checkLanguage(inline.From)
-
 	nsfw := checkNSFW(inline.From)
-	if nsfw == false {
+	if !nsfw {
 		inline.Query += " rating:safe"
 	}
 
@@ -50,18 +50,17 @@ func getInlineResults(cacheTime int, inline *t.InlineQuery) {
 	switch {
 	case len(post) > 0:
 		for i := 0; i < len(post); i++ {
-			inlineResult(post[i], lang)
+			inlineResult(post[i], locale)
 		}
 	case len(post) == 0: // Found nothing
 		emptyKeyboard := t.NewInlineKeyboardMarkup(
 			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonURL(locale.English.Buttons.Channel, config.Links.Channel),
-				t.NewInlineKeyboardButtonURL(locale.English.Buttons.Group, config.Links.Group),
+				t.NewInlineKeyboardButtonURL(locale("button_channel"), config.Links.Channel),
+				t.NewInlineKeyboardButtonURL(locale("button_group"), config.Links.Group),
 			),
 		)
-		emptyMessage := fmt.Sprintf("*%s*\n%s", locale.English.Inline.NoResult.Title, locale.English.Inline.NoResult.Description)
-		empty := t.NewInlineQueryResultArticleMarkdown(inline.ID, locale.English.Inline.NoResult.Title, emptyMessage)
-		empty.Description = locale.English.Inline.NoResult.Description
+		empty := t.NewInlineQueryResultArticleMarkdown(inline.ID, locale("inline_no_result_title"), "`¯\\_(ツ)_/¯`")
+		empty.Description = locale("inline_no_result_description")
 		empty.ReplyMarkup = &emptyKeyboard
 		results = append(results, empty)
 	}
@@ -85,28 +84,39 @@ func getInlineResults(cacheTime int, inline *t.InlineQuery) {
 	<-appMetrika // Send track to Yandex.AppMetrika
 }
 
-func inlineResult(post Post, lang string) {
+func inlineResult(post Post, locale i18n.TranslateFunc) {
 	// Universal(?) preview url
 	preview := config.Resource[20].Settings.URL + config.Resource[20].Settings.ThumbsDir + post.Directory + config.Resource[20].Settings.ThumbsPart + post.Hash + ".jpg"
-	post.Rating = setResultRating(post.Rating, lang)
+	post.Rating = setResultRating(post.Rating, locale)
 	resultKeyboard := t.NewInlineKeyboardMarkup(
 		t.NewInlineKeyboardRow(
-			t.NewInlineKeyboardButtonURL(locale.English.Buttons.Original, post.FileURL),
+			t.NewInlineKeyboardButtonURL(locale("button_original"), post.FileURL),
 		),
 	)
 
 	switch {
 	case strings.Contains(post.FileURL, ".webm"): // Not support yet. Show tip about "hidden" result
+		BBURL := BlushBoard + "/hash/" + post.Hash
+
 		video := t.NewInlineQueryResultVideo(strconv.Itoa(post.ID), BlushBoard+"/embed/"+post.Hash)
 		video.MimeType = "text/html"
 		video.ThumbURL = preview
-		video.Title = fmt.Sprintf(locale.English.Inline.Result.Title, strings.Title(locale.English.Types.Video), post.Owner)
+		video.Title = locale("inline_title", map[string]interface{}{
+			"Type":  strings.Title(locale("type_video")),
+			"Owner": post.Owner,
+		})
 		video.Width = post.Width
 		video.Height = post.Height
-		video.Description = fmt.Sprintf(locale.English.Inline.Result.Description, post.Rating, post.Tags)
-		videoURL := BlushBoard + "/hash/" + post.Hash
+		video.Description = locale("inline_description", map[string]interface{}{
+			"Rating": post.Rating,
+			"Tags":   post.Tags,
+		})
 		video.InputMessageContent = t.InputTextMessageContent{
-			Text:                  fmt.Sprintf(locale.English.Messages.BlushBoard, strings.Title(locale.English.Types.Video), post.Owner, videoURL),
+			Text: locale("message_blushboard", map[string]interface{}{
+				"Type":  strings.Title(locale("type_video")),
+				"Owner": post.Owner,
+				"URL":   BBURL,
+			}),
 			ParseMode:             parseMarkdown,
 			DisableWebPagePreview: false,
 		}
@@ -115,10 +125,16 @@ func inlineResult(post Post, lang string) {
 		video := t.NewInlineQueryResultVideo(strconv.Itoa(post.ID), post.FileURL)
 		video.MimeType = "video/mp4"
 		video.ThumbURL = preview
-		video.Title = fmt.Sprintf(locale.English.Inline.Result.Title, strings.Title(locale.English.Types.Video), post.Owner)
+		video.Title = locale("inline_title", map[string]interface{}{
+			"Type":  strings.Title(locale("type_video")),
+			"Owner": post.Owner,
+		})
 		video.Width = post.Width
 		video.Height = post.Height
-		video.Description = fmt.Sprintf(locale.English.Inline.Result.Description, post.Rating, post.Tags)
+		video.Description = locale("inline_description", map[string]interface{}{
+			"Rating": post.Rating,
+			"Tags":   post.Tags,
+		})
 		video.ReplyMarkup = &resultKeyboard
 		results = append(results, video)
 	case strings.Contains(post.FileURL, ".gif"):
@@ -126,7 +142,10 @@ func inlineResult(post Post, lang string) {
 		gif.Width = post.Width
 		gif.Height = post.Height
 		gif.ThumbURL = post.FileURL
-		gif.Title = fmt.Sprintf(locale.English.Inline.Result.Title, strings.Title(locale.English.Types.Animation), post.Owner)
+		gif.Title = locale("inline_title", map[string]interface{}{
+			"Type":  strings.Title(locale("type_animation")),
+			"Owner": post.Owner,
+		})
 		gif.ReplyMarkup = &resultKeyboard
 		results = append(results, gif)
 	default:
@@ -134,23 +153,29 @@ func inlineResult(post Post, lang string) {
 		image.ThumbURL = preview
 		image.Width = post.Width
 		image.Height = post.Height
-		image.Title = fmt.Sprintf(locale.English.Inline.Result.Title, strings.Title(locale.English.Types.Image), post.Owner)
-		image.Description = fmt.Sprintf(locale.English.Inline.Result.Description, post.Rating, post.Tags)
+		image.Title = locale("inline_title", map[string]interface{}{
+			"Type":  strings.Title(locale("type_image")),
+			"Owner": post.Owner,
+		})
+		image.Description = locale("inline_description", map[string]interface{}{
+			"Rating": post.Rating,
+			"Tags":   post.Tags,
+		})
 		image.ReplyMarkup = &resultKeyboard
 		results = append(results, image)
 	}
 }
 
-func setResultRating(rating string, lang string) string {
+func setResultRating(rating string, locale i18n.TranslateFunc) string {
 	switch rating {
 	case "s":
-		return locale.English.Rating.Safe
+		return locale("rating_safe")
 	case "e":
-		return locale.English.Rating.Explicit
+		return locale("rating_explicit")
 	case "q":
-		return locale.English.Rating.Questionable
+		return locale("rating_questionable")
 	default:
-		return locale.English.Rating.Unknown
+		return locale("rating_unknown")
 	}
 }
 

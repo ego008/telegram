@@ -5,6 +5,7 @@ import (
 	"flag"
 	b "github.com/botanio/sdk/go"
 	t "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/nicksnyder/go-i18n/i18n"
 	r "gopkg.in/dancannon/gorethink.v2"
 	"io/ioutil"
 	"log"
@@ -16,7 +17,6 @@ var (
 	bot        *t.BotAPI
 	config     Configuration
 	db         *r.Session
-	locale     Localization
 	metrika    b.Botan
 )
 
@@ -34,16 +34,9 @@ func init() {
 	}
 
 	// Read localization
-	localeFile, err := ioutil.ReadFile("locale.json")
-	if err != nil {
-		log.Fatalf("[Localization] Reading error: %+v", err)
-	} else {
-		log.Println("[Localization] Read successfully.")
-	}
-	// Decode localization
-	if err = json.Unmarshal(localeFile, &locale); err != nil {
-		log.Fatalf("[Localization] Decoding error: %+v", err)
-	}
+	i18n.MustLoadTranslationFile("i18n/en-us.all.json")
+	i18n.MustLoadTranslationFile("i18n/ru-ru.all.json")
+	i18n.MustLoadTranslationFile("i18n/zh-zh.all.json")
 
 	// Initialize RethinkDB
 	if rethink, err := r.Connect(r.ConnectOpts{

@@ -9,7 +9,7 @@
   },
   {
     "id": "achievements_unlocked",
-    "translation": ""
+    "translation": "你成功地解鎖了全部的成就。恭喜！"
   },
   {
     "id": "button_achievements",
@@ -53,7 +53,7 @@
   },
   {
     "id": "button_language",
-    "translation": ""
+    "translation": "🏁 語言"
   },
   {
     "id": "button_more",
@@ -61,7 +61,7 @@
   },
   {
     "id": "button_nsfw",
-    "translation": ""
+    "translation": "🔞 NSFW {{.Status}}"
   },
   {
     "id": "button_original",
@@ -129,7 +129,7 @@
   },
   {
     "id": "message_settings",
-    "translation": ""
+    "translation": "這裡是你的偏好設定。如果錯的話可以糾正我。😉"
   },
   {
     "id": "message_start",
@@ -153,11 +153,11 @@
   },
   {
     "id": "status_off",
-    "translation": ""
+    "translation": "關閉"
   },
   {
     "id": "status_on",
-    "translation": ""
+    "translation": "開啟"
   },
   {
     "id": "type_animation",

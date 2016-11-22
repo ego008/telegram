@@ -3,15 +3,14 @@ package main
 import (
 	"fmt"
 	t "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/nicksnyder/go-i18n/i18n"
 	f "github.com/valyala/fasthttp"
 	"log"
 	"strconv"
 	"strings"
 )
 
-func uploadFilesProcess(message *t.Message, bytes t.FileBytes, randomFile Post) {
-	// lang := checkLanguage(message.From)
-
+func uploadFilesProcess(message *t.Message, bytes t.FileBytes, randomFile Post, locale i18n.TranslateFunc) {
 	// Force feedback
 	if _, err := bot.Send(t.NewChatAction(message.Chat.ID, t.ChatUploadDocument)); err != nil {
 		log.Printf("[Bot] ChatAction send error: %+v", err)
@@ -22,14 +21,14 @@ func uploadFilesProcess(message *t.Message, bytes t.FileBytes, randomFile Post) 
 		originalLink := getBotanURL(message.From.ID, randomFile.FileURL)
 		inlineKeyboard = t.NewInlineKeyboardMarkup(
 			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonURL(locale.English.Buttons.Original, originalLink),
-				t.NewInlineKeyboardButtonSwitch(locale.English.Buttons.Share, "id:"+strconv.Itoa(randomFile.ID)),
+				t.NewInlineKeyboardButtonURL(locale("button_original"), originalLink),
+				t.NewInlineKeyboardButtonSwitch(locale("button_share"), "id:"+strconv.Itoa(randomFile.ID)),
 			),
 		)
 	} else {
 		inlineKeyboard = t.NewInlineKeyboardMarkup(
 			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonURL(locale.English.Buttons.Original, randomFile.FileURL),
+				t.NewInlineKeyboardButtonURL(locale("button_original"), randomFile.FileURL),
 			),
 		)
 	}
@@ -51,7 +50,11 @@ func uploadFilesProcess(message *t.Message, bytes t.FileBytes, randomFile Post) 
 		}
 	case strings.Contains(randomFile.FileURL, ".webm"):
 		pageURL := BlushBoard + "/hash/" + randomFile.Hash
-		text := fmt.Sprintf(locale.English.Messages.BlushBoard, strings.Title(locale.English.Types.Video), randomFile.Owner, pageURL)
+		text := locale("message_blushboard", map[string]interface{}{
+			"Type":  strings.Title(locale("type_video")),
+			"Owner": randomFile.Owner,
+			"URL":   pageURL,
+		})
 		reply := t.NewMessage(message.Chat.ID, text)
 		reply.ParseMode = parseMarkdown
 		reply.DisableWebPagePreview = false

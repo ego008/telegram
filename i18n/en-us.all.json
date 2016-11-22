@@ -89,11 +89,19 @@
   },
   {
     "id": "inline_description",
+    "translation": "Rating: {{.Rating}}\nTags: {{.Tags}}"
+  },
+  {
+    "id": "inline_no_result_description",
     "translation": "Try search a different combination of tags."
   },
   {
-    "id": "inline_title",
+    "id": "inline_no_result_title",
     "translation": "Nobody here but us chickens!"
+  },
+  {
+    "id": "inline_title",
+    "translation": "{{.Type}} by {{.Owner}}"
   },
   {
     "id": "language_name",

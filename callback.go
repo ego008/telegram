@@ -1,24 +1,25 @@
 package main
 
 import (
-	"fmt"
 	t "github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
 	"strings"
 )
 
 func checkCallbackQuery(callback *t.CallbackQuery) {
-	log.Printf("Callback: %#v", callback)
 	switch callback.Data {
 	case "nsfw_on":
-		switchNSFW(callback.From, true)
+		locale := checkLanguage(callback.From)
+		go switchNSFW(callback.From, true)
 
 		replyMarkup := t.NewInlineKeyboardMarkup(
 			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonData("🔞 NSFW ON", "nsfw_off"),
+				t.NewInlineKeyboardButtonData(locale("button_nsfw", map[string]interface{}{
+					"Status": strings.ToUpper(locale("status_on")),
+				}), "nsfw_off"),
 			),
 			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonData(locale.English.Buttons.Language, "to_lang"),
+				t.NewInlineKeyboardButtonData(locale("button_language"), "to_lang"),
 			),
 		)
 
@@ -26,16 +27,18 @@ func checkCallbackQuery(callback *t.CallbackQuery) {
 		if _, err := bot.Send(newKeys); err != nil {
 			log.Printf("[Bot] Sending message error: %+v", err)
 		}
-
 	case "nsfw_off":
-		switchNSFW(callback.From, false)
+		locale := checkLanguage(callback.From)
+		go switchNSFW(callback.From, false)
 
 		replyMarkup := t.NewInlineKeyboardMarkup(
 			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonData("🔞 NSFW OFF", "nsfw_on"),
+				t.NewInlineKeyboardButtonData(locale("button_nsfw", map[string]interface{}{
+					"Status": strings.ToUpper(locale("status_off")),
+				}), "nsfw_on"),
 			),
 			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonData(locale.English.Buttons.Language, "to_lang"),
+				t.NewInlineKeyboardButtonData(locale("button_language"), "to_lang"),
 			),
 		)
 
@@ -43,23 +46,20 @@ func checkCallbackQuery(callback *t.CallbackQuery) {
 		if _, err := bot.Send(newKeys); err != nil {
 			log.Printf("[Bot] Sending message error: %+v", err)
 		}
-
 	case "to_lang":
+		locale := checkLanguage(callback.From)
 		replyMarkup := t.NewInlineKeyboardMarkup(
 			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonData(locale.English.Name, "lang_english"),
+				t.NewInlineKeyboardButtonData("🇬🇧 English", "lang_en-us"),
 			),
 			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonData(locale.Russian.Name, "lang_russian"),
+				t.NewInlineKeyboardButtonData("🇷🇺 Русский", "lang_ru-ru"),
 			),
 			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonData(locale.TChinese.Name, "lang_tchinese"),
+				t.NewInlineKeyboardButtonData("🇹🇼 正體中文", "lang_zh-zh"),
 			),
 			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonData(locale.SChinese.Name, "lang_schinese"),
-			),
-			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonData(locale.English.Buttons.Cancel, "to_settings"),
+				t.NewInlineKeyboardButtonData(locale("button_cancel"), "to_settings"),
 			),
 		)
 		newKeys := t.NewEditMessageReplyMarkup(callback.Message.Chat.ID, callback.Message.MessageID, replyMarkup)
@@ -67,39 +67,47 @@ func checkCallbackQuery(callback *t.CallbackQuery) {
 			log.Printf("[Bot] Sending message error: %+v", err)
 		}
 	case "to_settings":
-		settingsMessage(callback)
+		go settingsMessage(callback)
 	}
 
 	if strings.HasPrefix(callback.Data, "lang_") {
 		lang := strings.TrimLeft(callback.Data, "lang_")
-		changeLanguage(callback.From, lang)
-		settingsMessage(callback)
+		locale := changeLanguage(callback.From, lang)
+
+		go settingsMessage(callback)
+
+		text := locale("message_settings")
+		newText := t.NewEditMessageText(callback.Message.Chat.ID, callback.Message.MessageID, text)
+		if _, err := bot.Send(newText); err != nil {
+			log.Printf("[Bot] Sending message error: %+v", err)
+		}
 	}
 }
 
 func settingsMessage(callback *t.CallbackQuery) {
-	lang := checkLanguage(callback.From)
+	locale := checkLanguage(callback.From)
 	nsfw := checkNSFW(callback.From)
 
 	var nsfwBtn t.InlineKeyboardButton
 	if nsfw {
-		nsfwBtn = t.NewInlineKeyboardButtonData("🔞 NSFW ON", "nsfw_off")
+		nsfwBtn = t.NewInlineKeyboardButtonData(locale("button_nsfw", map[string]interface{}{
+			"Status": strings.ToUpper(locale("status_on")),
+		}), "nsfw_off")
 	} else {
-		nsfwBtn = t.NewInlineKeyboardButtonData("🔞 NSFW OFF", "nsfw_on")
+		nsfwBtn = t.NewInlineKeyboardButtonData(locale("button_nsfw", map[string]interface{}{
+			"Status": strings.ToUpper(locale("status_off")),
+		}), "nsfw_on")
 	}
 
 	replyMarkup := t.NewInlineKeyboardMarkup(
-		t.NewInlineKeyboardRow(nsfwBtn),
-		t.NewInlineKeyboardRow(t.NewInlineKeyboardButtonData(locale.English.Buttons.Language, "to_lang")),
+		t.NewInlineKeyboardRow(
+			nsfwBtn,
+		),
+		t.NewInlineKeyboardRow(
+			t.NewInlineKeyboardButtonData(locale("button_language"), "to_lang"),
+		),
 	)
 	newKeys := t.NewEditMessageReplyMarkup(callback.Message.Chat.ID, callback.Message.MessageID, replyMarkup)
-
-	text := fmt.Sprintf("%s: %s", locale.English.Buttons.Language, lang)
-	newText := t.NewEditMessageText(callback.Message.Chat.ID, callback.Message.MessageID, text)
-
-	if _, err := bot.Send(newText); err != nil {
-		log.Printf("[Bot] Sending message error: %+v", err)
-	}
 	if _, err := bot.Send(newKeys); err != nil {
 		log.Printf("[Bot] Sending message error: %+v", err)
 	}
