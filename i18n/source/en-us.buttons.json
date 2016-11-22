@@ -1,0 +1,78 @@
+[
+	{
+		"id": "button_achievements",
+		"translation": "🏆 Achievements"
+	},
+	{
+		"id": "button_cancel",
+		"translation": "↩️ Cancel"
+	},
+	{
+		"id": "button_channel",
+		"translation": "📢 Channel"
+	},
+	{
+		"id": "button_cheatsheet",
+		"translation": "📝 CheatSheet"
+	},
+	{
+		"id": "button_disable",
+		"translation": "✅ Disable"
+	},
+	{
+		"id": "button_donate",
+		"translation": "💸 Donate!"
+	},
+	{
+		"id": "button_enable",
+		"translation": "🅾 Enable"
+	},
+	{
+		"id": "button_try",
+		"translation": "👁 Let me try!"
+	},
+	{
+		"id": "button_feedback",
+		"translation": "💌 Contact us"
+	},
+	{
+		"id": "button_group",
+		"translation": "👥 Group"
+	},
+	{
+		"id": "button_help",
+		"translation": "❔ Help"
+	},
+	{
+		"id": "button_language",
+		"translation": "🏁 Language"
+	},
+	{
+		"id": "button_more",
+		"translation": "🌀 More"
+	},
+	{
+		"id": "button_nsfw",
+		"translation": "🔞 NSFW {{.Status}}"
+	},
+	{
+		"id": "button_original",
+		"translation": "💾 Original"
+	},
+	{
+		"id": "button_random",
+		"translation": "🎲 Random"
+	},
+	{
+		"id": "button_rate",
+		"translation": "Rate ⭐️⭐️⭐️⭐️⭐️"
+	},
+	{
+		"id": "button_settings",
+		"translation": "⚙ Settings"
+	},
+	{
+		"id": "button_share",
+		"translation": "🗣 Share"
+	}
+]

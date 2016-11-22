@@ -1,0 +1,18 @@
+[
+	{
+		"id": "rating_explicit",
+		"translation": "暴露的"
+	},
+	{
+		"id": "rating_questionable",
+		"translation": "具疑问性"
+	},
+	{
+		"id": "rating_safe",
+		"translation": "安全"
+	},
+	{
+		"id": "rating_unknown",
+		"translation": "未知"
+	}
+]

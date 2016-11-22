@@ -1,0 +1,18 @@
+[
+	{
+		"id": "inline_title",
+		"translation": "{{.Type}} by {{.Owner}}"
+	},
+	{
+		"id": "inline_description",
+		"translation": "Rating: {{.Rating}}\nTags: {{.Tags}}"
+	},
+	{
+		"id": "inline_title",
+		"translation": "Nobody here but us chickens!"
+	},
+	{
+		"id": "inline_description",
+		"translation": "Try search a different combination of tags."
+	}
+]

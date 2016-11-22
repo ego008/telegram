@@ -1,0 +1,18 @@
+[
+	{
+		"id": "inline_title",
+		"translation": "{{.Type}} 原作者为 {{.Owner}}"
+	},
+	{
+		"id": "inline_description",
+		"translation": "评分：{{.Rating}}\n标签：{{.Tags}}"
+	},
+	{
+		"id": "inline_no_result_title",
+		"translation": "虽然没有任何东西在这但还有你的鸟！"
+	},
+	{
+		"id": "inline_no_result_description",
+		"translation": "请试着用不同的标签组合搜寻。"
+	}
+]

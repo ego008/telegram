@@ -1,0 +1,18 @@
+[
+	{
+		"id": "inline_title",
+		"translation": "{{.Type}} от {{.Owner}}"
+	},
+	{
+		"id": "inline_description",
+		"translation": "Рейтинг: {{.Rating}}\nТеги: {{.Tags}}"
+	},
+	{
+		"id": "inline_no_result_title",
+		"translation": "Здесь никого, кроме нас, цыплят!"
+	},
+	{
+		"id": "inline_no_result_description",
+		"translation": "Попробуй выполнить поиск с другой комбинацией тегов."
+	}
+]

@@ -1,0 +1,174 @@
+[
+  {
+    "id": "achievements_hidden_description",
+    "translation": "相关信息会在每个成就解锁后说明"
+  },
+  {
+    "id": "achievements_hidden_title",
+    "translation": "剩余 {{.Count}} 个隐藏的成就"
+  },
+  {
+    "id": "achievements_unlocked",
+    "translation": ""
+  },
+  {
+    "id": "button_achievements",
+    "translation": "🏆 成就"
+  },
+  {
+    "id": "button_cancel",
+    "translation": "↩️ 取消"
+  },
+  {
+    "id": "button_channel",
+    "translation": "📢 频道"
+  },
+  {
+    "id": "button_cheatsheet",
+    "translation": "📝 用法总汇"
+  },
+  {
+    "id": "button_disable",
+    "translation": "✅ 停用"
+  },
+  {
+    "id": "button_donate",
+    "translation": "💸 赞助！"
+  },
+  {
+    "id": "button_enable",
+    "translation": "🅾 启用"
+  },
+  {
+    "id": "button_feedback",
+    "translation": "💌 联络我们"
+  },
+  {
+    "id": "button_group",
+    "translation": "👥 群组"
+  },
+  {
+    "id": "button_help",
+    "translation": "❔ 说明"
+  },
+  {
+    "id": "button_language",
+    "translation": ""
+  },
+  {
+    "id": "button_more",
+    "translation": "🌀 更多"
+  },
+  {
+    "id": "button_nsfw",
+    "translation": ""
+  },
+  {
+    "id": "button_original",
+    "translation": "💾 原图"
+  },
+  {
+    "id": "button_random",
+    "translation": "🎲 随机"
+  },
+  {
+    "id": "button_rate",
+    "translation": "评分 ⭐️⭐️⭐️⭐️⭐️"
+  },
+  {
+    "id": "button_settings",
+    "translation": "⚙ 设定"
+  },
+  {
+    "id": "button_share",
+    "translation": "🗣 分享"
+  },
+  {
+    "id": "button_try",
+    "translation": "👁 让我试试！"
+  },
+  {
+    "id": "inline_description",
+    "translation": "评分：{{.Rating}}\n标签：{{.Tags}}"
+  },
+  {
+    "id": "inline_no_result_description",
+    "translation": "请试着用不同的标签组合搜寻。"
+  },
+  {
+    "id": "inline_no_result_title",
+    "translation": "虽然没有任何东西在这但还有你的鸟！"
+  },
+  {
+    "id": "inline_title",
+    "translation": "{{.Type}} 原作者为 {{.Owner}}"
+  },
+  {
+    "id": "language_name",
+    "translation": "🇨🇳 简体中文"
+  },
+  {
+    "id": "message_blushboard",
+    "translation": "☺️ [{{.Type}} 原作者为 {{.Owner}}]({{.URL}})️"
+  },
+  {
+    "id": "message_cheatsheet",
+    "translation": "*标签一 标签二*\n用以搜寻带有 `标签一` 和 `标签二` 的文章。\n\n*~标签一 ~标签二*\n用来搜寻带有 `标签一` 或者是 `标签二` 的文章。（目前还不支援）\n\n*夜晚~*\n模糊搜寻 `夜晚` 标签。这将会使得符合 `夜晚 傍晚 晚上` 或者是任何符合[莱文斯坦距离](http://en.wikipedia.org/wiki/Levenshtein_distance)的文章都成为搜寻结果。\n\n*-标签一*\n搜寻没有 `标签一` 的文章。\n\n*标∗一*\n用以搜寻 `标` 开头然后 `一` 结尾的文章。\n\n*user:bob*\n搜寻使用者 `Bob` 发表的任何文章。\n\n*md5:foo*\n用以搜寻 MD5 码是 `foo` 的文章。\n\n*md5:foo∗*\n用以搜寻开 MD5 码开头是 `foo` 的文章。\n\n*rating:questionable*\n搜寻被评级为 `questionable` 的文章。\n\n*-rating:questionable*\n用以搜寻没有被评级为 `questionable` 的文章。\n\n*parent:1234*\n用以搜寻父文章是 `1234` 的文章（同时包含 `1234` 的文章）。\n\n*rating:questionable rating:safe*\n你没有办法使用这种方式，因为有两个重复的标签。\n\n*rating:questionable parent:100*\n不过你可以将不同标签组合在一起。\n\n*width:\u003e=1000 height:\u003e1000*\n寻找宽度大于或是等于 `1000` 而且高度大于 `1000` 的图片。\n\n*score:\u003e=10*\n搜寻分数大于或是等于 `10` 的图片。这个数值会在每天的 12AM CST 更新。\n\n*sort:updated:desc*\n由最新排序为主。\n\n*其他的排序方式：*\n• `id`\n• `score`\n• `rating`\n• `user`\n• `height`\n• `width`\n• `parent`\n• `source`\n• `updated`\n这些都可以由 `asc` 或是 `desc` 排序。"
+  },
+  {
+    "id": "message_donate",
+    "translation": "*没有人提供架设服务器和机器人开发的费用呢。* 😔\n在 Patreon 上赞助原作者然后在此写下你的大名吧！"
+  },
+  {
+    "id": "message_help",
+    "translation": "/cheatsheet - 得知在 Gelbooru 中进阶搜寻的用法；\n/random - 从 Gelbooru 中选出一篇随机文章；\n/donate - 赞助者的清单，还有你的名字如何出现在这；\n/info - 作者联系方式还有官方社群；"
+  },
+  {
+    "id": "message_info",
+    "translation": "原作者：@toby3d\n版本：{{.Version}}\n仓库：https://github.com/HentaiDB/HentaiDBot\n已上线时间：{{.UpTime}}"
+  },
+  {
+    "id": "message_settings",
+    "translation": ""
+  },
+  {
+    "id": "message_start",
+    "translation": "嗨，{{.FirstName}}！\n我是 @HentaiDB 计划的官方机器人。\n\n你可以透过我搜寻 Gelbooru 的图片或是 GIF。你只需要在任何聊天中输入 `@HentaiDBot hatsune_miku` 然后选择你想发送的文章，*但是你不用按下送出钮*，你只需要稍微等一下就会有结果了。😏\n\n你可以透过 /cheatsheet 得知进阶搜寻的用法，或者是对我说声 /help 也行。尽情享受吧！☺️"
+  },
+  {
+    "id": "rating_explicit",
+    "translation": "暴露的"
+  },
+  {
+    "id": "rating_questionable",
+    "translation": "具疑问性"
+  },
+  {
+    "id": "rating_safe",
+    "translation": "安全"
+  },
+  {
+    "id": "rating_unknown",
+    "translation": "未知"
+  },
+  {
+    "id": "status_off",
+    "translation": ""
+  },
+  {
+    "id": "status_on",
+    "translation": ""
+  },
+  {
+    "id": "type_animation",
+    "translation": "动画"
+  },
+  {
+    "id": "type_image",
+    "translation": "图片"
+  },
+  {
+    "id": "type_video",
+    "translation": "视频"
+  }
+]

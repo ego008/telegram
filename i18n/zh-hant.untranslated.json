@@ -1,0 +1,26 @@
+[
+  {
+    "id": "achievements_unlocked",
+    "translation": "You've unlocked every single achievement. Congratulations!"
+  },
+  {
+    "id": "button_language",
+    "translation": "🏁 Language"
+  },
+  {
+    "id": "button_nsfw",
+    "translation": "🔞 NSFW {{.Status}}"
+  },
+  {
+    "id": "message_settings",
+    "translation": "This is a list of your preferences. Correct me if something is wrong. 😉"
+  },
+  {
+    "id": "status_off",
+    "translation": "off"
+  },
+  {
+    "id": "status_on",
+    "translation": "on"
+  }
+]

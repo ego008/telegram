@@ -1,0 +1,18 @@
+[
+	{
+		"id": "rating_explicit",
+		"translation": "explicit"
+	},
+	{
+		"id": "rating_questionable",
+		"translation": "questionable"
+	},
+	{
+		"id": "rating_safe",
+		"translation": "safe"
+	},
+	{
+		"id": "rating_unknown",
+		"translation": "unknown"
+	}
+]

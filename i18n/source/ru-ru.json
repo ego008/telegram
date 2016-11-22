@@ -1,0 +1,14 @@
+[
+	{
+		"id": "language_name",
+		"translation": "🇷🇺 Русский"
+	},
+	{
+		"id": "status_on",
+		"translation": "вкл"
+	},
+	{
+		"id": "status_off",
+		"translation": "выкл"
+	}
+]

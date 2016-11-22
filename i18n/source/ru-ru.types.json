@@ -1,0 +1,14 @@
+[
+	{
+		"id": "type_image",
+		"translation": "изображение"
+	},
+	{
+		"id": "type_animation",
+		"translation": "анимация"
+	},
+	{
+		"id": "type_video",
+		"translation": "видео"
+	}
+]

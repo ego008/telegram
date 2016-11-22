@@ -1,0 +1,14 @@
+[
+	{
+		"id": "type_image",
+		"translation": "图片"
+	},
+	{
+		"id": "type_animation",
+		"translation": "动画"
+	},
+	{
+		"id": "type_video",
+		"translation": "视频"
+	}
+]

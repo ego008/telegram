@@ -1,0 +1,30 @@
+[
+	{
+		"id": "message_blushboard",
+		"translation": "☺️ [{{.Type}} by {{.Owner}}]({{.URL}})️"
+	},
+	{
+		"id": "message_cheatsheet",
+		"translation": "*tag1 tag2*\nSearch for posts that have `tag1` and `tag2`.\n\n*~tag1 ~tag2*\nSearch for posts that have `tag1` or `tag2`. (Currently does not work)\n\n*night~*\nFuzzy search for the tag `night`. This will return results such as `night fight bright` and so on according to the [Levenshtein distance](http://en.wikipedia.org/wiki/Levenshtein_distance).\n\n*-tag1*\nSearch for posts that don't have `tag1`.\n\n*ta∗1*\nSearch for posts with tags that starts with `ta` and ends with `1`.\n\n*user:bob*\nSearch for posts uploaded by the user `Bob`.\n\n*md5:foo*\nSearch for posts with the MD5 hash `foo`.\n\n*md5:foo∗*\nSearch for posts whose MD5 starts with the MD5 hash `foo`.\n\n*rating:questionable*\nSearch for posts that are rated `questionable`.\n\n*-rating:questionable*\nSearch for posts that are not rated `questionable`.\n\n*parent:1234*\nSearch for posts that have `1234` as a parent (and include post `1234`).\n\n*rating:questionable rating:safe*\nIn general, combining the same metatags (the ones that have colons in them) will not work.\n\n*rating:questionable parent:100*\nYou can combine different metatags, however.\n\n*width:>=1000 height:>1000*\nFind images with a width greater than or equal to `1000` and a height greater than `1000`.\n\n*score:>=10*\nFind images with a score greater than or equal to `10`. This value is updated once daily at 12AM CST.\n\n*sort:updated:desc*\nSort posts by their most recently updated order.\n\n*Other sortable types:*\n• `id`\n• `score`\n• `rating`\n• `user`\n• `height`\n• `width`\n• `parent`\n• `source`\n• `updated`\nCan be sorted by both `asc` or `desc`."
+	},
+	{
+		"id": "message_donate",
+		"translation": "*No one has supported hosting and bot development.* 😔\nSupport creator through Patreon and write your name here!"
+	},
+	{
+		"id": "message_help",
+		"translation": "/cheatsheet - get cheat sheet of advanced search in Gelbooru;\n/random - get a totally random post from Gelbooru;\n/donate - list of patrons and way to write your name in history;\n/info - authorship and official communities;"
+	},
+	{
+		"id": "message_info",
+		"translation": "Creator: @toby3d\nVersion: {{.Version}}\nRepository: https://github.com/HentaiDB/HentaiDBot\nUptime: {{.UpTime}}"
+	},
+	{
+		"id": "message_settings",
+		"translation": "This is a list of your preferences. Correct me if something is wrong. 😉"
+	},
+	{
+		"id": "message_start",
+		"translation": "Hi, {{.FirstName}}!\nI'm the official bot of @HentaiDB project.\n\nYou can search images and GIF's in Gelbooru through me. Just type `@HentaiDBot hatsune_miku` in any chat and select post which you want to send. *Don't hit Send*, just wait for results. 😏\n\nLet me know if you need a /cheatsheet of advanced search or other /help to me. Enjoy! ☺️"
+	}
+]
