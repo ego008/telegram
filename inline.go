@@ -1,31 +1,34 @@
 package main
 
 import (
-	b "github.com/botanio/sdk/go"
-	t "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/nicksnyder/go-i18n/i18n"
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
-)
 
-var results []interface{}
+	"github.com/botanio/sdk/go"
+	tg "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/nicksnyder/go-i18n/i18n"
+)
 
 const BlushBoard = "http://beta.hentaidb.pw"
 
-func getInlineResults(cacheTime int, inline *t.InlineQuery) {
-	locale := checkLanguage(inline.From)
-
-	// Track action
-	metrika.TrackAsync(inline.From.ID, MetrikaInlineQuery{inline}, "Search", func(answer b.Answer, err []error) {
-		log.Printf("[Botan] Track Search %s", answer.Status)
-		appMetrika <- true
-	})
-
-	nsfw := checkNSFW(inline.From)
-	if !nsfw {
-		inline.Query += " rating:safe"
+var (
+	results []interface{}
+	rating  = map[string]string{
+		"s": T("rating_safe"),
+		"e": T("rating_explicit"),
+		"q": T("rating_questionable"),
+		"?": T("rating_unknown"),
 	}
+)
+
+func getInlineResults(cacheTime int, inline *tg.InlineQuery) {
+	// Track action
+	b.TrackAsync(inline.From.ID, MetrikaInlineQuery{inline}, "Search", func(answer botan.Answer, err []error) {
+		log.Printf("[Botan] Track Search %s", answer.Status)
+		metrika <- true
+	})
 
 	// Check result pages
 	var post []Post
@@ -50,23 +53,23 @@ func getInlineResults(cacheTime int, inline *t.InlineQuery) {
 	switch {
 	case len(post) > 0:
 		for i := 0; i < len(post); i++ {
-			inlineResult(post[i], locale)
+			inlineResult(post[i], T)
 		}
 	case len(post) == 0: // Found nothing
-		emptyKeyboard := t.NewInlineKeyboardMarkup(
-			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonURL(locale("button_channel"), config.Links.Channel),
-				t.NewInlineKeyboardButtonURL(locale("button_group"), config.Links.Group),
+		emptyKeyboard := tg.NewInlineKeyboardMarkup(
+			tg.NewInlineKeyboardRow(
+				tg.NewInlineKeyboardButtonURL(T("button_channel"), cfg["link_channel"].(string)),
+				tg.NewInlineKeyboardButtonURL(T("button_group"), cfg["link_group"].(string)),
 			),
 		)
-		empty := t.NewInlineQueryResultArticleMarkdown(inline.ID, locale("inline_no_result_title"), "`¯\\_(ツ)_/¯`")
-		empty.Description = locale("inline_no_result_description")
+		empty := tg.NewInlineQueryResultArticleMarkdown(inline.ID, T("inline_no_result_title"), "`¯\\_(ツ)_/¯`")
+		empty.Description = T("inline_no_result_description")
 		empty.ReplyMarkup = &emptyKeyboard
 		results = append(results, empty)
 	}
 
 	// Configure inline-mode
-	inlineConfig := t.InlineConfig{}
+	var inlineConfig tg.InlineConfig
 	inlineConfig.InlineQueryID = inline.ID
 	inlineConfig.IsPersonal = true
 	inlineConfig.CacheTime = cacheTime
@@ -81,16 +84,16 @@ func getInlineResults(cacheTime int, inline *t.InlineQuery) {
 		log.Printf("[Bot] Answer inline-query error: %+v", err)
 	}
 
-	<-appMetrika // Send track to Yandex.AppMetrika
+	<-metrika // Send track to Yandex.AppMetrika
 }
 
 func inlineResult(post Post, locale i18n.TranslateFunc) {
 	// Universal(?) preview url
-	preview := config.Resource[20].Settings.URL + config.Resource[20].Settings.ThumbsDir + post.Directory + config.Resource[20].Settings.ThumbsPart + post.Hash + ".jpg"
-	post.Rating = setResultRating(post.Rating, locale)
-	resultKeyboard := t.NewInlineKeyboardMarkup(
-		t.NewInlineKeyboardRow(
-			t.NewInlineKeyboardButtonURL(locale("button_original"), post.FileURL),
+	preview := fmt.Sprint(cfg["resource_url"].(string), cfg["resource_thumbs_dir"].(string), post.Directory, cfg["resource_thumbs_part"].(string), post.Hash, ".jpg")
+	post.Rating = rating[post.Rating]
+	resultKeyboard := tg.NewInlineKeyboardMarkup(
+		tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonURL(T("button_original"), "https:"+post.FileURL),
 		),
 	)
 
@@ -98,22 +101,22 @@ func inlineResult(post Post, locale i18n.TranslateFunc) {
 	case strings.Contains(post.FileURL, ".webm"): // Not support yet. Show tip about "hidden" result
 		BBURL := BlushBoard + "/hash/" + post.Hash
 
-		video := t.NewInlineQueryResultVideo(strconv.Itoa(post.ID), BlushBoard+"/embed/"+post.Hash)
+		video := tg.NewInlineQueryResultVideo(strconv.Itoa(post.ID), BlushBoard+"/embed/"+post.Hash)
 		video.MimeType = "text/html"
 		video.ThumbURL = preview
-		video.Title = locale("inline_title", map[string]interface{}{
-			"Type":  strings.Title(locale("type_video")),
+		video.Title = T("inline_title", map[string]interface{}{
+			"Type":  strings.Title(T("type_video")),
 			"Owner": post.Owner,
 		})
 		video.Width = post.Width
 		video.Height = post.Height
-		video.Description = locale("inline_description", map[string]interface{}{
+		video.Description = T("inline_description", map[string]interface{}{
 			"Rating": post.Rating,
 			"Tags":   post.Tags,
 		})
-		video.InputMessageContent = t.InputTextMessageContent{
-			Text: locale("message_blushboard", map[string]interface{}{
-				"Type":  strings.Title(locale("type_video")),
+		video.InputMessageContent = tg.InputTextMessageContent{
+			Text: T("message_blushboard", map[string]interface{}{
+				"Type":  strings.Title(T("type_video")),
 				"Owner": post.Owner,
 				"URL":   BBURL,
 			}),
@@ -122,42 +125,42 @@ func inlineResult(post Post, locale i18n.TranslateFunc) {
 		}
 		results = append(results, video)
 	case strings.Contains(post.FileURL, ".mp4"): // Just in case. Why not? ¯\_(ツ)_/¯
-		video := t.NewInlineQueryResultVideo(strconv.Itoa(post.ID), post.FileURL)
+		video := tg.NewInlineQueryResultVideo(strconv.Itoa(post.ID), "https:"+post.FileURL)
 		video.MimeType = "video/mp4"
 		video.ThumbURL = preview
-		video.Title = locale("inline_title", map[string]interface{}{
-			"Type":  strings.Title(locale("type_video")),
+		video.Title = T("inline_title", map[string]interface{}{
+			"Type":  strings.Title(T("type_video")),
 			"Owner": post.Owner,
 		})
 		video.Width = post.Width
 		video.Height = post.Height
-		video.Description = locale("inline_description", map[string]interface{}{
+		video.Description = T("inline_description", map[string]interface{}{
 			"Rating": post.Rating,
 			"Tags":   post.Tags,
 		})
 		video.ReplyMarkup = &resultKeyboard
 		results = append(results, video)
 	case strings.Contains(post.FileURL, ".gif"):
-		gif := t.NewInlineQueryResultGIF(strconv.Itoa(post.ID), post.FileURL)
+		gif := tg.NewInlineQueryResultGIF(strconv.Itoa(post.ID), "https:"+post.FileURL)
 		gif.Width = post.Width
 		gif.Height = post.Height
 		gif.ThumbURL = post.FileURL
-		gif.Title = locale("inline_title", map[string]interface{}{
-			"Type":  strings.Title(locale("type_animation")),
+		gif.Title = T("inline_title", map[string]interface{}{
+			"Type":  strings.Title(T("type_animation")),
 			"Owner": post.Owner,
 		})
 		gif.ReplyMarkup = &resultKeyboard
 		results = append(results, gif)
 	default:
-		image := t.NewInlineQueryResultPhoto(strconv.Itoa(post.ID), post.FileURL)
+		image := tg.NewInlineQueryResultPhoto(strconv.Itoa(post.ID), "https:"+post.FileURL)
 		image.ThumbURL = preview
 		image.Width = post.Width
 		image.Height = post.Height
-		image.Title = locale("inline_title", map[string]interface{}{
-			"Type":  strings.Title(locale("type_image")),
+		image.Title = T("inline_title", map[string]interface{}{
+			"Type":  strings.Title(T("type_image")),
 			"Owner": post.Owner,
 		})
-		image.Description = locale("inline_description", map[string]interface{}{
+		image.Description = T("inline_description", map[string]interface{}{
 			"Rating": post.Rating,
 			"Tags":   post.Tags,
 		})
@@ -166,24 +169,11 @@ func inlineResult(post Post, locale i18n.TranslateFunc) {
 	}
 }
 
-func setResultRating(rating string, locale i18n.TranslateFunc) string {
-	switch rating {
-	case "s":
-		return locale("rating_safe")
-	case "e":
-		return locale("rating_explicit")
-	case "q":
-		return locale("rating_questionable")
-	default:
-		return locale("rating_unknown")
-	}
-}
-
-func trackInlineResult(result *t.ChosenInlineResult) {
-	metrika.TrackAsync(result.From.ID, MetrikaChosenInlineResult{result}, "Find", func(answer b.Answer, err []error) {
+func trackInlineResult(result *tg.ChosenInlineResult) {
+	b.TrackAsync(result.From.ID, MetrikaChosenInlineResult{result}, "Find", func(answer botan.Answer, err []error) {
 		log.Printf("[Botan] Track Find %s", answer.Status)
-		appMetrika <- true
+		metrika <- true
 	})
 
-	<-appMetrika // Send track to Yandex.AppMetrika
+	<-metrika // Send track to Yandex.AppMetrika
 }

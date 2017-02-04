@@ -3,9 +3,10 @@
 package main
 
 import (
-	b "github.com/botanio/sdk/go"
-	t "github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
+
+	"github.com/botanio/sdk/go"
+	tg "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 func init() {
@@ -13,26 +14,26 @@ func init() {
 }
 
 // GetEasterEgg could send an easeter egg. But no.
-func easterEggsMessages(message *t.Message) {
+func easterEggsMessages(message *tg.Message) {
 	if message.Chat.IsPrivate() || bot.IsMessageToMe(*message) {
 		// Track all other messages
-		metrika.TrackAsync(message.From.ID, MetrikaMessage{message}, "Message", func(answer b.Answer, err []error) {
+		b.TrackAsync(message.From.ID, MetrikaMessage{message}, "Message", func(answer botan.Answer, err []error) {
 			log.Printf("[Botan] Track Message %s", answer.Status)
-			appMetrika <- true
+			metrika <- true
 		})
 
-		<-appMetrika
+		<-metrika
 	}
 }
 
-func eggCommand(message *t.Message) {
+func eggCommand(message *tg.Message) {
 	if message.Chat.IsPrivate() || bot.IsMessageToMe(*message) {
 		// Track all other messages
-		metrika.TrackAsync(message.From.ID, MetrikaMessage{message}, "Message", func(answer b.Answer, err []error) {
+		b.TrackAsync(message.From.ID, MetrikaMessage{message}, "Message", func(answer botan.Answer, err []error) {
 			log.Printf("[Botan] Track Message %s", answer.Status)
-			appMetrika <- true
+			metrika <- true
 		})
 
-		<-appMetrika
+		<-metrika
 	}
 }

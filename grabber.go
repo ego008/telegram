@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	f "github.com/valyala/fasthttp"
 	"log"
 	// "net/url"
 	"strconv"
+
+	f "github.com/valyala/fasthttp"
 )
 
 type (
@@ -64,7 +65,7 @@ func getPosts(req Request) []Post {
 	case req.Tags != "":
 		args.Add("tags", req.Tags)
 	}
-	repository := fmt.Sprintf("%s/index.php?%s", config.Resource[20].Settings.URL, args.String())
+	repository := fmt.Sprintf("%s/index.php?%s", cfg["resource_url"].(string), args.String())
 	log.Println(repository)
 	_, resp, err := f.Get(nil, repository)
 	if err != nil {

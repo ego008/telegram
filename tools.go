@@ -2,47 +2,48 @@ package main
 
 import (
 	"fmt"
-	t "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/nicksnyder/go-i18n/i18n"
-	f "github.com/valyala/fasthttp"
 	"log"
 	"strconv"
 	"strings"
+
+	tg "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/nicksnyder/go-i18n/i18n"
+	f "github.com/valyala/fasthttp"
 )
 
-func uploadFilesProcess(message *t.Message, bytes t.FileBytes, randomFile Post, locale i18n.TranslateFunc) {
+func uploadFilesProcess(message *tg.Message, bytes tg.FileBytes, randomFile Post, locale i18n.TranslateFunc) {
 	// Force feedback
-	if _, err := bot.Send(t.NewChatAction(message.Chat.ID, t.ChatUploadDocument)); err != nil {
+	if _, err := bot.Send(tg.NewChatAction(message.Chat.ID, tg.ChatUploadDocument)); err != nil {
 		log.Printf("[Bot] ChatAction send error: %+v", err)
 	}
 
-	var inlineKeyboard t.InlineKeyboardMarkup
+	var inlineKeyboard tg.InlineKeyboardMarkup
 	if message.Chat.IsPrivate() { // Add share-button if chat is private
 		originalLink := getBotanURL(message.From.ID, randomFile.FileURL)
-		inlineKeyboard = t.NewInlineKeyboardMarkup(
-			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonURL(locale("button_original"), originalLink),
-				t.NewInlineKeyboardButtonSwitch(locale("button_share"), "id:"+strconv.Itoa(randomFile.ID)),
+		inlineKeyboard = tg.NewInlineKeyboardMarkup(
+			tg.NewInlineKeyboardRow(
+				tg.NewInlineKeyboardButtonURL(locale("button_original"), originalLink),
+				tg.NewInlineKeyboardButtonSwitch(locale("button_share"), "id:"+strconv.Itoa(randomFile.ID)),
 			),
 		)
 	} else {
-		inlineKeyboard = t.NewInlineKeyboardMarkup(
-			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonURL(locale("button_original"), randomFile.FileURL),
+		inlineKeyboard = tg.NewInlineKeyboardMarkup(
+			tg.NewInlineKeyboardRow(
+				tg.NewInlineKeyboardButtonURL(locale("button_original"), randomFile.FileURL),
 			),
 		)
 	}
 
 	switch {
 	case strings.Contains(randomFile.FileURL, ".mp4"):
-		video := t.NewVideoUpload(message.Chat.ID, bytes)
+		video := tg.NewVideoUpload(message.Chat.ID, bytes)
 		video.ReplyToMessageID = message.MessageID
 		video.ReplyMarkup = &inlineKeyboard
 		if _, err := bot.Send(video); err != nil {
 			log.Printf("[Bot] Sending message error: %+v", err)
 		}
 	case strings.Contains(randomFile.FileURL, ".gif"):
-		gif := t.NewDocumentUpload(message.Chat.ID, bytes)
+		gif := tg.NewDocumentUpload(message.Chat.ID, bytes)
 		gif.ReplyToMessageID = message.MessageID
 		gif.ReplyMarkup = &inlineKeyboard
 		if _, err := bot.Send(gif); err != nil {
@@ -55,7 +56,7 @@ func uploadFilesProcess(message *t.Message, bytes t.FileBytes, randomFile Post, 
 			"Owner": randomFile.Owner,
 			"URL":   pageURL,
 		})
-		reply := t.NewMessage(message.Chat.ID, text)
+		reply := tg.NewMessage(message.Chat.ID, text)
 		reply.ParseMode = parseMarkdown
 		reply.DisableWebPagePreview = false
 		reply.ReplyToMessageID = message.MessageID
@@ -64,7 +65,7 @@ func uploadFilesProcess(message *t.Message, bytes t.FileBytes, randomFile Post, 
 			log.Printf("[Bot] Sending message error: %+v", err)
 		}
 	default:
-		image := t.NewPhotoUpload(message.Chat.ID, bytes)
+		image := tg.NewPhotoUpload(message.Chat.ID, bytes)
 		image.ReplyToMessageID = message.MessageID
 		image.ReplyMarkup = &inlineKeyboard
 		if _, err := bot.Send(image); err != nil {
@@ -73,7 +74,7 @@ func uploadFilesProcess(message *t.Message, bytes t.FileBytes, randomFile Post, 
 	}
 }
 
-func getTelegramFileID(message *t.Message) {
+func getTelegramFileID(message *tg.Message) {
 	var uploadFileInfo string
 	switch {
 	case message.Audio != nil: // Upload file as Voice
@@ -95,14 +96,14 @@ func getTelegramFileID(message *t.Message) {
 	case message.Voice != nil:
 		uploadFileInfo = fmt.Sprintf("ID: %s", message.Voice.FileID)
 	}
-	reply := t.NewMessage(message.Chat.ID, uploadFileInfo)
+	reply := tg.NewMessage(message.Chat.ID, uploadFileInfo)
 	reply.ReplyToMessageID = message.MessageID
 	if _, err := bot.Send(reply); err != nil {
 		log.Printf("[Bot] Sending message error: %+v", err)
 	}
 }
 
-func getLargePhoto(message *t.Message) string {
+func getLargePhoto(message *tg.Message) string {
 	photo := *message.Photo
 	id := 0
 	for i, v := range photo {
@@ -113,8 +114,8 @@ func getLargePhoto(message *t.Message) string {
 	return photo[id].FileID
 }
 
-func getVoiceFromAudio(message *t.Message) string {
-	if _, err := bot.Send(t.NewChatAction(message.Chat.ID, t.ChatRecordAudio)); err != nil {
+func getVoiceFromAudio(message *tg.Message) string {
+	if _, err := bot.Send(tg.NewChatAction(message.Chat.ID, tg.ChatRecordAudio)); err != nil {
 		log.Printf("[Bot] ChatAction send error: %+v", err)
 	}
 
@@ -127,12 +128,12 @@ func getVoiceFromAudio(message *t.Message) string {
 	if err != nil {
 		log.Printf("Get file error: %+v", err)
 	}
-	bytes := t.FileBytes{
+	bytes := tg.FileBytes{
 		Name:  message.Audio.FileID,
 		Bytes: body,
 	}
 
-	voice := t.NewVoiceUpload(message.Chat.ID, bytes)
+	voice := tg.NewVoiceUpload(message.Chat.ID, bytes)
 	voice.Duration = message.Audio.Duration
 	voice.ReplyToMessageID = message.MessageID
 	resp, err := bot.Send(voice)
@@ -145,7 +146,7 @@ func getVoiceFromAudio(message *t.Message) string {
 
 // Generate personal tracking-link
 func getBotanURL(id int, url string) string {
-	req := fmt.Sprintf("https://api.botan.io/s/?token=%s&user_ids=%d&url=%s", config.Botan.Token, id, url)
+	req := fmt.Sprintf("https://api.botan.io/s/?token=%s&user_ids=%d&url=%s", cfg["botan"].(string), id, url)
 	status, botanURL, err := f.Get(nil, req)
 	if err != nil || status != 200 {
 		log.Printf("[Botan] Generate URL error: %+v", err)

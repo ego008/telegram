@@ -1,63 +1,44 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
-	b "github.com/botanio/sdk/go"
-	t "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/nicksnyder/go-i18n/i18n"
-	r "gopkg.in/dancannon/gorethink.v2"
+	"fmt"
 	"io/ioutil"
-	"log"
-	"net/http"
+
+	"github.com/botanio/sdk/go"
+	tg "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/hjson/hjson-go"
+	log "github.com/kirillDanshin/dlog"
+	f "github.com/valyala/fasthttp"
 )
 
 var (
-	appMetrika = make(chan bool)
-	bot        *t.BotAPI
-	config     Configuration
-	db         *r.Session
-	metrika    b.Botan
+	b       botan.Botan
+	bot     *tg.BotAPI
+	cfg     map[string]interface{}
+	metrika = make(chan bool)
 )
 
 func init() {
-	// Read configuration
-	configFile, err := ioutil.ReadFile("config.json")
+	// Open configuration file
+	config, err := ioutil.ReadFile("config.hjson")
 	if err != nil {
-		log.Fatalf("[Configuration] Reading error: %+v", err)
-	} else {
-		log.Println("[Configuration] Read successfully!")
-	}
-	// Decode configuration
-	if err = json.Unmarshal(configFile, &config); err != nil {
-		log.Fatalf("[Configuration] Decoding error: %+v", err)
+		panic(err.Error())
 	}
 
-	// Read localization
-	i18n.MustLoadTranslationFile("i18n/en-us.all.json")
-	i18n.MustLoadTranslationFile("i18n/ru-ru.all.json")
-	i18n.MustLoadTranslationFile("i18n/zh-zh.all.json")
-
-	// Initialize RethinkDB
-	if rethink, err := r.Connect(r.ConnectOpts{
-		Address:  config.DataBase.Address,
-		Database: config.DataBase.DataBase,
-	}); err != nil {
-		log.Fatalln(err)
-	} else {
-		db = rethink
+	// Read configuration
+	if err = hjson.Unmarshal(config, &cfg); err != nil {
+		panic(err.Error())
 	}
+
+	b = botan.New(cfg["botan"].(string))
 
 	// Initialize bot
-	teleBot, err := t.NewBotAPI(config.Telegram.Token)
+	bot, err = tg.NewBotAPI(cfg["telegram_token"].(string))
 	if err != nil {
-		log.Fatalf("[Bot] Initialize error: %+v", err)
-	} else {
-		bot = teleBot
-		log.Printf("[Bot] Authorized as @%s", bot.Self.UserName)
+		panic(err.Error())
 	}
-
-	metrika = b.New(config.Botan.Token) // Initialize botan
+	log.F("Authorized as @%s", bot.Self.UserName)
 }
 
 func main() {
@@ -66,42 +47,47 @@ func main() {
 	cacheTime := flag.Int("cache", 0, "cache time in seconds for inline-search results")
 	flag.Parse()
 
-	bot.RemoveWebhook()
 	bot.Debug = *debugMode
 
-	updates := make(<-chan t.Update)
+	updates := make(<-chan tg.Update)
 	updates = setUpdates(*webhookMode)
 
 	// Updater
-	for update := range updates {
+	for upd := range updates {
 		switch {
-		case update.Message != nil:
-			go getMessages(update.Message)
-		case update.InlineQuery != nil && len(update.InlineQuery.Query) <= 255: // Just don't update results if query exceeds the maximum length
-			go getInlineResults(*cacheTime, update.InlineQuery)
-		case update.ChosenInlineResult != nil:
-			go trackInlineResult(update.ChosenInlineResult)
-		case update.CallbackQuery != nil:
-			go checkCallbackQuery(update.CallbackQuery)
+		case upd.Message != nil:
+			go getMessages(upd.Message)
+		case upd.InlineQuery != nil && len(upd.InlineQuery.Query) <= 255: // Just don't update results if query exceeds the maximum length
+			go getInlineResults(*cacheTime, upd.InlineQuery)
+		case upd.ChosenInlineResult != nil:
+			go trackInlineResult(upd.ChosenInlineResult)
+			// case upd.CallbackQuery != nil:
+			// 	go checkCallbackQuery(upd.CallbackQuery)
 		}
 	}
 }
 
-func setUpdates(isWebhook bool) <-chan t.Update {
-	if isWebhook == true {
-		log.Println("[Bot] Webhook activated")
-		if _, err := bot.SetWebhook(t.NewWebhook(config.Telegram.Webhook.Set + config.Telegram.Token)); err != nil {
-			log.Fatalf("[Bot] Set webhook error: %+v", err)
+func setUpdates(isWebhook bool) <-chan tg.Update {
+	bot.RemoveWebhook()
+	if isWebhook {
+		if _, err := bot.SetWebhook(
+			tg.NewWebhook(
+				fmt.Sprintf(cfg["telegram_webhook_set"].(string), cfg["telegram_token"].(string)),
+			),
+		); err != nil {
+			panic(err)
 		}
-		go http.ListenAndServe(config.Telegram.Webhook.Serve, nil)
-		updates := bot.ListenForWebhook(config.Telegram.Webhook.Listen + config.Telegram.Token)
-		return updates
+		go f.ListenAndServe(cfg["telegram_webhook_serve"].(string), nil)
+		// go http.ListenAndServe(cfg["telegram_webhook_serve"].(string), nil)
+		return bot.ListenForWebhook(
+			fmt.Sprintf(cfg["telegram_webhook_listen"].(string), cfg["telegram_token"].(string)),
+		)
 	} else {
-		upd := t.NewUpdate(0)
+		upd := tg.NewUpdate(0)
 		upd.Timeout = 60
 		updates, err := bot.GetUpdatesChan(upd)
 		if err != nil {
-			log.Fatalf("[Bot] Getting updates error: %+v", err)
+			panic(err)
 		}
 		return updates
 	}

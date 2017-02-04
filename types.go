@@ -1,6 +1,6 @@
 package main
 
-import t "github.com/go-telegram-bot-api/telegram-bot-api"
+import tg "github.com/go-telegram-bot-api/telegram-bot-api"
 
 type (
 	// Configuration is a main config
@@ -64,14 +64,14 @@ type (
 	}
 
 	MetrikaMessage struct {
-		*t.Message
+		*tg.Message
 	}
 
 	MetrikaInlineQuery struct {
-		*t.InlineQuery
+		*tg.InlineQuery
 	}
 
 	MetrikaChosenInlineResult struct {
-		*t.ChosenInlineResult
+		*tg.ChosenInlineResult
 	}
 )

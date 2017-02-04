@@ -1,21 +1,29 @@
 package main
 
 import (
-	t "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/nicksnyder/go-i18n/i18n"
-	r "gopkg.in/dancannon/gorethink.v2"
 	"log"
+
+	"github.com/boltdb/bolt"
+	// tg "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-type (
-	User struct {
-		ID       int    `gorethink:"user_id"`
-		NSFW     bool   `gorethink:"nsfw"`
-		Language string `gorethink:"language"`
-	}
-)
+var db *bolt.DB
 
-func createUser(user *t.User) i18n.TranslateFunc {
+func init() {
+	var err error
+	go func() {
+		db, err = bolt.Open("hentai.db", 0600, nil)
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
+		defer db.Close()
+
+		select {}
+	}()
+}
+
+/*
+func createUser(user *tg.User) i18n.TranslateFunc {
 	resp, err := r.DB(config.DataBase.DataBase).Table(config.DataBase.Table).Filter(map[string]interface{}{"user_id": user.ID}).Run(db)
 	if err != nil {
 		log.Println(err)
@@ -34,7 +42,7 @@ func createUser(user *t.User) i18n.TranslateFunc {
 	return locale
 }
 
-func checkNSFW(user *t.User) bool {
+func checkNSFW(user *tg.User) bool {
 	createUser(user)
 	resp, err := r.DB(config.DataBase.DataBase).Table(config.DataBase.Table).Filter(map[string]interface{}{"user_id": user.ID}).Field("nsfw").Run(db)
 	if err != nil {
@@ -48,14 +56,14 @@ func checkNSFW(user *t.User) bool {
 	return nsfw
 }
 
-func switchNSFW(user *t.User, state bool) {
+func switchNSFW(user *tg.User, state bool) {
 	createUser(user)
 	if _, err := r.DB(config.DataBase.DataBase).Table(config.DataBase.Table).Filter(map[string]interface{}{"user_id": user.ID}).Update(map[string]interface{}{"nsfw": state}).RunWrite(db); err != nil {
 		log.Println(err)
 	}
 }
 
-func checkLanguage(user *t.User) i18n.TranslateFunc {
+func checkLanguage(user *tg.User) i18n.TranslateFunc {
 	createUser(user)
 	resp, err := r.DB(config.DataBase.DataBase).Table(config.DataBase.Table).Filter(map[string]interface{}{"user_id": user.ID}).Field("language").Run(db)
 	if err != nil {
@@ -70,7 +78,7 @@ func checkLanguage(user *t.User) i18n.TranslateFunc {
 	return locale
 }
 
-func changeLanguage(user *t.User, lang string) i18n.TranslateFunc {
+func changeLanguage(user *tg.User, lang string) i18n.TranslateFunc {
 	createUser(user)
 	if _, err := r.DB(config.DataBase.DataBase).Table(config.DataBase.Table).Filter(map[string]interface{}{"user_id": user.ID}).Update(map[string]interface{}{"language": lang}).RunWrite(db); err != nil {
 		log.Println(err)
@@ -78,3 +86,4 @@ func changeLanguage(user *t.User, lang string) i18n.TranslateFunc {
 	locale, _ := i18n.Tfunc(lang)
 	return locale
 }
+*/

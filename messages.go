@@ -2,15 +2,16 @@ package main
 
 import (
 	"fmt"
-	b "github.com/botanio/sdk/go"
-	t "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/hako/durafmt"
-	"github.com/nicksnyder/go-i18n/i18n"
-	f "github.com/valyala/fasthttp"
 	"log"
 	"math/rand"
 	"strings"
 	"time"
+
+	"github.com/botanio/sdk/go"
+	tg "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/hako/durafmt"
+	"github.com/nicksnyder/go-i18n/i18n"
+	f "github.com/valyala/fasthttp"
 )
 
 const (
@@ -23,63 +24,61 @@ const (
 
 var startUptime = time.Now()
 
-func getMessages(message *t.Message) {
-	locale := checkLanguage(message.From)
-
+func getMessages(message *tg.Message) {
 	isCommand := message.IsCommand()
 	isPrivate := message.Chat.IsPrivate()
 	switch {
 	case isCommand /*&& (isPrivate || isMessageToMe)*/ :
-		go sendMessages(message, locale)
-	case isPrivate && message.From.ID == config.Telegram.Admin && message.Text == "":
+		go sendMessages(message, T)
+	case isPrivate && message.From.ID == int(cfg["telegram_admin"].(float64)) && message.Text == "":
 		go getTelegramFileID(message) // Admin feature without tracking
 	default:
 		go easterEggsMessages(message) // Secret actions and commands ;)
 	}
 }
 
-func sendMessages(message *t.Message, locale i18n.TranslateFunc) {
+func sendMessages(message *tg.Message, T i18n.TranslateFunc) {
 	lowerCommand := strings.ToLower(message.Command())
 	switch lowerCommand {
 	case "start": // Requirement Telegram platform
-		go startCommand(message, locale)
+		go startCommand(message, T)
 	case "help": // Requirement Telegram platform
-		go helpCommand(message, locale)
-	case "settings": // Requirement Telegram platform
-		go settingsCommand(message, locale)
+		go helpCommand(message, T)
+	// case "settings": // Requirement Telegram platform
+	// 	go settingsCommand(message, T)
 	case "cheatsheet":
-		go cheatsheetCommand(message, locale)
+		go cheatsheetCommand(message, T)
 	case "random":
-		go randomCommand(message, locale)
+		go randomCommand(message, T)
 	case "info":
-		go infoCommand(message, locale)
+		go infoCommand(message, T)
 	case "donate":
-		go donateCommand(message, locale)
+		go donateCommand(message, T)
 	default:
 		go eggCommand(message)
 	}
 }
 
-func startCommand(message *t.Message, locale i18n.TranslateFunc) {
+func startCommand(message *tg.Message, T i18n.TranslateFunc) {
 	// Track action
-	metrika.TrackAsync(message.From.ID, MetrikaMessage{message}, "/start", func(answer b.Answer, err []error) {
+	b.TrackAsync(message.From.ID, MetrikaMessage{message}, "/start", func(answer botan.Answer, err []error) {
 		log.Printf("[Botan] Track /start %s", answer.Status)
-		appMetrika <- true
+		metrika <- true
 	})
 
 	// Force feedback
-	if _, err := bot.Send(t.NewChatAction(message.Chat.ID, t.ChatTyping)); err != nil {
+	if _, err := bot.Send(tg.NewChatAction(message.Chat.ID, tg.ChatTyping)); err != nil {
 		log.Printf("[Bot] ChatAction send error: %+v", err)
 	}
 
-	inlineKeyboard := t.NewInlineKeyboardMarkup(
-		t.NewInlineKeyboardRow(
-			t.NewInlineKeyboardButtonSwitch(locale("button_try"), "hatsune_miku rating:safe"), // Showing tutorial button for demonstration work
+	inlineKeyboard := tg.NewInlineKeyboardMarkup(
+		tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonSwitch(T("button_try"), "hatsune_miku rating:safe"), // Showing tutorial button for demonstration work
 		),
 	)
 
-	text := locale("message_start", map[string]interface{}{"FirstName": message.From.FirstName})
-	reply := t.NewMessage(message.Chat.ID, text)
+	text := T("message_start", map[string]interface{}{"FirstName": message.From.FirstName})
+	reply := tg.NewMessage(message.Chat.ID, text)
 	reply.ParseMode = parseMarkdown
 	reply.DisableWebPagePreview = true
 	reply.ReplyToMessageID = message.MessageID
@@ -88,28 +87,28 @@ func startCommand(message *t.Message, locale i18n.TranslateFunc) {
 		log.Printf("[Bot] Sending message error: %+v", err)
 	}
 
-	<-appMetrika // Send track to Yandex.AppMetrika
+	<-metrika // Send track to Yandex.metrika
 }
 
-func helpCommand(message *t.Message, locale i18n.TranslateFunc) {
+func helpCommand(message *tg.Message, T i18n.TranslateFunc) {
 	// Track action
-	metrika.TrackAsync(message.From.ID, MetrikaMessage{message}, "/help", func(answer b.Answer, err []error) {
+	b.TrackAsync(message.From.ID, MetrikaMessage{message}, "/help", func(answer botan.Answer, err []error) {
 		log.Printf("[Botan] Track /help %s", answer.Status)
-		appMetrika <- true
+		metrika <- true
 	})
 
 	// Force feedback
-	if _, err := bot.Send(t.NewChatAction(message.Chat.ID, t.ChatTyping)); err != nil {
+	if _, err := bot.Send(tg.NewChatAction(message.Chat.ID, tg.ChatTyping)); err != nil {
 		log.Printf("[Bot] ChatAction send error: %+v", err)
 	}
 
-	document := t.NewDocumentShare(message.Chat.ID, demonstrationGIF)
+	document := tg.NewDocumentShare(message.Chat.ID, demonstrationGIF)
 	if _, err := bot.Send(document); err != nil {
 		log.Printf("[Bot] Sending message error: %+v", err)
 	}
 
-	text := locale("message_help")
-	reply := t.NewMessage(message.Chat.ID, text)
+	text := T("message_help")
+	reply := tg.NewMessage(message.Chat.ID, text)
 	reply.ParseMode = parseMarkdown
 	reply.DisableWebPagePreview = true
 	reply.ReplyToMessageID = message.MessageID
@@ -117,45 +116,44 @@ func helpCommand(message *t.Message, locale i18n.TranslateFunc) {
 		log.Printf("[Bot] Sending message error: %+v", err)
 	}
 
-	<-appMetrika // Send track to Yandex.AppMetrika
+	<-metrika // Send track to Yandex.metrika
 }
 
-func settingsCommand(message *t.Message, locale i18n.TranslateFunc) {
+/*
+func settingsCommand(message *tg.Message, T i18n.TranslateFunc) {
 	// Track action
-	metrika.TrackAsync(message.From.ID, MetrikaMessage{message}, "/settings", func(answer b.Answer, err []error) {
+	b.TrackAsync(message.From.ID, MetrikaMessage{message}, "/settings", func(answer botan.Answer, err []error) {
 		log.Printf("[Botan] Track /settings %s", answer.Status)
-		appMetrika <- true
+		metrika <- true
 	})
 
 	// Force feedback
-	if _, err := bot.Send(t.NewChatAction(message.Chat.ID, t.ChatTyping)); err != nil {
+	if _, err := bot.Send(tg.NewChatAction(message.Chat.ID, tg.ChatTyping)); err != nil {
 		log.Printf("[Bot] ChatAction send error: %+v", err)
 	}
 
-	nsfw := checkNSFW(message.From)
-
-	var nsfwBtn t.InlineKeyboardButton
+	var nsfwBtn tg.InlineKeyboardButton
 	if nsfw {
-		nsfwBtn = t.NewInlineKeyboardButtonData(locale("button_nsfw", map[string]interface{}{
-			"Status": strings.ToUpper(locale("status_on")),
+		nsfwBtn = tg.NewInlineKeyboardButtonData(T("button_nsfw", map[string]interface{}{
+			"Status": strings.ToUpper(T("status_on")),
 		}), "nsfw_off")
 	} else {
-		nsfwBtn = t.NewInlineKeyboardButtonData(locale("button_nsfw", map[string]interface{}{
-			"Status": strings.ToUpper(locale("status_off")),
+		nsfwBtn = tg.NewInlineKeyboardButtonData(T("button_nsfw", map[string]interface{}{
+			"Status": strings.ToUpper(T("status_off")),
 		}), "nsfw_on")
 	}
 
-	inlineKeyboard := t.NewInlineKeyboardMarkup(
-		t.NewInlineKeyboardRow(
+	inlineKeyboard := tg.NewInlineKeyboardMarkup(
+		tg.NewInlineKeyboardRow(
 			nsfwBtn,
 		),
-		t.NewInlineKeyboardRow(
-			t.NewInlineKeyboardButtonData(locale("button_language"), "to_lang"),
+		tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonData(T("button_language"), "to_lang"),
 		),
 	)
 
-	text := locale("message_settings")
-	reply := t.NewMessage(message.Chat.ID, text)
+	text := T("message_settings")
+	reply := tg.NewMessage(message.Chat.ID, text)
 	reply.ParseMode = parseMarkdown
 	reply.DisableWebPagePreview = true
 	reply.ReplyToMessageID = message.MessageID
@@ -164,23 +162,24 @@ func settingsCommand(message *t.Message, locale i18n.TranslateFunc) {
 		log.Printf("[Bot] Sending message error: %+v", err)
 	}
 
-	<-appMetrika // Send track to Yandex.AppMetrika
+	<-metrika // Send track to Yandex.metrika
 }
+*/
 
-func cheatsheetCommand(message *t.Message, locale i18n.TranslateFunc) {
+func cheatsheetCommand(message *tg.Message, T i18n.TranslateFunc) {
 	// Track action
-	metrika.TrackAsync(message.From.ID, MetrikaMessage{message}, "/cheatsheet", func(answer b.Answer, err []error) {
+	b.TrackAsync(message.From.ID, MetrikaMessage{message}, "/cheatsheet", func(answer botan.Answer, err []error) {
 		log.Printf("[Botan] Track /cheatsheet %s", answer.Status)
-		appMetrika <- true
+		metrika <- true
 	})
 
 	// Force feedback
-	if _, err := bot.Send(t.NewChatAction(message.Chat.ID, t.ChatTyping)); err != nil {
+	if _, err := bot.Send(tg.NewChatAction(message.Chat.ID, tg.ChatTyping)); err != nil {
 		log.Printf("[Bot] ChatAction send error: %+v", err)
 	}
 
-	text := locale("message_cheatsheet")
-	reply := t.NewMessage(message.Chat.ID, text)
+	text := T("message_cheatsheet")
+	reply := tg.NewMessage(message.Chat.ID, text)
 	reply.ParseMode = parseMarkdown
 	reply.DisableWebPagePreview = true
 	reply.ReplyToMessageID = message.MessageID
@@ -188,36 +187,36 @@ func cheatsheetCommand(message *t.Message, locale i18n.TranslateFunc) {
 		log.Printf("[Bot] Sending message error: %+v", err)
 	}
 
-	<-appMetrika // Send track to Yandex.AppMetrika
+	<-metrika // Send track to Yandex.metrika
 }
 
-func donateCommand(message *t.Message, locale i18n.TranslateFunc) {
+func donateCommand(message *tg.Message, T i18n.TranslateFunc) {
 	// Track action
-	metrika.TrackAsync(message.From.ID, MetrikaMessage{message}, "/donate", func(answer b.Answer, err []error) {
+	b.TrackAsync(message.From.ID, MetrikaMessage{message}, "/donate", func(answer botan.Answer, err []error) {
 		log.Printf("[Botan] Track /donate %s", answer.Status)
-		appMetrika <- true
+		metrika <- true
 	})
 
 	// Force feedback
-	if _, err := bot.Send(t.NewChatAction(message.Chat.ID, t.ChatTyping)); err != nil {
+	if _, err := bot.Send(tg.NewChatAction(message.Chat.ID, tg.ChatTyping)); err != nil {
 		log.Printf("[Bot] ChatAction send error: %+v", err)
 	}
 
 	var donateURL string
 	if message.Chat.IsPrivate() {
-		donateURL = getBotanURL(message.From.ID, config.Links.Donate)
+		donateURL = getBotanURL(message.From.ID, cfg["link_donate"].(string))
 	} else {
-		donateURL = config.Links.Donate
+		donateURL = cfg["link_donate"].(string)
 	}
 
-	inlineKeyboard := t.NewInlineKeyboardMarkup(
-		t.NewInlineKeyboardRow(
-			t.NewInlineKeyboardButtonURL(locale("button_donate"), donateURL),
+	inlineKeyboard := tg.NewInlineKeyboardMarkup(
+		tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonURL(T("button_donate"), donateURL),
 		),
 	)
 
-	text := locale("message_donate")
-	reply := t.NewMessage(message.Chat.ID, text)
+	text := T("message_donate")
+	reply := tg.NewMessage(message.Chat.ID, text)
 	reply.ParseMode = parseMarkdown
 	reply.DisableWebPagePreview = true
 	reply.ReplyToMessageID = message.MessageID
@@ -226,75 +225,58 @@ func donateCommand(message *t.Message, locale i18n.TranslateFunc) {
 		log.Printf("[Bot] Sending message error: %+v", err)
 	}
 
-	<-appMetrika // Send track to Yandex.AppMetrika
+	<-metrika // Send track to Yandex.metrika
 }
 
-func randomCommand(message *t.Message, locale i18n.TranslateFunc) {
+func randomCommand(message *tg.Message, T i18n.TranslateFunc) {
 	// Track action
-	metrika.TrackAsync(message.From.ID, MetrikaMessage{message}, "/random", func(answer b.Answer, err []error) {
+	b.TrackAsync(message.From.ID, MetrikaMessage{message}, "/random", func(answer botan.Answer, err []error) {
 		log.Printf("[Botan] Track /random %s", answer.Status)
-		appMetrika <- true
-	})
-
-	nsfw := checkNSFW(message.From)
-
-	if nsfw {
-		// Force feedback
-		if _, err := bot.Send(t.NewChatAction(message.Chat.ID, t.ChatUploadDocument)); err != nil {
-			log.Printf("[Bot] ChatAction send error: %+v", err)
-		}
-
-		randomSource := rand.NewSource(time.Now().UnixNano()) // Maximum randomizing dice
-		totalPosts := getPosts(Request{ID: 0})                // Get last upload post
-		random := rand.New(randomSource)                      // Create magical dice
-		var randomFile []Post
-
-		for {
-			randomPost := random.Intn(totalPosts[0].ID)    // Generate a random ID number from first to last ID post
-			randomFile = getPosts(Request{ID: randomPost}) // Call to selected ID
-			if len(randomFile) > 0 {
-				break // If post is NOT blocked or erroneous
-			}
-			log.Println("[Bot] Nothing. Reroll dice!")
-		}
-
-		log.Printf("[Bot] Get random file by URL: %s", randomFile[0].FileURL)
-		_, body, err := f.Get(nil, randomFile[0].FileURL)
-		if err != nil {
-			log.Printf("[Bot] Get random image by URL error: %+v", err)
-		}
-		bytes := t.FileBytes{
-			Name:  randomFile[0].Image,
-			Bytes: body,
-		}
-		uploadFilesProcess(message, bytes, randomFile[0], locale)
-	} else {
-		// Force feedback
-		if _, err := bot.Send(t.NewChatAction(message.Chat.ID, t.ChatTyping)); err != nil {
-			log.Printf("[Bot] ChatAction send error: %+v", err)
-		}
-
-		reply := t.NewMessage(message.Chat.ID, "`¯\\_(ツ)_/¯`")
-		reply.ParseMode = parseMarkdown
-		reply.DisableWebPagePreview = true
-		reply.ReplyToMessageID = message.MessageID
-		if _, err := bot.Send(reply); err != nil {
-			log.Printf("[Bot] Sending message error: %+v", err)
-		}
-	}
-
-	<-appMetrika // Send track to Yandex.AppMetrika
-}
-
-func infoCommand(message *t.Message, locale i18n.TranslateFunc) {
-	// Track action
-	metrika.TrackAsync(message.From.ID, MetrikaMessage{message}, "/info", func(answer b.Answer, err []error) {
-		log.Printf("[Botan] Track /info %s", answer.Status)
-		appMetrika <- true
+		metrika <- true
 	})
 
 	// Force feedback
-	if _, err := bot.Send(t.NewChatAction(message.Chat.ID, t.ChatTyping)); err != nil {
+	if _, err := bot.Send(tg.NewChatAction(message.Chat.ID, tg.ChatUploadDocument)); err != nil {
+		log.Printf("[Bot] ChatAction send error: %+v", err)
+	}
+
+	randomSource := rand.NewSource(time.Now().UnixNano()) // Maximum randomizing dice
+	totalPosts := getPosts(Request{ID: 0})                // Get last upload post
+	random := rand.New(randomSource)                      // Create magical dice
+	var randomFile []Post
+
+	for {
+		randomPost := random.Intn(totalPosts[0].ID)    // Generate a random ID number from first to last ID post
+		randomFile = getPosts(Request{ID: randomPost}) // Call to selected ID
+		if len(randomFile) > 0 {
+			break // If post is NOT blocked or erroneous
+		}
+		log.Println("[Bot] Nothing. Reroll dice!")
+	}
+
+	log.Printf("[Bot] Get random file by URL: %s", randomFile[0].FileURL)
+	_, body, err := f.Get(nil, randomFile[0].FileURL)
+	if err != nil {
+		log.Printf("[Bot] Get random image by URL error: %+v", err)
+	}
+	bytes := tg.FileBytes{
+		Name:  randomFile[0].Image,
+		Bytes: body,
+	}
+	uploadFilesProcess(message, bytes, randomFile[0], T)
+
+	<-metrika // Send track to Yandex.metrika
+}
+
+func infoCommand(message *tg.Message, T i18n.TranslateFunc) {
+	// Track action
+	b.TrackAsync(message.From.ID, MetrikaMessage{message}, "/info", func(answer botan.Answer, err []error) {
+		log.Printf("[Botan] Track /info %s", answer.Status)
+		metrika <- true
+	})
+
+	// Force feedback
+	if _, err := bot.Send(tg.NewChatAction(message.Chat.ID, tg.ChatTyping)); err != nil {
 		log.Printf("[Bot] ChatAction send error: %+v", err)
 	}
 
@@ -304,17 +286,17 @@ func infoCommand(message *t.Message, locale i18n.TranslateFunc) {
 		fmt.Printf("[Bot] DuraFmt error: %+v", err)
 	}
 
-	inlineKeyboard := t.NewInlineKeyboardMarkup(
-		t.NewInlineKeyboardRow(
-			t.NewInlineKeyboardButtonURL(locale("button_channel"), config.Links.Channel),
-			t.NewInlineKeyboardButtonURL(locale("button_group"), config.Links.Group),
+	inlineKeyboard := tg.NewInlineKeyboardMarkup(
+		tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonURL(T("button_channel"), cfg["link_channel"].(string)),
+			tg.NewInlineKeyboardButtonURL(T("button_group"), cfg["link_group"].(string)),
 		),
-		t.NewInlineKeyboardRow(
-			t.NewInlineKeyboardButtonURL(locale("button_rate"), config.Links.Rate+bot.Self.UserName),
+		tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonURL(T("button_rate"), cfg["link_rate"].(string)+bot.Self.UserName),
 		),
 	)
-	photo := t.NewPhotoShare(message.Chat.ID, versionCover)
-	photo.Caption = locale("message_info", map[string]interface{}{
+	photo := tg.NewPhotoShare(message.Chat.ID, versionCover)
+	photo.Caption = T("message_info", map[string]interface{}{
 		"Version": versionCodeName,
 		"UpTime":  uptime.String(),
 	})
@@ -324,5 +306,5 @@ func infoCommand(message *t.Message, locale i18n.TranslateFunc) {
 		log.Printf("[Bot] Sending message error: %+v", err)
 	}
 
-	<-appMetrika // Send track to Yandex.AppMetrika
+	<-metrika // Send track to Yandex.metrika
 }
