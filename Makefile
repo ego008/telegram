@@ -1,7 +1,7 @@
 development:
 	goi18n merge -sourceLanguage en-us -outdir ./i18n/ ./i18n/source/*
 	goi18n -sourceLanguage en-us -outdir ./i18n/ ./i18n/*.all.json ./i18n/*.untranslated.json
-	go build
+	go build -tags "debug"
 
 production:
 	goi18n merge -sourceLanguage en-us -outdir ./i18n/ ./i18n/source/*

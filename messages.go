@@ -15,11 +15,8 @@ import (
 )
 
 const (
-	parseMarkdown    = "markdown"
-	parseHTML        = "html"
-	versionCover     = "AgADAgAD0qcxG5dBuEiCC-cbcKOJf_U2Sw0ABLXb7jf__uQVOr4EAAEC"
-	versionCodeName  = "3.0 \"Cinder Fall\""
-	demonstrationGIF = "BQADAgADNwYAAmOYSwLFYMl_HVAaDwI"
+	parseMarkdown = "markdown"
+	parseHTML     = "html"
 )
 
 var startUptime = time.Now()
@@ -33,7 +30,7 @@ func GetMessage(msg *tg.Message) {
 
 	T, _ := i18n.Tfunc(usr.Language)
 
-	if usr.Role == "anon" {
+	if usr.Role == "anon" && msg.Chat.IsPrivate() {
 		markup := tg.NewInlineKeyboardMarkup(
 			tg.NewInlineKeyboardRow(
 				tg.NewInlineKeyboardButtonData(T("button_verify"), "i_agree"),
@@ -43,6 +40,7 @@ func GetMessage(msg *tg.Message) {
 		reply.ParseMode = parseMarkdown
 		reply.DisableWebPagePreview = true
 		reply.ReplyMarkup = &markup
+		reply.ReplyToMessageID = msg.MessageID
 		if _, err := bot.Send(reply); err != nil {
 			log.Ln("Sending message error:", err.Error())
 		}
@@ -54,7 +52,7 @@ func GetMessage(msg *tg.Message) {
 	switch {
 	case isCommand:
 		Commands(usr, msg, T)
-	case !isCommand && isPrivate && usr.Role == "admin" && msg.Text == "":
+	case !isCommand && isPrivate && usr.Role == "user" && msg.Text == "":
 		getTelegramFileID(msg) // Admin feature without tracking
 	default:
 		EasterEggsMessages(msg) // Secret actions and commands ;)
@@ -73,7 +71,9 @@ func Commands(usr *UserDB, msg *tg.Message, T i18n.TranslateFunc) {
 	case "cheatsheet":
 		CheatSheetCommand(usr, msg, T)
 	case "random":
-		RandomCommand(usr, msg, T)
+		if !msg.Chat.IsPrivate() || usr.Role != "anon" {
+			RandomCommand(usr, msg, T)
+		}
 	case "info":
 		InfoCommand(usr, msg, T)
 	case "donate":
@@ -86,7 +86,7 @@ func Commands(usr *UserDB, msg *tg.Message, T i18n.TranslateFunc) {
 func StartCommand(usr *UserDB, msg *tg.Message, T i18n.TranslateFunc) {
 	// Track action
 	b.TrackAsync(msg.From.ID, struct{ *tg.Message }{msg}, "/start", func(answer botan.Answer, err []error) {
-		log.Ln("Track /start %s", answer.Status)
+		log.Ln("Track /start", answer.Status)
 		metrika <- true
 	})
 
@@ -131,7 +131,7 @@ func HelpCommand(usr *UserDB, msg *tg.Message, T i18n.TranslateFunc) {
 		log.Ln("ChatAction send error:", err.Error())
 	}
 
-	document := tg.NewDocumentShare(int64(msg.From.ID), demonstrationGIF)
+	document := tg.NewDocumentShare(int64(msg.From.ID), cfg["telegram_demonstration_gif"].(string))
 	if _, err := bot.Send(document); err != nil {
 		log.Ln("Sending message error:", err.Error())
 	}
@@ -211,7 +211,7 @@ func CheatSheetCommand(usr *UserDB, msg *tg.Message, T i18n.TranslateFunc) {
 func DonateCommand(usr *UserDB, msg *tg.Message, T i18n.TranslateFunc) {
 	// Track action
 	b.TrackAsync(msg.From.ID, struct{ *tg.Message }{msg}, "/donate", func(answer botan.Answer, err []error) {
-		log.Ln("Track /donate %s", answer.Status)
+		log.Ln("Track /donate", answer.Status)
 		metrika <- true
 	})
 
@@ -271,8 +271,8 @@ func RandomCommand(usr *UserDB, msg *tg.Message, T i18n.TranslateFunc) {
 		log.Ln("Nothing. Reroll dice!")
 	}
 
-	log.Ln("Get random file by URL: %s", randomFile[0].FileURL)
-	_, body, err := f.Get(nil, randomFile[0].FileURL)
+	log.Ln("Get random file by URL: %s", fmt.Sprint("https:", randomFile[0].FileURL))
+	_, body, err := f.Get(nil, fmt.Sprint("https:", randomFile[0].FileURL))
 	if err != nil {
 		log.Ln("Get random image by URL error:", err.Error())
 	}
@@ -312,9 +312,9 @@ func InfoCommand(usr *UserDB, msg *tg.Message, T i18n.TranslateFunc) {
 			tg.NewInlineKeyboardButtonURL(T("button_rate"), cfg["link_rate"].(string)+bot.Self.UserName),
 		),
 	)
-	photo := tg.NewPhotoShare(int64(msg.From.ID), versionCover)
+	photo := tg.NewPhotoShare(int64(msg.From.ID), cfg["telegram_version_cover"].(string))
 	photo.Caption = T("message_info", map[string]interface{}{
-		"Version": versionCodeName,
+		"Version": cfg["telegram_version_name"].(string),
 		"UpTime":  uptime.String(),
 	})
 	photo.ReplyMarkup = &inlineKeyboard

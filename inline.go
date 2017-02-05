@@ -25,6 +25,7 @@ func GetInlineResults(inline *tg.InlineQuery) {
 	usr, err := GetUserDB(inline.From.ID)
 	if err != nil {
 		log.Ln(err.Error())
+		return
 	}
 
 	T, _ := i18n.Tfunc(usr.Language)

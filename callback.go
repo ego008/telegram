@@ -33,7 +33,7 @@ func CheckCallbackQuery(call *tg.CallbackQuery) {
 	case call.Data == "nsfw_true" || call.Data == "nsfw_false":
 		ChangeFilter(usr, call, T)
 	case call.Data == "settings_menu":
-		OpenSettingsPage(usr, call, T)
+		OpenSettings(usr, call, T)
 	case strings.HasPrefix(call.Data, "lang_"):
 		switch {
 		case call.Data == "lang_menu":
@@ -48,31 +48,24 @@ func CheckCallbackQuery(call *tg.CallbackQuery) {
 
 func AcceptanceOfTerms(usr *UserDB, call *tg.CallbackQuery, T i18n.TranslateFunc) {
 	go ChangeRoleBD(call.From.ID, "user")
-	go func() {
-		var markup tg.InlineKeyboardMarkup
-		newMarkup := tg.NewEditMessageReplyMarkup(call.Message.Chat.ID, call.Message.MessageID, markup)
-		if _, err := bot.Send(newMarkup); err != nil {
-			log.Ln("Sending message error:", err.Error())
-		}
-	}()
-	go func() {
-		text := T("message_verify_accepted", map[string]interface{}{
-			"Name": call.From.String(),
-			"Time": fmt.Sprintf("%d:%d", call.Message.Time().Hour(), call.Message.Time().Minute()),
-			"Date": fmt.Sprintf("%d/%d/%d", call.Message.Time().Day(), call.Message.Time().Month(), call.Message.Time().Year()),
-		})
-		newText := tg.NewEditMessageText(call.Message.Chat.ID, call.Message.MessageID, text)
-		newText.ParseMode = parseMarkdown
-		if _, err := bot.Send(newText); err != nil {
-			log.Ln("Sending message error:", err.Error())
-		}
-	}()
-	go func() {
-		StartCommand(usr, call.Message, T)
-	}()
+
+	var markup tg.InlineKeyboardMarkup
+	text := T("message_verify_accepted", map[string]interface{}{
+		"Name": call.From.String(),
+		"Time": fmt.Sprintf("%d:%d", call.Message.Time().Hour(), call.Message.Time().Minute()),
+		"Date": fmt.Sprintf("%d/%d/%d", call.Message.Time().Day(), call.Message.Time().Month(), call.Message.Time().Year()),
+	})
+	edit := tg.NewEditMessageText(call.Message.Chat.ID, call.Message.MessageID, text)
+	edit.ParseMode = parseMarkdown
+	edit.ReplyMarkup = &markup
+	if _, err := bot.Send(edit); err != nil {
+		log.Ln("Sending message error:", err.Error())
+	}
+
+	StartCommand(usr, call.Message, T)
 }
 
-func OpenSettingsPage(usr *UserDB, call *tg.CallbackQuery, T i18n.TranslateFunc) {
+func OpenSettings(usr *UserDB, call *tg.CallbackQuery, T i18n.TranslateFunc) {
 	markup := tg.NewInlineKeyboardMarkup(
 		tg.NewInlineKeyboardRow(
 			tg.NewInlineKeyboardButtonData(T("button_language"), "lang_menu"),
@@ -87,8 +80,8 @@ func OpenSettingsPage(usr *UserDB, call *tg.CallbackQuery, T i18n.TranslateFunc)
 		),
 	)
 
-	newMarkup := tg.NewEditMessageReplyMarkup(call.Message.Chat.ID, call.Message.MessageID, markup)
-	if _, err := bot.Send(newMarkup); err != nil {
+	edit := tg.NewEditMessageReplyMarkup(call.Message.Chat.ID, call.Message.MessageID, markup)
+	if _, err := bot.Send(edit); err != nil {
 		log.Ln("Sending message error:", err.Error())
 	}
 }
@@ -111,8 +104,8 @@ func ChangeFilter(usr *UserDB, call *tg.CallbackQuery, T i18n.TranslateFunc) {
 		),
 	)
 
-	newMarkup := tg.NewEditMessageReplyMarkup(call.Message.Chat.ID, call.Message.MessageID, markup)
-	if _, err := bot.Send(newMarkup); err != nil {
+	edit := tg.NewEditMessageReplyMarkup(call.Message.Chat.ID, call.Message.MessageID, markup)
+	if _, err := bot.Send(edit); err != nil {
 		log.Ln("Sending message error:", err.Error())
 	}
 }
@@ -129,8 +122,8 @@ func GetLangList(usr *UserDB, call *tg.CallbackQuery, T i18n.TranslateFunc) {
 		tg.NewInlineKeyboardButtonData(T("button_cancel"), "settings_menu"),
 	))
 
-	newMarkup := tg.NewEditMessageReplyMarkup(call.Message.Chat.ID, call.Message.MessageID, markup)
-	if _, err := bot.Send(newMarkup); err != nil {
+	edit := tg.NewEditMessageReplyMarkup(call.Message.Chat.ID, call.Message.MessageID, markup)
+	if _, err := bot.Send(edit); err != nil {
 		log.Ln("Sending message error:", err.Error())
 	}
 }
@@ -155,8 +148,10 @@ func ChangeLanguage(usr *UserDB, call *tg.CallbackQuery, T i18n.TranslateFunc) {
 		),
 	)
 
-	newMarkup := tg.NewEditMessageReplyMarkup(call.Message.Chat.ID, call.Message.MessageID, markup)
-	if _, err := bot.Send(newMarkup); err != nil {
+	edit := tg.NewEditMessageText(call.Message.Chat.ID, call.Message.MessageID, T("message_settings"))
+	edit.ParseMode = parseMarkdown
+	edit.ReplyMarkup = &markup
+	if _, err := bot.Send(edit); err != nil {
 		log.Ln("Sending message error:", err.Error())
 	}
 }

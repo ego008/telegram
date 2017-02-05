@@ -13,9 +13,9 @@ import (
 type UserDB struct {
 	Language string
 	NSFW     bool
-	Menu     string
-	Role     string
-	Hits     int
+	// Menu     string
+	Role string
+	Hits int
 }
 
 var (
@@ -33,28 +33,8 @@ func init() {
 		defer db.Close()
 
 		if err := db.Update(func(tx *bolt.Tx) error {
-			users, err := tx.CreateBucketIfNotExists(bktUsers)
-			if err != nil {
-				return err
-			}
-
-			for _, id := range cfg["admins"].([]interface{}) {
-				user, err := users.CreateBucketIfNotExists([]byte(strconv.Itoa(int(id.(float64)))))
-				if err != nil {
-					return err
-				}
-				user.Put([]byte("role"), []byte("admin"))
-			}
-
-			for _, id := range cfg["patrons"].([]interface{}) {
-				user, err := users.CreateBucketIfNotExists([]byte(strconv.Itoa(int(id.(float64)))))
-				if err != nil {
-					return err
-				}
-				user.Put([]byte("role"), []byte("patron"))
-			}
-
-			return nil
+			_, err := tx.CreateBucketIfNotExists(bktUsers)
+			return err
 		}); err != nil {
 			panic(err.Error())
 		}
@@ -70,15 +50,24 @@ func CreateUserBD(id int) error {
 			return err
 		}
 
+		for _, admin := range cfg["admins"].([]interface{}) {
+			if id == int(admin.(float64)) {
+				bkt.Put([]byte("role"), []byte("anon"))
+			} else {
+				for _, patron := range cfg["patrons"].([]interface{}) {
+					if id == int(patron.(float64)) {
+						bkt.Put([]byte("role"), []byte("patron"))
+					} else {
+						bkt.Put([]byte("role"), []byte("anon"))
+					}
+				}
+			}
+		}
+
 		bkt.Put([]byte("lang"), []byte("en-us"))
 		bkt.Put([]byte("nsfw"), strconv.AppendBool(nil, false))
-		bkt.Put([]byte("menu"), []byte("start"))
-		// if id == 38508643 {
-		// 	bkt.Put([]byte("role"), []byte("admin"))
-		// } else {
-		bkt.Put([]byte("role"), []byte("anon"))
+		// bkt.Put([]byte("menu"), []byte("start"))
 		bkt.Put([]byte("hits"), []byte(strconv.Itoa(0)))
-		// }
 		return nil
 	})
 }
@@ -138,7 +127,7 @@ func GetUserDB(id int) (*UserDB, error) {
 
 		usr.Language = string(bkt.Get([]byte("lang")))
 		usr.NSFW, _ = strconv.ParseBool(string(bkt.Get([]byte("nsfw"))))
-		usr.Menu = string(bkt.Get([]byte("menu")))
+		// usr.Menu = string(bkt.Get([]byte("menu")))
 		usr.Role = string(bkt.Get([]byte("role")))
 		usr.Hits, _ = strconv.Atoi(string(bkt.Get([]byte("hits"))))
 		return nil

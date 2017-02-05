@@ -156,6 +156,10 @@
     "translation": "I agree, what I am over 18 years old, I don't have any claims to developers of this bot and related projects, I don't have any claims to content of this bot and related projects, I don't have any claims to Telegram bot-platform and I understand that the bot and related projects does not store the content published through them, and works only with meta-data provided by third parties through their API.\n\n- _{{.Name}} {{.Time}} {{.Date}}_"
   },
   {
+    "id": "message_verify_short",
+    "translation": "I need your consent to on my work. Open private chat with me and press \"Start\"! 😉"
+  },
+  {
     "id": "rating_explicit",
     "translation": "explicit"
   },

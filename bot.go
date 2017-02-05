@@ -35,6 +35,8 @@ func init() {
 		panic(err.Error())
 	}
 
+	log.Ln("TRY RUNNING VERSION", cfg["telegram_version_name"].(string))
+
 	b = botan.New(cfg["botan"].(string)) // Set metrika counter
 
 	// Initialize bot
@@ -50,6 +52,7 @@ func main() {
 
 	updates := make(<-chan tg.Update)
 	updates = SetUpdates(*webhookMode)
+	defer bot.RemoveWebhook()
 
 	// Updater
 	for upd := range updates {
@@ -67,7 +70,6 @@ func main() {
 }
 
 func SetUpdates(isWebhook bool) <-chan tg.Update {
-	bot.RemoveWebhook()
 	if isWebhook {
 		if _, err := bot.SetWebhook(
 			tg.NewWebhook(
