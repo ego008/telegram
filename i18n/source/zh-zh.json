@@ -4,11 +4,11 @@
 		"translation": "🇹🇼 正體中文"
 	},
 	{
-		"id": "status_on",
+		"id": "status_true",
 		"translation": "開啟"
 	},
 	{
-		"id": "status_off",
+		"id": "status_false",
 		"translation": "關閉"
 	}
 ]

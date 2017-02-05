@@ -1,118 +1,162 @@
 package main
 
-/*
 import (
-	"log"
+	"fmt"
+	"strconv"
 	"strings"
 
-	tg "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/botanio/sdk/go"
+	log "github.com/kirillDanshin/dlog"
+	"github.com/nicksnyder/go-i18n/i18n"
+	tg "gopkg.in/telegram-bot-api.v4"
 )
 
-func checkCallbackQuery(callback *tg.CallbackQuery) {
-	switch callback.Data {
-	case "nsfw_on":
-		locale := checkLanguage(callback.From)
-		go switchNSFW(callback.From, true)
+func CheckCallbackQuery(call *tg.CallbackQuery) {
+	b.TrackAsync(call.From.ID, struct{ *tg.CallbackQuery }{call}, "Callback", func(answer botan.Answer, err []error) {
+		log.Ln("Track callback", answer.Status)
+		metrika <- true
+	})
 
-		replyMarkup := tg.NewInlineKeyboardMarkup(
-			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonData(locale("button_nsfw", map[string]interface{}{
-					"Status": strings.ToUpper(locale("status_on")),
-				}), "nsfw_off"),
-			),
-			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonData(locale("button_language"), "to_lang"),
-			),
-		)
-
-		newKeys := tg.NewEditMessageReplyMarkup(callback.Message.Chat.ID, callback.Message.MessageID, replyMarkup)
-		if _, err := bot.Send(newKeys); err != nil {
-			log.Printf("[Bot] Sending message error: %+v", err)
-		}
-	case "nsfw_off":
-		locale := checkLanguage(callback.From)
-		go switchNSFW(callback.From, false)
-
-		replyMarkup := tg.NewInlineKeyboardMarkup(
-			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonData(locale("button_nsfw", map[string]interface{}{
-					"Status": strings.ToUpper(locale("status_off")),
-				}), "nsfw_on"),
-			),
-			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonData(locale("button_language"), "to_lang"),
-			),
-		)
-
-		newKeys := tg.NewEditMessageReplyMarkup(callback.Message.Chat.ID, callback.Message.MessageID, replyMarkup)
-		if _, err := bot.Send(newKeys); err != nil {
-			log.Printf("[Bot] Sending message error: %+v", err)
-		}
-	case "to_lang":
-		locale := checkLanguage(callback.From)
-		replyMarkup := tg.NewInlineKeyboardMarkup(
-			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonData("🇬🇧 English", "lang_en-us"),
-			),
-			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonData("🇷🇺 Русский", "lang_ru-ru"),
-			),
-			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonData("🇹🇼 正體中文", "lang_zh-zh"),
-			),
-			t.NewInlineKeyboardRow(
-				t.NewInlineKeyboardButtonData(locale("button_cancel"), "to_settings"),
-			),
-		)
-		newKeys := tg.NewEditMessageReplyMarkup(callback.Message.Chat.ID, callback.Message.MessageID, replyMarkup)
-		if _, err := bot.Send(newKeys); err != nil {
-			log.Printf("[Bot] Sending message error: %+v", err)
-		}
-	case "to_settings":
-		go settingsMessage(callback)
+	usr, err := GetUserDB(call.From.ID)
+	if err != nil {
+		log.Ln(err.Error())
+		return
 	}
 
-	if strings.HasPrefix(callback.Data, "lang_") {
-		lang := strings.TrimLeft(callback.Data, "lang_")
-		locale := changeLanguage(callback.From, lang)
+	log.Ln(usr)
 
-		go settingsMessage(callback)
+	T, _ := i18n.Tfunc(usr.Language)
 
-		text := locale("message_settings")
-		newText := tg.NewEditMessageText(callback.Message.Chat.ID, callback.Message.MessageID, text)
-		if _, err := bot.Send(newText); err != nil {
-			log.Printf("[Bot] Sending message error: %+v", err)
+	switch {
+	case call.Data == "i_agree":
+		AcceptanceOfTerms(usr, call, T)
+	case call.Data == "nsfw_true" || call.Data == "nsfw_false":
+		ChangeFilter(usr, call, T)
+	case call.Data == "settings_menu":
+		OpenSettingsPage(usr, call, T)
+	case strings.HasPrefix(call.Data, "lang_"):
+		switch {
+		case call.Data == "lang_menu":
+			GetLangList(usr, call, T)
+		default:
+			ChangeLanguage(usr, call, T)
 		}
 	}
+
+	<-metrika // Send track to Yandex.metrika
 }
 
-func settingsMessage(callback *tg.CallbackQuery) {
-	locale := checkLanguage(callback.From)
-	nsfw := checkNSFW(callback.From)
+func AcceptanceOfTerms(usr *UserDB, call *tg.CallbackQuery, T i18n.TranslateFunc) {
+	go ChangeRoleBD(call.From.ID, "user")
+	go func() {
+		var markup tg.InlineKeyboardMarkup
+		newMarkup := tg.NewEditMessageReplyMarkup(call.Message.Chat.ID, call.Message.MessageID, markup)
+		if _, err := bot.Send(newMarkup); err != nil {
+			log.Ln("Sending message error:", err.Error())
+		}
+	}()
+	go func() {
+		text := T("message_verify_accepted", map[string]interface{}{
+			"Name": call.From.String(),
+			"Time": fmt.Sprintf("%d:%d", call.Message.Time().Hour(), call.Message.Time().Minute()),
+			"Date": fmt.Sprintf("%d/%d/%d", call.Message.Time().Day(), call.Message.Time().Month(), call.Message.Time().Year()),
+		})
+		newText := tg.NewEditMessageText(call.Message.Chat.ID, call.Message.MessageID, text)
+		newText.ParseMode = parseMarkdown
+		if _, err := bot.Send(newText); err != nil {
+			log.Ln("Sending message error:", err.Error())
+		}
+	}()
+	go func() {
+		StartCommand(usr, call.Message, T)
+	}()
+}
 
-	var nsfwBtn tg.InlineKeyboardButton
-	if nsfw {
-		nsfwBtn = tg.NewInlineKeyboardButtonData(locale("button_nsfw", map[string]interface{}{
-			"Status": strings.ToUpper(locale("status_on")),
-		}), "nsfw_off")
-	} else {
-		nsfwBtn = tg.NewInlineKeyboardButtonData(locale("button_nsfw", map[string]interface{}{
-			"Status": strings.ToUpper(locale("status_off")),
-		}), "nsfw_on")
-	}
-
-	replyMarkup := tg.NewInlineKeyboardMarkup(
-		t.NewInlineKeyboardRow(
-			nsfwBtn,
+func OpenSettingsPage(usr *UserDB, call *tg.CallbackQuery, T i18n.TranslateFunc) {
+	markup := tg.NewInlineKeyboardMarkup(
+		tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonData(T("button_language"), "lang_menu"),
 		),
-		t.NewInlineKeyboardRow(
-			t.NewInlineKeyboardButtonData(locale("button_language"), "to_lang"),
+		tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonData(
+				T("button_nsfw", map[string]interface{}{
+					"Status": strings.ToUpper(T(fmt.Sprint("status_", usr.NSFW))),
+				}),
+				fmt.Sprint("nsfw_", !usr.NSFW),
+			),
 		),
 	)
-	newKeys := tg.NewEditMessageReplyMarkup(callback.Message.Chat.ID, callback.Message.MessageID, replyMarkup)
-	if _, err := bot.Send(newKeys); err != nil {
-		log.Printf("[Bot] Sending message error: %+v", err)
+
+	newMarkup := tg.NewEditMessageReplyMarkup(call.Message.Chat.ID, call.Message.MessageID, markup)
+	if _, err := bot.Send(newMarkup); err != nil {
+		log.Ln("Sending message error:", err.Error())
 	}
 }
 
-*/
+func ChangeFilter(usr *UserDB, call *tg.CallbackQuery, T i18n.TranslateFunc) {
+	state, _ := strconv.ParseBool(strings.TrimPrefix(call.Data, "nsfw_"))
+	go ChangeFilterDB(call.From.ID, state)
+
+	markup := tg.NewInlineKeyboardMarkup(
+		tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonData(T("button_language"), "lang_menu"),
+		),
+		tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonData(
+				T("button_nsfw", map[string]interface{}{
+					"Status": strings.ToUpper(T(fmt.Sprint("status_", state))),
+				}),
+				fmt.Sprint("nsfw_", !state),
+			),
+		),
+	)
+
+	newMarkup := tg.NewEditMessageReplyMarkup(call.Message.Chat.ID, call.Message.MessageID, markup)
+	if _, err := bot.Send(newMarkup); err != nil {
+		log.Ln("Sending message error:", err.Error())
+	}
+}
+
+func GetLangList(usr *UserDB, call *tg.CallbackQuery, T i18n.TranslateFunc) {
+	var markup tg.InlineKeyboardMarkup
+	for _, locale := range locales {
+		t, _ := i18n.Tfunc(locale)
+		markup.InlineKeyboard = append(markup.InlineKeyboard, tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonData(t("language_name"), fmt.Sprint("lang_", locale)),
+		))
+	}
+	markup.InlineKeyboard = append(markup.InlineKeyboard, tg.NewInlineKeyboardRow(
+		tg.NewInlineKeyboardButtonData(T("button_cancel"), "settings_menu"),
+	))
+
+	newMarkup := tg.NewEditMessageReplyMarkup(call.Message.Chat.ID, call.Message.MessageID, markup)
+	if _, err := bot.Send(newMarkup); err != nil {
+		log.Ln("Sending message error:", err.Error())
+	}
+}
+
+func ChangeLanguage(usr *UserDB, call *tg.CallbackQuery, T i18n.TranslateFunc) {
+	newLang := strings.TrimPrefix(call.Data, "lang_")
+	go ChangeLangBD(call.From.ID, newLang)
+
+	T, _ = i18n.Tfunc(newLang)
+
+	markup := tg.NewInlineKeyboardMarkup(
+		tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonData(T("button_language"), "lang_menu"),
+		),
+		tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonData(
+				T("button_nsfw", map[string]interface{}{
+					"Status": strings.ToUpper(T(fmt.Sprint("status_", usr.NSFW))),
+				}),
+				fmt.Sprint("nsfw_", !usr.NSFW),
+			),
+		),
+	)
+
+	newMarkup := tg.NewEditMessageReplyMarkup(call.Message.Chat.ID, call.Message.MessageID, markup)
+	if _, err := bot.Send(newMarkup); err != nil {
+		log.Ln("Sending message error:", err.Error())
+	}
+}

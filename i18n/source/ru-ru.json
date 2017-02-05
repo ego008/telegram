@@ -4,11 +4,11 @@
 		"translation": "🇷🇺 Русский"
 	},
 	{
-		"id": "status_on",
+		"id": "status_true",
 		"translation": "вкл"
 	},
 	{
-		"id": "status_off",
+		"id": "status_false",
 		"translation": "выкл"
 	}
 ]

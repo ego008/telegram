@@ -4,11 +4,11 @@
 		"translation": "🇬🇧 English"
 	},
 	{
-		"id": "status_on",
+		"id": "status_true",
 		"translation": "on"
 	},
 	{
-		"id": "status_off",
+		"id": "status_false",
 		"translation": "off"
 	}
 ]

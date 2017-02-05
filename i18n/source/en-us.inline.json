@@ -4,6 +4,14 @@
 		"translation": "{{.Type}} by {{.Owner}}"
 	},
 	{
+		"id": "inline_button_verify",
+		"translation": "Hey! Look! Listen!"
+	},
+	{
+		"id": "inline_button_dashboard",
+		"translation": "Open settings"
+	},
+	{
 		"id": "inline_description",
 		"translation": "Rating: {{.Rating}}\nTags: {{.Tags}}"
 	},

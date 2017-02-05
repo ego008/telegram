@@ -74,5 +74,9 @@
 	{
 		"id": "button_share",
 		"translation": "🗣 Поделиться"
+	},
+	{
+		"id": "button_verify",
+		"translation": "✅ Я согласен"
 	}
 ]
