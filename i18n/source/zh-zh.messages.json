@@ -1,7 +1,7 @@
 [
 	{
 		"id": "message_blushboard",
-		"translation": "☺️ [{{.Type}} 原作者为 {{.Owner}}]({{.URL}})️"
+		"translation": "☺️ [{{.Type}} 原作者為 {{.Owner}}]({{.URL}})"
 	},
 	{
 		"id": "message_cheatsheet",

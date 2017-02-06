@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/botanio/sdk/go"
+	tg "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/hako/durafmt"
 	log "github.com/kirillDanshin/dlog"
 	"github.com/nicksnyder/go-i18n/i18n"
 	f "github.com/valyala/fasthttp"
-	tg "gopkg.in/telegram-bot-api.v4"
 )
 
 const (
@@ -29,23 +29,6 @@ func GetMessage(msg *tg.Message) {
 	}
 
 	T, _ := i18n.Tfunc(usr.Language)
-
-	if usr.Role == "anon" && msg.Chat.IsPrivate() {
-		markup := tg.NewInlineKeyboardMarkup(
-			tg.NewInlineKeyboardRow(
-				tg.NewInlineKeyboardButtonData(T("button_verify"), "i_agree"),
-			),
-		)
-		reply := tg.NewMessage(int64(msg.From.ID), T("message_verify"))
-		reply.ParseMode = parseMarkdown
-		reply.DisableWebPagePreview = true
-		reply.ReplyMarkup = &markup
-		reply.ReplyToMessageID = msg.MessageID
-		if _, err := bot.Send(reply); err != nil {
-			log.Ln("Sending message error:", err.Error())
-		}
-		return
-	}
 
 	isCommand := msg.IsCommand()
 	isPrivate := msg.Chat.IsPrivate()
@@ -71,9 +54,7 @@ func Commands(usr *UserDB, msg *tg.Message, T i18n.TranslateFunc) {
 	case "cheatsheet":
 		CheatSheetCommand(usr, msg, T)
 	case "random":
-		if !msg.Chat.IsPrivate() || usr.Role != "anon" {
-			RandomCommand(usr, msg, T)
-		}
+		RandomCommand(usr, msg, T)
 	case "info":
 		InfoCommand(usr, msg, T)
 	case "donate":
@@ -90,28 +71,35 @@ func StartCommand(usr *UserDB, msg *tg.Message, T i18n.TranslateFunc) {
 		metrika <- true
 	})
 
-	// Force feedback
-	if _, err := bot.Send(tg.NewChatAction(msg.Chat.ID, tg.ChatTyping)); err != nil {
-		log.Ln("ChatAction send error:", err.Error())
-	}
-
-	switch msg.CommandArguments() {
-	case "settings":
+	if msg.CommandArguments() == "settings" {
 		SettingsCommand(usr, msg, T)
 		return
 	}
 
-	inlineKeyboard := tg.NewInlineKeyboardMarkup(
+	// Force feedback
+	go bot.Send(tg.NewChatAction(msg.Chat.ID, tg.ChatTyping))
+
+	demo := tg.NewDocumentShare(msg.Chat.ID, cfg["telegram_demonstration_gif"].(string))
+	if _, err := bot.Send(demo); err != nil {
+		log.Ln("Sending message error:", err.Error())
+	}
+
+	exampleQuery := "hatsune_miku rating:safe"
+	markup := tg.NewInlineKeyboardMarkup(
 		tg.NewInlineKeyboardRow(
-			tg.NewInlineKeyboardButtonSwitch(T("button_try"), "hatsune_miku rating:safe"), // Showing tutorial button for demonstration work
+			tg.InlineKeyboardButton{
+				Text: T("button_try"),
+				SwitchInlineQueryCurrentChat: &exampleQuery,
+			},
 		),
 	)
 
-	text := T("message_start", map[string]interface{}{"FirstName": msg.From.FirstName})
+	text := T("message_start", map[string]interface{}{
+		"FirstName": msg.From.FirstName,
+	})
 	reply := tg.NewMessage(msg.Chat.ID, text)
 	reply.ParseMode = parseMarkdown
-	reply.DisableWebPagePreview = true
-	reply.ReplyMarkup = &inlineKeyboard
+	reply.ReplyMarkup = &markup
 	if _, err := bot.Send(reply); err != nil {
 		log.Ln("Sending message error:", err.Error())
 	}
@@ -127,9 +115,7 @@ func HelpCommand(usr *UserDB, msg *tg.Message, T i18n.TranslateFunc) {
 	})
 
 	// Force feedback
-	if _, err := bot.Send(tg.NewChatAction(msg.Chat.ID, tg.ChatTyping)); err != nil {
-		log.Ln("ChatAction send error:", err.Error())
-	}
+	go bot.Send(tg.NewChatAction(msg.Chat.ID, tg.ChatTyping))
 
 	document := tg.NewDocumentShare(int64(msg.From.ID), cfg["telegram_demonstration_gif"].(string))
 	if _, err := bot.Send(document); err != nil {
@@ -155,9 +141,7 @@ func SettingsCommand(usr *UserDB, msg *tg.Message, T i18n.TranslateFunc) {
 	})
 
 	// Force feedback
-	if _, err := bot.Send(tg.NewChatAction(msg.Chat.ID, tg.ChatTyping)); err != nil {
-		log.Ln("ChatAction send error:", err.Error())
-	}
+	go bot.Send(tg.NewChatAction(msg.Chat.ID, tg.ChatTyping))
 
 	markup := tg.NewInlineKeyboardMarkup(
 		tg.NewInlineKeyboardRow(
@@ -193,9 +177,7 @@ func CheatSheetCommand(usr *UserDB, msg *tg.Message, T i18n.TranslateFunc) {
 	})
 
 	// Force feedback
-	if _, err := bot.Send(tg.NewChatAction(int64(msg.From.ID), tg.ChatTyping)); err != nil {
-		log.Ln("ChatAction send error:", err.Error())
-	}
+	go bot.Send(tg.NewChatAction(int64(msg.From.ID), tg.ChatTyping))
 
 	text := T("message_cheatsheet")
 	reply := tg.NewMessage(int64(msg.From.ID), text)
@@ -216,9 +198,7 @@ func DonateCommand(usr *UserDB, msg *tg.Message, T i18n.TranslateFunc) {
 	})
 
 	// Force feedback
-	if _, err := bot.Send(tg.NewChatAction(int64(msg.From.ID), tg.ChatTyping)); err != nil {
-		log.Ln("ChatAction send error:", err.Error())
-	}
+	go bot.Send(tg.NewChatAction(int64(msg.From.ID), tg.ChatTyping))
 
 	var donateURL string
 	if msg.Chat.IsPrivate() {
@@ -253,9 +233,7 @@ func RandomCommand(usr *UserDB, msg *tg.Message, T i18n.TranslateFunc) {
 	})
 
 	// Force feedback
-	if _, err := bot.Send(tg.NewChatAction(msg.Chat.ID, tg.ChatUploadDocument)); err != nil {
-		log.Ln("ChatAction send error:", err.Error())
-	}
+	go bot.Send(tg.NewChatAction(msg.Chat.ID, tg.ChatUploadDocument))
 
 	randomSource := rand.NewSource(time.Now().UnixNano()) // Maximum randomizing dice
 	totalPosts := getPosts(Request{ID: 0})                // Get last upload post
@@ -263,10 +241,15 @@ func RandomCommand(usr *UserDB, msg *tg.Message, T i18n.TranslateFunc) {
 	var randomFile []Post
 
 	for {
-		randomPost := random.Intn(totalPosts[0].ID)    // Generate a random ID number from first to last ID post
-		randomFile = getPosts(Request{ID: randomPost}) // Call to selected ID
+		randomPost := random.Intn(totalPosts[0].ID)              // Generate a random ID number from first to last ID post
+		randomFile = getPosts(Request{ID: randomPost, Limit: 1}) // Call to selected ID
 		if len(randomFile) > 0 {
-			break // If post is NOT blocked or erroneous
+			if (!usr.NSFW && randomFile[0].Rating == "s") || usr.NSFW {
+				log.Ln("Breake rerolling - we found pic!")
+				break // If post is NOT blocked or erroneous
+			}
+			log.Ln("Not safe pic. Reroll dice!")
+			continue
 		}
 		log.Ln("Nothing. Reroll dice!")
 	}
@@ -293,9 +276,7 @@ func InfoCommand(usr *UserDB, msg *tg.Message, T i18n.TranslateFunc) {
 	})
 
 	// Force feedback
-	if _, err := bot.Send(tg.NewChatAction(int64(msg.From.ID), tg.ChatTyping)); err != nil {
-		log.Ln("ChatAction send error:", err.Error())
-	}
+	go bot.Send(tg.NewChatAction(int64(msg.From.ID), tg.ChatTyping))
 
 	uptimePeriod := time.Since(startUptime).String()
 	uptime, err := durafmt.ParseString(uptimePeriod)

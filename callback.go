@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/botanio/sdk/go"
+	tg "github.com/go-telegram-bot-api/telegram-bot-api"
 	log "github.com/kirillDanshin/dlog"
 	"github.com/nicksnyder/go-i18n/i18n"
-	tg "gopkg.in/telegram-bot-api.v4"
 )
 
 func CheckCallbackQuery(call *tg.CallbackQuery) {
@@ -28,8 +28,6 @@ func CheckCallbackQuery(call *tg.CallbackQuery) {
 	T, _ := i18n.Tfunc(usr.Language)
 
 	switch {
-	case call.Data == "i_agree":
-		AcceptanceOfTerms(usr, call, T)
 	case call.Data == "nsfw_true" || call.Data == "nsfw_false":
 		ChangeFilter(usr, call, T)
 	case call.Data == "settings_menu":
@@ -44,25 +42,6 @@ func CheckCallbackQuery(call *tg.CallbackQuery) {
 	}
 
 	<-metrika // Send track to Yandex.metrika
-}
-
-func AcceptanceOfTerms(usr *UserDB, call *tg.CallbackQuery, T i18n.TranslateFunc) {
-	go ChangeRoleBD(call.From.ID, "user")
-
-	var markup tg.InlineKeyboardMarkup
-	text := T("message_verify_accepted", map[string]interface{}{
-		"Name": call.From.String(),
-		"Time": fmt.Sprintf("%d:%d", call.Message.Time().Hour(), call.Message.Time().Minute()),
-		"Date": fmt.Sprintf("%d/%d/%d", call.Message.Time().Day(), call.Message.Time().Month(), call.Message.Time().Year()),
-	})
-	edit := tg.NewEditMessageText(call.Message.Chat.ID, call.Message.MessageID, text)
-	edit.ParseMode = parseMarkdown
-	edit.ReplyMarkup = &markup
-	if _, err := bot.Send(edit); err != nil {
-		log.Ln("Sending message error:", err.Error())
-	}
-
-	StartCommand(usr, call.Message, T)
 }
 
 func OpenSettings(usr *UserDB, call *tg.CallbackQuery, T i18n.TranslateFunc) {

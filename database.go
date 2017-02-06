@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/boltdb/bolt"
-	// tg "gopkg.in/telegram-bot-api.v4"
+	// tg "github.com/go-telegram-bot-api/telegram-bot-api"
 	// log "github.com/kirillDanshin/dlog"
 )
 
@@ -21,6 +21,7 @@ type UserDB struct {
 var (
 	db       *bolt.DB
 	bktUsers = []byte("users")
+	bktPosts = []byte("posts")
 )
 
 func init() {
@@ -33,7 +34,10 @@ func init() {
 		defer db.Close()
 
 		if err := db.Update(func(tx *bolt.Tx) error {
-			_, err := tx.CreateBucketIfNotExists(bktUsers)
+			if _, err := tx.CreateBucketIfNotExists(bktUsers); err != nil {
+				return err
+			}
+			_, err = tx.CreateBucketIfNotExists(bktPosts)
 			return err
 		}); err != nil {
 			panic(err.Error())
@@ -52,13 +56,13 @@ func CreateUserBD(id int) error {
 
 		for _, admin := range cfg["admins"].([]interface{}) {
 			if id == int(admin.(float64)) {
-				bkt.Put([]byte("role"), []byte("anon"))
+				bkt.Put([]byte("role"), []byte("user"))
 			} else {
 				for _, patron := range cfg["patrons"].([]interface{}) {
 					if id == int(patron.(float64)) {
 						bkt.Put([]byte("role"), []byte("patron"))
 					} else {
-						bkt.Put([]byte("role"), []byte("anon"))
+						bkt.Put([]byte("role"), []byte("user"))
 					}
 				}
 			}

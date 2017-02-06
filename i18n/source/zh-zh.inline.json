@@ -4,6 +4,10 @@
 		"translation": "{{.Type}} 原作者為 {{.Owner}}"
 	},
 	{
+		"id": "inline_button_dashboard",
+		"translation": "開啟設定"
+	},
+	{
 		"id": "inline_description",
 		"translation": "評分：{{.Rating}}\n標籤：{{.Tags}}"
 	},

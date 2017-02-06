@@ -4,8 +4,8 @@ package main
 
 import (
 	"github.com/botanio/sdk/go"
+	tg "github.com/go-telegram-bot-api/telegram-bot-api"
 	log "github.com/kirillDanshin/dlog"
-	tg "gopkg.in/telegram-bot-api.v4"
 )
 
 func init() {

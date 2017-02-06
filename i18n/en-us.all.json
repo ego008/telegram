@@ -88,16 +88,8 @@
     "translation": "👁 Let me try!"
   },
   {
-    "id": "button_verify",
-    "translation": "✅ I agree"
-  },
-  {
     "id": "inline_button_dashboard",
     "translation": "Open settings"
-  },
-  {
-    "id": "inline_button_verify",
-    "translation": "Hey! Look! Listen!"
   },
   {
     "id": "inline_description",
@@ -133,7 +125,7 @@
   },
   {
     "id": "message_help",
-    "translation": "/cheatsheet - get cheat sheet of advanced search in Gelbooru;\n/random - get a totally random post from Gelbooru;\n/donate - list of patrons and way to write your name in history;\n/info - authorship and official communities;"
+    "translation": "/settings - your personal searching controls;\n/cheatsheet - get cheat sheet of advanced search in Gelbooru;\n/random - get a totally random post from Gelbooru;\n/donate - list of patrons and way to write your name in history;\n/info - authorship and official communities;"
   },
   {
     "id": "message_info",
@@ -146,18 +138,6 @@
   {
     "id": "message_start",
     "translation": "Hi, {{.FirstName}}!\nI'm the official bot of @HentaiDB project.\n\nYou can search images and GIF's in Gelbooru through me. Just type `@HentaiDBot hatsune_miku` in any chat and select post which you want to send. *Don't hit Send*, just wait for results. 😏\n\nLet me know if you need a /cheatsheet of advanced search or other /help to me. Enjoy! ☺️"
-  },
-  {
-    "id": "message_verify",
-    "translation": "For the beginning - a little formality. 😉\nBy clicking the button below you accept the following conditions:\n- I am over 18 years old;\n- I don't have any claims to developers of this bot and related projects;\n- I don't have any claims to content of this bot and related projects;\n- I don't have any claims to Telegram bot-platform;\n- I understand that the bot and related projects does not store the content published through them and works only with meta-data provided by third parties through their API;"
-  },
-  {
-    "id": "message_verify_accepted",
-    "translation": "I agree, what I am over 18 years old, I don't have any claims to developers of this bot and related projects, I don't have any claims to content of this bot and related projects, I don't have any claims to Telegram bot-platform and I understand that the bot and related projects does not store the content published through them, and works only with meta-data provided by third parties through their API.\n\n- _{{.Name}} {{.Time}} {{.Date}}_"
-  },
-  {
-    "id": "message_verify_short",
-    "translation": "I need your consent to on my work. Open private chat with me and press \"Start\"! 😉"
   },
   {
     "id": "rating_explicit",

@@ -88,16 +88,8 @@
     "translation": "👁 讓我試試！"
   },
   {
-    "id": "button_verify",
-    "translation": "✅ I agree"
-  },
-  {
     "id": "inline_button_dashboard",
-    "translation": "Open settings"
-  },
-  {
-    "id": "inline_button_verify",
-    "translation": "Hey! Look! Listen!"
+    "translation": "開啟設定"
   },
   {
     "id": "inline_description",
@@ -121,7 +113,7 @@
   },
   {
     "id": "message_blushboard",
-    "translation": "☺️ [{{.Type}} 原作者为 {{.Owner}}]({{.URL}})️"
+    "translation": "☺️ [{{.Type}} 原作者為 {{.Owner}}]({{.URL}})"
   },
   {
     "id": "message_cheatsheet",
@@ -146,18 +138,6 @@
   {
     "id": "message_start",
     "translation": "嗨，{{.FirstName}}！\n我是 @HentaiDB 計劃的官方機器人。\n\n你可以透過我搜尋 Gelbooru 的圖片或是 GIF。你只需要在任何聊天中輸入 `@HentaiDBot hatsune_miku` 然後選擇你想發送的文章，*但是你不用按下送出鈕*，你只需要稍微等一下就會有結果了。😏\n\n你可以透過 /cheatsheet 得知進階搜尋的用法，或者是對我說聲 /help 也行。盡情享受吧！☺️"
-  },
-  {
-    "id": "message_verify",
-    "translation": "For the beginning - a little formality. 😉\nBy clicking the button below you accept the following conditions:\n- I am over 18 years old;\n- I don't have any claims to developers of this bot and related projects;\n- I don't have any claims to content of this bot and related projects;\n- I don't have any claims to Telegram bot-platform;\n- I understand that the bot and related projects does not store the content published through them and works only with meta-data provided by third parties through their API;"
-  },
-  {
-    "id": "message_verify_accepted",
-    "translation": "I agree, what I am over 18 years old, I don't have any claims to developers of this bot and related projects, I don't have any claims to content of this bot and related projects, I don't have any claims to Telegram bot-platform and I understand that the bot and related projects does not store the content published through them, and works only with meta-data provided by third parties through their API.\n\n- _{{.Name}} {{.Time}} {{.Date}}_"
-  },
-  {
-    "id": "message_verify_short",
-    "translation": "I need your consent to on my work. Open private chat with me and press \"Start\"! 😉"
   },
   {
     "id": "rating_explicit",

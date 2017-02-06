@@ -6,10 +6,10 @@ import (
 	"io/ioutil"
 
 	"github.com/botanio/sdk/go"
+	tg "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/hjson/hjson-go"
 	log "github.com/kirillDanshin/dlog"
 	f "github.com/valyala/fasthttp"
-	tg "gopkg.in/telegram-bot-api.v4"
 )
 
 var (

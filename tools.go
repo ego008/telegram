@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"strings"
 
+	tg "github.com/go-telegram-bot-api/telegram-bot-api"
 	log "github.com/kirillDanshin/dlog"
 	"github.com/nicksnyder/go-i18n/i18n"
 	f "github.com/valyala/fasthttp"
-	tg "gopkg.in/telegram-bot-api.v4"
 )
 
 func uploadFilesProcess(msg *tg.Message, bytes tg.FileBytes, randomFile Post, T i18n.TranslateFunc) {
