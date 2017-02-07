@@ -199,14 +199,12 @@ func inlineResult(query string, post Post, T i18n.TranslateFunc) {
 }
 
 func TrackChosenInlineResult(result *tg.ChosenInlineResult) {
+	b.TrackAsync(result.From.ID, struct{ *tg.ChosenInlineResult }{result}, "Find", func(answer botan.Answer, err []error) {
+		log.Ln("Track Find", answer.Status)
+		metrika <- true
+	})
+
 	go AddHitsDB(result.From.ID)
 
-	answer, errs := b.Track(result.From.ID, struct{ *tg.ChosenInlineResult }{result}, "Find")
-	if len(errs) > 0 {
-		for _, err := range errs {
-			log.Ln(err.Error())
-		}
-	}
-
-	log.Ln("Track Find", answer.Status)
+	<-metrika // Send track to Yandex.AppMetrika
 }

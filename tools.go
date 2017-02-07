@@ -40,14 +40,14 @@ func uploadFilesProcess(msg *tg.Message, bytes tg.FileBytes, randomFile Post, T 
 		video.ReplyToMessageID = msg.MessageID
 		video.ReplyMarkup = &inlineKeyboard
 		if _, err := bot.Send(video); err != nil {
-			log.Ln("[Bot] Sending message error:", err.Error())
+			log.Ln("Sending message error:", err.Error())
 		}
 	case strings.Contains(fmt.Sprint("https:", randomFile.FileURL), ".gif"):
 		gif := tg.NewDocumentUpload(msg.Chat.ID, bytes)
 		gif.ReplyToMessageID = msg.MessageID
 		gif.ReplyMarkup = &inlineKeyboard
 		if _, err := bot.Send(gif); err != nil {
-			log.Ln("[Bot] Sending message error:", err.Error())
+			log.Ln("Sending message error:", err.Error())
 		}
 	case strings.Contains(fmt.Sprint("https:", randomFile.FileURL), ".webm"):
 		pageURL := BlushBoard + "/hash/" + randomFile.Hash
@@ -62,14 +62,14 @@ func uploadFilesProcess(msg *tg.Message, bytes tg.FileBytes, randomFile Post, T 
 		reply.ReplyToMessageID = msg.MessageID
 		reply.ReplyMarkup = &inlineKeyboard
 		if _, err := bot.Send(reply); err != nil {
-			log.Ln("[Bot] Sending message error:", err.Error())
+			log.Ln("Sending message error:", err.Error())
 		}
 	default:
 		image := tg.NewPhotoUpload(msg.Chat.ID, bytes)
 		image.ReplyToMessageID = msg.MessageID
 		image.ReplyMarkup = &inlineKeyboard
 		if _, err := bot.Send(image); err != nil {
-			log.Ln("[Bot] Sending message error:", err.Error())
+			log.Ln("Sending message error:", err.Error())
 		}
 	}
 }
@@ -99,7 +99,7 @@ func getTelegramFileID(msg *tg.Message) {
 	reply := tg.NewMessage(msg.Chat.ID, uploadFileInfo)
 	reply.ReplyToMessageID = msg.MessageID
 	if _, err := bot.Send(reply); err != nil {
-		log.Ln("[Bot] Sending message error:", err.Error())
+		log.Ln("Sending message error:", err.Error())
 	}
 }
 
@@ -116,7 +116,7 @@ func getLargePhoto(msg *tg.Message) string {
 
 func getVoiceFromAudio(msg *tg.Message) string {
 	if _, err := bot.Send(tg.NewChatAction(msg.Chat.ID, tg.ChatRecordAudio)); err != nil {
-		log.Ln("[Bot] ChatAction send error:", err.Error())
+		log.Ln("ChatAction send error:", err.Error())
 	}
 
 	url, err := bot.GetFileDirectURL(msg.Audio.FileID)

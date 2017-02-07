@@ -35,7 +35,7 @@ func GetMessage(msg *tg.Message) {
 	switch {
 	case isCommand:
 		Commands(usr, msg, T)
-	case !isCommand && isPrivate && usr.Role == "user" && msg.Text == "":
+	case !isCommand && isPrivate && usr.Role == "admin" && msg.Text == "":
 		getTelegramFileID(msg) // Admin feature without tracking
 	default:
 		EasterEggsMessages(msg) // Secret actions and commands ;)
@@ -254,7 +254,7 @@ func RandomCommand(usr *UserDB, msg *tg.Message, T i18n.TranslateFunc) {
 		log.Ln("Nothing. Reroll dice!")
 	}
 
-	log.Ln("Get random file by URL: %s", fmt.Sprint("https:", randomFile[0].FileURL))
+	log.Ln("Get random file by URL:", fmt.Sprint("https:", randomFile[0].FileURL))
 	_, body, err := f.Get(nil, fmt.Sprint("https:", randomFile[0].FileURL))
 	if err != nil {
 		log.Ln("Get random image by URL error:", err.Error())

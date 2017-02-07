@@ -3,11 +3,10 @@ package main
 import (
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/boltdb/bolt"
 	// tg "github.com/go-telegram-bot-api/telegram-bot-api"
-	// log "github.com/kirillDanshin/dlog"
+	log "github.com/kirillDanshin/dlog"
 )
 
 type UserDB struct {
@@ -27,18 +26,42 @@ var (
 func init() {
 	go func() {
 		var err error
-		db, err = bolt.Open("hentai.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+		db, err = bolt.Open("hentai.db", 0600, nil)
 		if err != nil {
 			panic(err.Error())
 		}
 		defer db.Close()
 
-		if err := db.Update(func(tx *bolt.Tx) error {
-			if _, err := tx.CreateBucketIfNotExists(bktUsers); err != nil {
+		if err := db.Batch(func(tx *bolt.Tx) error {
+			users, err := tx.CreateBucketIfNotExists(bktUsers)
+			if err != nil {
 				return err
 			}
-			_, err = tx.CreateBucketIfNotExists(bktPosts)
-			return err
+
+			if _, err = tx.CreateBucketIfNotExists(bktPosts); err != nil {
+				return err
+			}
+
+			users.Tx().ForEach(func(name []byte, bkt *bolt.Bucket) error {
+				bID, _ := strconv.Atoi(string(name))
+				for _, admin := range cfg["admins"].([]interface{}) {
+					if int(admin.(float64)) == bID {
+						log.F("change %d role to admin", bID)
+						return ChangeRoleBD(bID, "admin")
+					} else {
+						for _, patron := range cfg["patrons"].([]interface{}) {
+							if int(patron.(float64)) == bID {
+								log.F("change %d role to patron", bID)
+								return ChangeRoleBD(bID, "patron")
+							}
+						}
+					}
+					log.Ln("skipped role bucket")
+				}
+				return nil
+			})
+
+			return nil
 		}); err != nil {
 			panic(err.Error())
 		}
@@ -48,7 +71,7 @@ func init() {
 }
 
 func CreateUserBD(id int) error {
-	return db.Update(func(tx *bolt.Tx) error {
+	return db.Batch(func(tx *bolt.Tx) error {
 		bkt, err := tx.Bucket(bktUsers).CreateBucket([]byte(strconv.Itoa(id)))
 		if err != nil {
 			return err
@@ -56,7 +79,7 @@ func CreateUserBD(id int) error {
 
 		for _, admin := range cfg["admins"].([]interface{}) {
 			if id == int(admin.(float64)) {
-				bkt.Put([]byte("role"), []byte("user"))
+				bkt.Put([]byte("role"), []byte("admin"))
 			} else {
 				for _, patron := range cfg["patrons"].([]interface{}) {
 					if id == int(patron.(float64)) {
@@ -77,7 +100,7 @@ func CreateUserBD(id int) error {
 }
 
 func ChangeLangBD(id int, lang string) error {
-	if err := db.Update(func(tx *bolt.Tx) error {
+	if err := db.Batch(func(tx *bolt.Tx) error {
 		bkt := tx.Bucket(bktUsers).Bucket([]byte(strconv.Itoa(id)))
 		if bkt == nil {
 			return fmt.Errorf("bucket not exist")
@@ -85,6 +108,7 @@ func ChangeLangBD(id int, lang string) error {
 
 		return bkt.Put([]byte("lang"), []byte(lang))
 	}); err != nil {
+		log.Ln(err.Error())
 		CreateUserBD(id)
 		return ChangeLangBD(id, lang)
 	}
@@ -92,7 +116,7 @@ func ChangeLangBD(id int, lang string) error {
 }
 
 func ChangeRoleBD(id int, role string) error {
-	if err := db.Update(func(tx *bolt.Tx) error {
+	if err := db.Batch(func(tx *bolt.Tx) error {
 		bkt := tx.Bucket(bktUsers).Bucket([]byte(strconv.Itoa(id)))
 		if bkt == nil {
 			return fmt.Errorf("bucket not exist")
@@ -100,6 +124,7 @@ func ChangeRoleBD(id int, role string) error {
 
 		return bkt.Put([]byte("role"), []byte(role))
 	}); err != nil {
+		log.Ln(err.Error())
 		CreateUserBD(id)
 		return ChangeRoleBD(id, role)
 	}
@@ -107,7 +132,7 @@ func ChangeRoleBD(id int, role string) error {
 }
 
 func ChangeFilterDB(id int, nsfw bool) error {
-	if err := db.Update(func(tx *bolt.Tx) error {
+	if err := db.Batch(func(tx *bolt.Tx) error {
 		bkt := tx.Bucket(bktUsers).Bucket([]byte(strconv.Itoa(id)))
 		if bkt == nil {
 			return fmt.Errorf("bucket not exist")
@@ -115,6 +140,7 @@ func ChangeFilterDB(id int, nsfw bool) error {
 
 		return bkt.Put([]byte("nsfw"), strconv.AppendBool(nil, nsfw))
 	}); err != nil {
+		log.Ln(err.Error())
 		CreateUserBD(id)
 		return ChangeFilterDB(id, nsfw)
 	}
@@ -136,6 +162,7 @@ func GetUserDB(id int) (*UserDB, error) {
 		usr.Hits, _ = strconv.Atoi(string(bkt.Get([]byte("hits"))))
 		return nil
 	}); err != nil {
+		log.Ln(err.Error())
 		CreateUserBD(id)
 		return GetUserDB(id)
 	}
@@ -143,7 +170,7 @@ func GetUserDB(id int) (*UserDB, error) {
 }
 
 func AddHitsDB(id int) error {
-	if err := db.Update(func(tx *bolt.Tx) error {
+	if err := db.Batch(func(tx *bolt.Tx) error {
 		bkt := tx.Bucket(bktUsers).Bucket([]byte(strconv.Itoa(id)))
 		if bkt == nil {
 			return fmt.Errorf("bucket not exist")
@@ -151,8 +178,10 @@ func AddHitsDB(id int) error {
 
 		hits, _ := strconv.Atoi(string(bkt.Get([]byte("hits"))))
 		hits++
+		log.F("%d hits to %d user", hits, id)
 		return bkt.Put([]byte("hits"), []byte(strconv.Itoa(hits)))
 	}); err != nil {
+		log.Ln(err.Error())
 		CreateUserBD(id)
 		return AddHitsDB(id)
 	}

@@ -4,9 +4,9 @@ translation:
 development:
 	make translation
 	goi18n -sourceLanguage en-us -outdir ./i18n/ ./i18n/*.all.json ./i18n/*.untranslated.json
-	go build -tags "debug"
+	go build -tags="debug"
 
 production:
 	make translation
 	goi18n -sourceLanguage en-us -outdir ./i18n/ ./i18n/*.all.json ./i18n/*.untranslated.json
-	go build -tags "eggs"
+	go build -tags="eggs"

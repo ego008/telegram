@@ -125,7 +125,7 @@
   },
   {
     "id": "message_help",
-    "translation": "/cheatsheet - 得知在 Gelbooru 中進階搜尋的用法；\n/random - 從 Gelbooru 中選出一篇隨機文章；\n/donate - 贊助者的清單，還有你的名字如何出現在這；\n/info - 作者聯繫方式還有官方社群；"
+    "translation": "/settings - 你的個人化搜尋設置；\n/cheatsheet - 得知在 Gelbooru 中進階搜尋的用法；\n/random - 從 Gelbooru 中選出一篇隨機文章；\n/donate - 贊助者的清單，還有你的名字如何出現在這；\n/info - 作者聯繫方式還有官方社群；"
   },
   {
     "id": "message_info",
