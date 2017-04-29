@@ -1,3 +1,6 @@
+build:
+	go build -tags="eggs"
+
 production:
 	make translation
 	goi18n -sourceLanguage en-us -outdir ./i18n/ ./i18n/*.all.json ./i18n/*.untranslated.json
