@@ -16,18 +16,6 @@
 		"translation": "📝 CheatSheet"
 	},
 	{
-		"id": "button_disable",
-		"translation": "✅ Disable"
-	},
-	{
-		"id": "button_donate",
-		"translation": "💸 Donate!"
-	},
-	{
-		"id": "button_enable",
-		"translation": "🅾 Enable"
-	},
-	{
 		"id": "button_try",
 		"translation": "👁 Let me try!"
 	},
@@ -52,10 +40,6 @@
 		"translation": "🌀 More"
 	},
 	{
-		"id": "button_nsfw",
-		"translation": "🔞 NSFW {{.Status}}"
-	},
-	{
 		"id": "button_original",
 		"translation": "💾 Original"
 	},
@@ -74,5 +58,53 @@
 	{
 		"id": "button_share",
 		"translation": "🗣 Share"
+	},
+	{
+		"id": "button_discord",
+		"translation": "👾 Discord"
+	},
+	{
+		"id": "button_return",
+		"translation": "↩️ Return"
+	},
+	{
+		"id": "button_blacklist",
+	"translation": "⚫️ Black list"
+	},
+	{
+		"id": "button_patreon_check",
+		"translation": "🔄 Check rewards"
+	},
+	{
+		"id": "button_patreon_checkout",
+		"translation": "💸 Become a sponsor!"
+	},
+	{
+		"id": "button_patreon_connect",
+		"translation": "🔌 Connect Patreon account"
+	},
+	{
+		"id": "button_patreon_disconnect",
+		"translation": "🔌 Unlink {{.Account}} account"
+	},
+	{
+		"id": "button_ratings",
+		"translation": "🔞 Filter by rating"
+	},
+	{
+		"id": "button_resources",
+		"translation": "🌐 Resources"
+	},
+	{
+		"id": "button_tags_add",
+		"translation": "🔖 Overwrite tags"
+	},
+	{
+		"id": "button_whitelist",
+		"translation": "⚪️ White list"
+	},
+	{
+		"id": "button_info",
+		"translation": "❔ Info"
 	}
 ]

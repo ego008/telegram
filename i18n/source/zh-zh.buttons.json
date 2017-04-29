@@ -16,18 +16,6 @@
 		"translation": "📝 用法總彙"
 	},
 	{
-		"id": "button_disable",
-		"translation": "✅ 停用"
-	},
-	{
-		"id": "button_donate",
-		"translation": "💸 贊助！"
-	},
-	{
-		"id": "button_enable",
-		"translation": "🅾 啟用"
-	},
-	{
 		"id": "button_try",
 		"translation": "👁 讓我試試！"
 	},
@@ -52,10 +40,6 @@
 		"translation": "🌀 更多"
 	},
 	{
-		"id": "button_nsfw",
-		"translation": "🔞 NSFW {{.Status}}"
-	},
-	{
 		"id": "button_original",
 		"translation": "💾 原圖"
 	},
@@ -74,5 +58,53 @@
 	{
 		"id": "button_share",
 		"translation": "🗣 分享"
+	},
+	{
+		"id": "button_blacklist",
+		"translation": "⚫️ 黑名單"
+	},
+	{
+		"id": "button_discord",
+		"translation": "👾 Discord"
+	},
+	{
+		"id": "button_patreon_check",
+		"translation": "🔄 檢查獎勵"
+	},
+	{
+		"id": "button_patreon_checkout",
+		"translation": "💸 成為贊助者！"
+	},
+	{
+		"id": "button_patreon_connect",
+		"translation": "🔌 連線到 Patreon 帳號"
+	},
+	{
+		"id": "button_patreon_disconnect",
+		"translation": "🔌 取消連結 {{.Account}} 帳號"
+	},
+	{
+		"id": "button_ratings",
+		"translation": "🔞 透過評分過濾"
+	},
+	{
+		"id": "button_resources",
+		"translation": "🌐 資源"
+	},
+	{
+		"id": "button_return",
+		"translation": "↩️ 返回"
+	},
+	{
+		"id": "button_tags_add",
+		"translation": "🔖 覆蓋標籤"
+	},
+	{
+		"id": "button_whitelist",
+		"translation": "⚪️ 白名單"
+	},
+	{
+		"id": "button_info",
+		"translation": "❔ 信息"
 	}
 ]

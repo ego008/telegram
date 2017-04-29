@@ -55,14 +55,14 @@ _testmain.go
 
 ### Workflow ###
 # Testing/production files
-config.hjson
+config.yml
 cert.pem
 hentai.db
 key.pem
 
 # Easter eggs
 eggs_on.go
-eggs.hjson
+eggs.yml
 
 # Build
 HentaiDBot

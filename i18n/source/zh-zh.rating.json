@@ -14,5 +14,9 @@
 	{
 		"id": "rating_unknown",
 		"translation": "未知"
+	},
+	{
+		"id": "rating_all",
+    	"translation": "所有"
 	}
 ]

@@ -1,189 +1,361 @@
 package main
 
 import (
-	"fmt"
+	"errors"
+	"log"
 	"strconv"
+	"strings"
 
-	"github.com/boltdb/bolt"
-	// tg "github.com/go-telegram-bot-api/telegram-bot-api"
-	log "github.com/kirillDanshin/dlog"
+	bolt "github.com/boltdb/bolt"
 )
 
-type UserDB struct {
-	Language string
-	NSFW     bool
-	// Menu     string
-	Role string
-	Hits int
-}
+type (
+	User struct {
+		ID                          int
+		Language                    string
+		Roles, Blacklist, Whitelist []string
+		Ratings                     Ratings
+		Patreon                     Patreon
+	}
+
+	Ratings struct {
+		Safe, Questionale, Explicit bool
+	}
+
+	Patreon struct {
+		FullName, AccessToken, RefreshToken string
+	}
+)
 
 var (
-	db       *bolt.DB
-	bktUsers = []byte("users")
-	bktPosts = []byte("posts")
+	bktPatreon   = []byte("patreon")
+	bktRatings   = []byte("ratings")
+	bktRoles     = []byte("roles")
+	bktBlacklist = []byte("black")
+	bktWhitelist = []byte("white")
+
+	db *bolt.DB
 )
 
-func init() {
-	go func() {
-		var err error
-		db, err = bolt.Open("hentai.db", 0600, nil)
-		if err != nil {
-			panic(err.Error())
-		}
-		defer db.Close()
-
-		if err := db.Batch(func(tx *bolt.Tx) error {
-			users, err := tx.CreateBucketIfNotExists(bktUsers)
-			if err != nil {
-				return err
-			}
-
-			if _, err = tx.CreateBucketIfNotExists(bktPosts); err != nil {
-				return err
-			}
-
-			users.Tx().ForEach(func(name []byte, bkt *bolt.Bucket) error {
-				bID, _ := strconv.Atoi(string(name))
-				for _, admin := range cfg["admins"].([]interface{}) {
-					if int(admin.(float64)) == bID {
-						log.F("change %d role to admin", bID)
-						return ChangeRoleBD(bID, "admin")
-					} else {
-						for _, patron := range cfg["patrons"].([]interface{}) {
-							if int(patron.(float64)) == bID {
-								log.F("change %d role to patron", bID)
-								return ChangeRoleBD(bID, "patron")
-							}
-						}
-					}
-					log.Ln("skipped role bucket")
-				}
-				return nil
-			})
-
-			return nil
-		}); err != nil {
-			panic(err.Error())
-		}
-
-		select {}
-	}()
+func dbInit() {
+	db, err = bolt.Open(*flagDB, 0600, nil)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
 }
 
-func CreateUserBD(id int) error {
-	return db.Batch(func(tx *bolt.Tx) error {
-		bkt, err := tx.Bucket(bktUsers).CreateBucket([]byte(strconv.Itoa(id)))
+func createUser(userID int) (*User, error) {
+	if err := db.Update(func(tx *bolt.Tx) error {
+		user, err := tx.CreateBucket([]byte(strconv.Itoa(userID)))
 		if err != nil {
 			return err
 		}
 
-		for _, admin := range cfg["admins"].([]interface{}) {
-			if id == int(admin.(float64)) {
-				bkt.Put([]byte("role"), []byte("admin"))
-			} else {
-				for _, patron := range cfg["patrons"].([]interface{}) {
-					if id == int(patron.(float64)) {
-						bkt.Put([]byte("role"), []byte("patron"))
-					} else {
-						bkt.Put([]byte("role"), []byte("user"))
-					}
-				}
+		user.Put([]byte("id"), []byte(strconv.Itoa(userID)))
+		user.Put([]byte("language"), []byte("en"))
+
+		black, err := user.CreateBucket(bktBlacklist)
+		if err != nil {
+			return err
+		}
+
+		black.Put([]byte("loli*"), nil)
+		black.Put([]byte("scat"), nil)
+
+		if _, err := user.CreateBucket(bktWhitelist); err != nil {
+			return err
+		}
+
+		roles, err := user.CreateBucket(bktRoles)
+		if err != nil {
+			return err
+		}
+
+		if userID == adm {
+			roles.Put([]byte("admin"), nil)
+			roles.Put([]byte("patron"), nil)
+		}
+
+		roles.Put([]byte("user"), nil)
+
+		ratings, err := user.CreateBucket(bktRatings)
+		if err != nil {
+			return err
+		}
+
+		ratings.Put([]byte("safe"), strconv.AppendBool(nil, true))
+		ratings.Put([]byte("questionable"), strconv.AppendBool(nil, false))
+		ratings.Put([]byte("explicit"), strconv.AppendBool(nil, false))
+
+		_, err = user.CreateBucket(bktPatreon)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+	return getUser(userID)
+}
+
+func (u *User) changeLanguage(lang string) (*User, error) {
+	if err := db.Update(func(tx *bolt.Tx) error {
+		user := tx.Bucket([]byte(strconv.Itoa(u.ID)))
+		if user == nil {
+			return errors.New("user not exist")
+		}
+
+		return user.Put([]byte("language"), []byte(lang))
+	}); err != nil {
+		return nil, err
+	}
+
+	return getUser(u.ID)
+}
+
+func (u *User) addRoles(roles ...string) (*User, error) {
+	if err := db.Update(func(tx *bolt.Tx) error {
+		user := tx.Bucket([]byte(strconv.Itoa(u.ID)))
+		if user == nil {
+			return errors.New("user not exist")
+		}
+
+		userRoles := user.Bucket(bktRoles)
+
+		for _, role := range roles {
+			if err := userRoles.Put([]byte(role), nil); err != nil {
+				return err
 			}
 		}
 
-		bkt.Put([]byte("lang"), []byte("en-us"))
-		bkt.Put([]byte("nsfw"), strconv.AppendBool(nil, false))
-		// bkt.Put([]byte("menu"), []byte("start"))
-		bkt.Put([]byte("hits"), []byte(strconv.Itoa(0)))
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return getUser(u.ID)
+}
+
+func (u *User) removeRoles(roles ...string) (*User, error) {
+	if err := db.Update(func(tx *bolt.Tx) error {
+		user := tx.Bucket([]byte(strconv.Itoa(u.ID)))
+		if user == nil {
+			return errors.New("user not exist")
+		}
+
+		userRoles := user.Bucket(bktRoles)
+
+		for _, role := range roles {
+			if err := userRoles.Delete([]byte(role)); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return getUser(u.ID)
+}
+
+func (u *User) changeRatings(safe, questionable, explicit bool) (*User, error) {
+	if err := db.Update(func(tx *bolt.Tx) error {
+		user := tx.Bucket([]byte(strconv.Itoa(u.ID)))
+		if user == nil {
+			return errors.New("user not exist")
+		}
+
+		ratings := user.Bucket(bktRatings)
+		if err := ratings.Put([]byte("safe"), strconv.AppendBool(nil, safe)); err != nil {
+			return err
+		}
+
+		if err := ratings.Put([]byte("questionable"), strconv.AppendBool(nil, questionable)); err != nil {
+			return err
+		}
+
+		return ratings.Put([]byte("explicit"), strconv.AppendBool(nil, explicit))
+	}); err != nil {
+		return nil, err
+	}
+	return getUser(u.ID)
+}
+
+func (u *User) patreonSave(name, access, refresh string) (*User, error) {
+	if err := db.Update(func(tx *bolt.Tx) error {
+		user := tx.Bucket([]byte(strconv.Itoa(u.ID)))
+		if user == nil {
+			return errors.New("user not exist")
+		}
+		pat := user.Bucket(bktPatreon)
+
+		if err := pat.Put([]byte("name"), []byte(name)); err != nil {
+			return err
+		}
+
+		if err := pat.Put([]byte("access"), []byte(access)); err != nil {
+			return err
+		}
+
+		return pat.Put([]byte("refresh"), []byte(refresh))
+	}); err != nil {
+		return nil, err
+	}
+
+	return getUser(u.ID)
+}
+
+func (u *User) tagsRewrite(black bool, tags []string) error {
+	return db.Update(func(tx *bolt.Tx) error {
+		user := tx.Bucket([]byte(strconv.Itoa(u.ID)))
+		if user == nil {
+			return errors.New("user not exist")
+		}
+
+		var bkt *bolt.Bucket
+		if black {
+			err := user.DeleteBucket(bktBlacklist)
+			if err != nil {
+				return err
+			}
+
+			bkt, err = user.CreateBucket(bktBlacklist)
+			if err != nil {
+				return err
+			}
+		} else {
+			err := user.DeleteBucket(bktWhitelist)
+			if err != nil {
+				return err
+			}
+
+			bkt, err = user.CreateBucket(bktWhitelist)
+			if err != nil {
+				return err
+			}
+		}
+
+		for _, tag := range tags {
+			tag = strings.ToLower(strings.TrimLeft(tag, "-"))
+			bkt.Put([]byte(tag), nil)
+		}
 		return nil
 	})
 }
 
-func ChangeLangBD(id int, lang string) error {
-	if err := db.Batch(func(tx *bolt.Tx) error {
-		bkt := tx.Bucket(bktUsers).Bucket([]byte(strconv.Itoa(id)))
-		if bkt == nil {
-			return fmt.Errorf("bucket not exist")
+func (u *User) tagRemove(black bool, tag string) (*User, error) {
+	if err := db.Update(func(tx *bolt.Tx) error {
+		user := tx.Bucket([]byte(strconv.Itoa(u.ID)))
+		if user == nil {
+			return errors.New("user not exist")
 		}
 
-		return bkt.Put([]byte("lang"), []byte(lang))
-	}); err != nil {
-		log.Ln(err.Error())
-		CreateUserBD(id)
-		return ChangeLangBD(id, lang)
-	}
-	return nil
-}
-
-func ChangeRoleBD(id int, role string) error {
-	if err := db.Batch(func(tx *bolt.Tx) error {
-		bkt := tx.Bucket(bktUsers).Bucket([]byte(strconv.Itoa(id)))
-		if bkt == nil {
-			return fmt.Errorf("bucket not exist")
+		var bkt *bolt.Bucket
+		if black {
+			bkt = user.Bucket(bktBlacklist)
+		} else {
+			bkt = user.Bucket(bktWhitelist)
 		}
 
-		return bkt.Put([]byte("role"), []byte(role))
+		return bkt.Delete([]byte(tag))
 	}); err != nil {
-		log.Ln(err.Error())
-		CreateUserBD(id)
-		return ChangeRoleBD(id, role)
+		return createUser(u.ID)
 	}
-	return nil
+
+	return getUser(u.ID)
 }
 
-func ChangeFilterDB(id int, nsfw bool) error {
-	if err := db.Batch(func(tx *bolt.Tx) error {
-		bkt := tx.Bucket(bktUsers).Bucket([]byte(strconv.Itoa(id)))
-		if bkt == nil {
-			return fmt.Errorf("bucket not exist")
-		}
-
-		return bkt.Put([]byte("nsfw"), strconv.AppendBool(nil, nsfw))
-	}); err != nil {
-		log.Ln(err.Error())
-		CreateUserBD(id)
-		return ChangeFilterDB(id, nsfw)
-	}
-	return nil
-}
-
-func GetUserDB(id int) (*UserDB, error) {
-	var usr UserDB
+func getUser(userID int) (*User, error) {
+	var usr User
 	if err := db.View(func(tx *bolt.Tx) error {
-		bkt := tx.Bucket(bktUsers).Bucket([]byte(strconv.Itoa(id)))
-		if bkt == nil {
-			return fmt.Errorf("bucket not exist")
+		user := tx.Bucket([]byte(strconv.Itoa(userID)))
+		if user == nil {
+			return errors.New("user not exist")
 		}
 
-		usr.Language = string(bkt.Get([]byte("lang")))
-		usr.NSFW, _ = strconv.ParseBool(string(bkt.Get([]byte("nsfw"))))
-		// usr.Menu = string(bkt.Get([]byte("menu")))
-		usr.Role = string(bkt.Get([]byte("role")))
-		usr.Hits, _ = strconv.Atoi(string(bkt.Get([]byte("hits"))))
+		usr.Language = string(user.Get([]byte("language")))
+		usr.ID, err = strconv.Atoi(string(user.Get([]byte("id"))))
+		if err != nil {
+			return err
+		}
+
+		black := user.Bucket(bktBlacklist)
+		var list []string
+		if err := black.ForEach(func(key, val []byte) error {
+			list = append(list, string(key))
+			return nil
+		}); err != nil {
+			return err
+		}
+		usr.Blacklist = list
+
+		white := user.Bucket(bktWhitelist)
+		list = nil
+		if err := white.ForEach(func(key, val []byte) error {
+			list = append(list, string(key))
+			return nil
+		}); err != nil {
+			return err
+		}
+		usr.Whitelist = list
+
+		roles := user.Bucket(bktRoles)
+		list = nil
+		if err := roles.ForEach(func(key, val []byte) error {
+			list = append(list, string(key))
+			return nil
+		}); err != nil {
+			return err
+		}
+		usr.Roles = list
+
+		ratings := user.Bucket(bktRatings)
+		var uRatings Ratings
+		uRatings.Safe, err = strconv.ParseBool(string(ratings.Get([]byte("safe"))))
+		if err != nil {
+			return err
+		}
+		uRatings.Questionale, err = strconv.ParseBool(string(ratings.Get([]byte("questionable"))))
+		if err != nil {
+			return err
+		}
+		uRatings.Explicit, err = strconv.ParseBool(string(ratings.Get([]byte("explicit"))))
+		if err != nil {
+			return err
+		}
+		usr.Ratings = uRatings
+
+		patreon := user.Bucket(bktPatreon)
+		if patreon != nil {
+			var uPatreon Patreon
+			uPatreon.FullName = string(patreon.Get([]byte("name")))
+			uPatreon.AccessToken = string(patreon.Get([]byte("access")))
+			uPatreon.RefreshToken = string(patreon.Get([]byte("refresh")))
+			usr.Patreon = uPatreon
+		}
+
 		return nil
 	}); err != nil {
-		log.Ln(err.Error())
-		CreateUserBD(id)
-		return GetUserDB(id)
+		return createUser(userID)
 	}
 	return &usr, nil
 }
 
-func AddHitsDB(id int) error {
-	if err := db.Batch(func(tx *bolt.Tx) error {
-		bkt := tx.Bucket(bktUsers).Bucket([]byte(strconv.Itoa(id)))
-		if bkt == nil {
-			return fmt.Errorf("bucket not exist")
-		}
+func getUsers() ([]User, error) {
+	var users []User
+	err = db.View(func(tx *bolt.Tx) error {
+		return tx.ForEach(func(name []byte, bkt *bolt.Bucket) error {
+			id, err := strconv.Atoi(string(name))
+			if err != nil {
+				return err
+			}
 
-		hits, _ := strconv.Atoi(string(bkt.Get([]byte("hits"))))
-		hits++
-		log.F("%d hits to %d user", hits, id)
-		return bkt.Put([]byte("hits"), []byte(strconv.Itoa(hits)))
-	}); err != nil {
-		log.Ln(err.Error())
-		CreateUserBD(id)
-		return AddHitsDB(id)
-	}
-	return nil
+			usr, err := getUser(id)
+			if err != nil {
+				return err
+			}
+
+			users = append(users, *usr)
+			return nil
+		})
+	})
+	return users, err
 }

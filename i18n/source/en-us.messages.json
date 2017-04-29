@@ -5,26 +5,90 @@
 	},
 	{
 		"id": "message_cheatsheet",
-		"translation": "*tag1 tag2*\nSearch for posts that have `tag1` and `tag2`.\n\n*~tag1 ~tag2*\nSearch for posts that have `tag1` or `tag2`. (Currently does not work)\n\n*night~*\nFuzzy search for the tag `night`. This will return results such as `night fight bright` and so on according to the [Levenshtein distance](http://en.wikipedia.org/wiki/Levenshtein_distance).\n\n*-tag1*\nSearch for posts that don't have `tag1`.\n\n*ta∗1*\nSearch for posts with tags that starts with `ta` and ends with `1`.\n\n*user:bob*\nSearch for posts uploaded by the user `Bob`.\n\n*md5:foo*\nSearch for posts with the MD5 hash `foo`.\n\n*md5:foo∗*\nSearch for posts whose MD5 starts with the MD5 hash `foo`.\n\n*rating:questionable*\nSearch for posts that are rated `questionable`.\n\n*-rating:questionable*\nSearch for posts that are not rated `questionable`.\n\n*parent:1234*\nSearch for posts that have `1234` as a parent (and include post `1234`).\n\n*rating:questionable rating:safe*\nIn general, combining the same metatags (the ones that have colons in them) will not work.\n\n*rating:questionable parent:100*\nYou can combine different metatags, however.\n\n*width:>=1000 height:>1000*\nFind images with a width greater than or equal to `1000` and a height greater than `1000`.\n\n*score:>=10*\nFind images with a score greater than or equal to `10`. This value is updated once daily at 12AM CST.\n\n*sort:updated:desc*\nSort posts by their most recently updated order.\n\n*Other sortable types:*\n• `id`\n• `score`\n• `rating`\n• `user`\n• `height`\n• `width`\n• `parent`\n• `source`\n• `updated`\nCan be sorted by both `asc` or `desc`."
-	},
-	{
-		"id": "message_donate",
-		"translation": "*No one has supported hosting and bot development.* 😔\nSupport creator through Patreon and write your name here!"
+		"translation": "*tag1 tag2*\nSearch for posts that have `tag1` and `tag2`.\n\n*~tag1 ~tag2*\nSearch for posts that have `tag1` or `tag2`. (Currently does not work)\n\n*night~*\nFuzzy search for the tag `night`. This will return results such as `night fight bright` and so on according to the [Levenshtein distance](http://en.wikipedia.org/wiki/Levenshtein_distance).\n\n*-tag1*\nSearch for posts that don't have `tag1`.\n\n*ta∗1*\nSearch for posts with tags that starts with `ta` and ends with `1`.\n\n*user:bob*\nSearch for posts uploaded by the user `Bob`.\n\n*md5:foo*\nSearch for posts with the MD5 hash `foo`.\n\n*md5:foo∗*\nSearch for posts whose MD5 starts with the MD5 hash `foo`.\n\n*page:16*\nShow results from 16-th page and the next.\n\n*lang:zh*\nSend the result with buttons on Chinese language.\n\n*rating:questionable*\nSearch for posts that are rated `questionable`.\n\n*-rating:questionable*\nSearch for posts that are not rated `questionable`.\n\n*parent:1234*\nSearch for posts that have `1234` as a parent (and include post `1234`).\n\n*rating:questionable rating:safe*\nIn general, combining the same metatags (the ones that have colons in them) will not work.\n\n*rating:questionable parent:100*\nYou can combine different metatags, however.\n\n*width:>=1000 height:>1000*\nFind images with a width greater than or equal to `1000` and a height greater than `1000`.\n\n*score:>=10*\nFind images with a score greater than or equal to `10`. This value is updated once daily at 12AM CST.\n\n*sort:updated:desc*\nSort posts by their most recently updated order.\n\n*Other sortable types:*\n• `id`\n• `score`\n• `rating`\n• `user`\n• `height`\n• `width`\n• `parent`\n• `source`\n• `updated`\nCan be sorted by both `asc` or `desc`."
 	},
 	{
 		"id": "message_help",
-		"translation": "/settings - your personal searching controls;\n/cheatsheet - get cheat sheet of advanced search in Gelbooru;\n/random - get a totally random post from Gelbooru;\n/donate - list of patrons and way to write your name in history;\n/info - authorship and official communities;"
+		"translation": "/settings - your personal search settings;\n/cheatsheet - get a cheatsheet of advanced search;\n/random - get an absolutely random post (based on the settings);\n/patreon - support for bot and activation of awards through Patreon system;\n/info - other information and official communities;"
 	},
 	{
 		"id": "message_info",
-		"translation": "Creator: @toby3d\nVersion: {{.Version}}\nRepository: https://github.com/HentaiDB/HentaiDBot\nUptime: {{.UpTime}}"
+		"translation": "*Creator:* @toby3d\n*Repositories:* [HentaiDB](https://github.com/HentaiDB)/[HentaiDBot](https://github.com/HentaiDB/HentaiDBot)\n*Version:* {{.Version}}\n*UpTime:* {{.UpTime}}"
+	},
+	{
+		"id": "message_info_caption",
+		"translation": "Creator: @toby3d\nRepository: https://github.com/HentaiDB/HentaiDBot\nVersion: {{.Version}}\nUpTime: {{.UpTime}}"
 	},
 	{
 		"id": "message_settings",
-		"translation": "This is a list of your preferences. Correct me if something is wrong. 😉"
+		"translation": "*Language:* {{.Language}}\n*Resources:* Gelbooru\n*Ratings:* {{.Ratings}}\n*Black list:* `{{.Blacklist}}`\n*White list:* `{{.Whitelist}}`"
 	},
 	{
 		"id": "message_start",
-		"translation": "Hi, {{.FirstName}}!\nI'm the official bot of @HentaiDB project.\n\nYou can search images and GIF's in Gelbooru through me. Just type `@HentaiDBot hatsune_miku` in any chat and select post which you want to send. *Don't hit Send*, just wait for results. 😏\n\nLet me know if you need a /cheatsheet of advanced search or other /help to me. Enjoy! ☺️"
+		"translation": "Hi, {{.FirstName}}!\nI'm the official bot of @HentaiDB project.\n\nYou can search images and GIF's in Gelbooru through me. Just type `@{{.BotName}} hatsune_miku` in any chat and select post which you want to send. *Don't hit Send*, just wait for results. 😏\n\nLet me know if you need a /cheatsheet of advanced search or other /help to me. Enjoy! ☺️"
+	},
+	{
+		"id":"message_blacklist",
+		"translation": "Here you can set up a black tag list. Any content containing _at least one tag_ from this list will be hidden by default, _even if the tag is explicitly used_ during the search. You can apply modifiers from /cheatsheet. Click on the tag to remove it from the list."
+	},
+	{
+		"id":"message_input_blacklist_tags",
+		"translation": "Enter the list of prohibited tags (up to {{.Limit}}) separated by a space:"
+	},
+	{
+		"id":"message_input_tags_success",
+		"translation": "The following tags have been successfully added to list:\n`{{.Tags}}`"
+	},
+	{
+		"id":"message_input_whitelist_tags",
+		"translation": "Enter a list of mandatory tags (up to {{.Limit}}) separated by a space:"
+	},
+	{
+		"id":"message_language",
+		"translation": "Here you can configure the language of all messages sent to you, as well as the language of the buttons of all the results to be sent to chats. The result language can be switched through explicit use `lang:[en|ru|zh|...]` in the search."
+	},
+	{
+		"id":"message_language_selected",
+		"translation": "👋🏻 Hello!"
+	},
+	{
+		"id":"message_patreon",
+		"translation": "*These people support the bot monthly:*\n{{.Patrons}}\n\nThank you so much, you are amazing! ☺️"
+	},
+	{
+		"id":"message_patreon_empty",
+		"translation": "*While no one supported the free development of the bot.* 😔\nBecome a sponsor through Patreon, write your name into history and get access to special functions!"
+	},
+	{
+		"id":"message_patreon_has_reward",
+		"translation": "🏆 Awards are registered!"
+	},
+	{
+		"id":"message_patreon_no_reward",
+		"translation": "😔 There are no awards."
+	},
+	{
+		"id":"message_patron_connected",
+		"translation": "You successfully connected through Patreon system as {{.FullName}}!"
+	},
+	{
+		"id":"message_patron_disconnected",
+		"translation": "👋🏻 Connection with Patreon was dropped."
+	},
+	{
+		"id":"message_ratings",
+		"translation": "Here you can configure the default content rating. The filter will be disabled if you explicitly use `rating:[safe|questionable|explicit]` in the search, and when you enable/disable all options below.\n\nAll content has one of three types of ratings: `{{.Safe}}`, _{{.Questionable}}_ and *{{.Explicit}}*.\n\n*{{.Explicit}}*\nAny content where the genitals are open and easily visible. This includes the demonstration of sex, masturbation or any other penetration.\n\n`{{.Safe}}`\nContent for a public viewing of which you would not feel guilty. Images of nudity, naked nipples or pubic hair, camel hair or any kind of sexually challenging posture are NOT `{{.Safe}}` and are _{{.Questionable}}_. Swimsuits and underwear are borderline cases.\n\n_{{.Questionable}}_\nBasically everything that is not in the category above. This is a large middle area, you should not expect anything in this or that way when viewing such content.\n\nPlease note: sometimes *{{.Explicit}}* can be marked as `{{.Safe}}`, and vice versa."
+	},
+	{
+		"id":"message_resources",
+		"translation": "Here you can customize the sources of search results. Please note that the same result in two or more resources may have different ratings or contain a different set of tags."
+	},
+	{
+		"id":"message_whitelist",
+		"translation": "Here you can set up a white list of tags. Any content *NOT* containing _all the tags_ from this list will be hidden by default. You can use modifiers from /cheatsheet. Click on the tag to remove it from the list."
+	},
+	{
+		"id": "message_post",
+		"translation": "ID: {{.ID}}\nPosted: {{.Posted}}\nby {{.Owner}}\nSize: {{.Size}}\nRating: {{.Rating}}\nScore: {{.Score}}\nTags: {{.Tags}}"
 	}
 ]

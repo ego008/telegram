@@ -12,11 +12,7 @@
 		"translation": "評分：{{.Rating}}\n標籤：{{.Tags}}"
 	},
 	{
-		"id": "inline_no_result_title",
+		"id": "inline_no_result",
 		"translation": "雖然沒有任何東西在這但還有你的鳥！"
-	},
-	{
-		"id": "inline_no_result_description",
-		"translation": "請試著用不同的標籤組合搜尋。"
 	}
 ]
