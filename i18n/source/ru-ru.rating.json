@@ -14,5 +14,9 @@
 	{
 		"id": "rating_unknown",
 		"translation": "неизвестный"
+	},
+	{
+		"id": "rating_all",
+		"translation": "всё подряд"
 	}
 ]

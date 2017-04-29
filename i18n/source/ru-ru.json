@@ -1,14 +1,10 @@
 [
 	{
 		"id": "language_name",
-		"translation": "🇷🇺 Русский"
+		"translation": "русский"
 	},
 	{
-		"id": "status_true",
-		"translation": "вкл"
-	},
-	{
-		"id": "status_false",
-		"translation": "выкл"
+		"id": "language_flag",
+		"translation": "🇷🇺"
 	}
 ]

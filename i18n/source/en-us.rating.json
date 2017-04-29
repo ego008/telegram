@@ -14,5 +14,9 @@
 	{
 		"id": "rating_unknown",
 		"translation": "unknown"
+	},
+	{
+		"id": "rating_all",
+		"translation": "all"
 	}
 ]

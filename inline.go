@@ -2,209 +2,266 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
-	"github.com/botanio/sdk/go"
 	tg "github.com/go-telegram-bot-api/telegram-bot-api"
-	log "github.com/kirillDanshin/dlog"
-	"github.com/nicksnyder/go-i18n/i18n"
+	i18n "github.com/nicksnyder/go-i18n/i18n"
 )
 
-const BlushBoard = "http://beta.hentaidb.pw"
+var exceptions = map[string]bool{
+	"height":  true,
+	"id":      true,
+	"parent":  true,
+	"rating":  true,
+	"score":   true,
+	"source":  true,
+	"updated": true,
+	"user":    true,
+	"width":   true,
+	"md5":     true,
+	"sort":    true,
+}
 
-var results []interface{}
+func inline(inline *tg.InlineQuery) {
+	trackInline(inline)
 
-func GetInlineResults(inline *tg.InlineQuery) {
-	// Track action
-	b.TrackAsync(inline.From.ID, struct{ *tg.InlineQuery }{inline}, "Search", func(answer botan.Answer, err []error) {
-		log.Ln("Track Search", answer.Status)
-		metrika <- true
-	})
-
-	usr, err := GetUserDB(inline.From.ID)
+	usr, err := getUser(inline.From.ID)
 	if err != nil {
-		log.Ln(err.Error())
-		return
+		log.Fatalln("Create user:", err.Error())
 	}
-	T, _ := i18n.Tfunc(usr.Language)
 
-	log.Ln(usr)
+	T, err := i18n.Tfunc(usr.Language)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
 
-	more := inline.Query
-	if !usr.NSFW {
-		if len(inline.Query) > 0 {
-			inline.Query += " rating:safe"
-			more = strings.TrimSuffix(more, " rating:safe")
-		} else {
-			inline.Query = "rating:safe"
-			more = strings.TrimSuffix(more, "rating:safe")
+	inline.Query = strings.ToLower(inline.Query)
+
+	var page int
+	hasRating := false
+	if r.MatchString(inline.Query) {
+		operators := r.FindAllStringSubmatch(inline.Query, -1)
+		for _, operator := range operators {
+			op := strings.Split(operator[1], ":")
+			if exceptions[op[0]] {
+				if op[0] == "rating" {
+					hasRating = true
+				}
+				continue
+			}
+
+			switch op[0] {
+			case "page":
+				page, _ = strconv.Atoi(op[1])
+			case "lang":
+				T, _ = i18n.Tfunc(op[1])
+			}
+
+			inline.Query = strings.TrimSuffix(strings.Replace(inline.Query, operator[0], "", -1), " ")
 		}
 	}
 
 	// Check result pages
-	var posts []Post
-	var page int
-	switch {
-	case len(inline.Offset) > 0:
-		page, _ = strconv.Atoi(inline.Offset)
-		posts = getPosts(Request{
-			Limit:  50,
-			PageID: page,
-			Tags:   inline.Query,
-		})
-	case len(inline.Offset) <= 0:
-		posts = getPosts(Request{
-			Limit: 50,
-			Tags:  inline.Query,
-		})
+	var posts []gPost
+	req := &request{Limit: 50}
+	req.Tags = inline.Query
+
+	if len(usr.Whitelist) > 0 {
+		req.Tags += fmt.Sprint(" ", strings.Join(usr.Whitelist, " "))
 	}
 
-	results = nil
-	switch {
-	case len(posts) > 0:
-		for _, post := range posts {
-			inlineResult(more, post, T)
-		}
-	case len(posts) == 0: // Found nothing
-		empty := tg.NewInlineQueryResultArticleMarkdown(inline.ID, T("inline_no_result_title"), "`¯\\_(ツ)_/¯`")
-		empty.Description = T("inline_no_result_description")
-		markup := tg.NewInlineKeyboardMarkup(
-			tg.NewInlineKeyboardRow(
-				tg.NewInlineKeyboardButtonURL(T("button_channel"), cfg["link_channel"].(string)),
-				tg.NewInlineKeyboardButtonURL(T("button_group"), cfg["link_group"].(string)),
-			),
-		)
-		empty.ReplyMarkup = &markup
-		results = append(results, empty)
+	if len(usr.Blacklist) > 0 {
+		req.Tags += fmt.Sprint(" -", strings.Join(usr.Blacklist, " -"))
 	}
+
+	rt := usr.Ratings
+	if !hasRating {
+		switch {
+		case rt.Safe && !rt.Questionale && !rt.Explicit:
+			req.Tags += " rating:safe"
+		case !rt.Safe && rt.Questionale && !rt.Explicit:
+			req.Tags += " rating:questionable"
+		case !rt.Safe && !rt.Questionale && rt.Explicit:
+			req.Tags += " rating:explicit"
+		case !rt.Safe && rt.Questionale && rt.Explicit:
+			req.Tags += " -rating:safe"
+		case rt.Safe && !rt.Questionale && rt.Explicit:
+			req.Tags += " -rating:questionable"
+		case rt.Safe && rt.Questionale && !rt.Explicit:
+			req.Tags += " -rating:explicit"
+		}
+	}
+
+	switch {
+	case len(inline.Offset) <= 0:
+		req.PageID = page
+		posts, _ = getPosts(req)
+	case len(inline.Offset) > 0:
+		page, err = strconv.Atoi(inline.Offset)
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
+		req.PageID = page
+		posts, _ = getPosts(req)
+	}
+
+	results := collectResults(usr, inline, T, posts)
 
 	// Configure inline-mode
-	var inlineConfig tg.InlineConfig
-	inlineConfig.SwitchPMText = T("inline_button_dashboard")
-	inlineConfig.SwitchPMParameter = "settings"
-	inlineConfig.InlineQueryID = inline.ID
-	inlineConfig.IsPersonal = true
-	inlineConfig.CacheTime = *cacheTime
-	inlineConfig.Results = results
-	if len(posts) == 50 {
-		page++
-		inlineConfig.NextOffset = strconv.Itoa(page)
+	inlineCfg := tg.InlineConfig{
+		CacheTime:     *flagCache,
+		InlineQueryID: inline.ID,
+		IsPersonal:    true,
+		Results:       results,
 	}
-
-	if _, err := bot.AnswerInlineQuery(inlineConfig); err != nil {
-		log.Ln("Answer inline-query error:", err.Error())
-	}
-
-	<-metrika // Send track to Yandex.AppMetrika
-}
-
-func inlineResult(query string, post Post, T i18n.TranslateFunc) {
-	preview := fmt.Sprint(cfg["resource_url"].(string), cfg["resource_thumbs_dir"].(string), post.Directory, cfg["resource_thumbs_part"].(string), post.Hash, ".jpg")
-
-	markup := tg.NewInlineKeyboardMarkup(
-		tg.NewInlineKeyboardRow(
-			tg.NewInlineKeyboardButtonURL(T("button_original"), fmt.Sprint("https:", post.FileURL)),
-		),
-	)
-	if query != "" {
-		markup.InlineKeyboard[0] = append(markup.InlineKeyboard[0], tg.InlineKeyboardButton{
-			Text: T("button_more"),
-			SwitchInlineQueryCurrentChat: &query,
-		})
-	}
-
-	rating := map[string]string{
-		"s": T("rating_safe"),
-		"e": T("rating_explicit"),
-		"q": T("rating_questionable"),
-		"?": T("rating_unknown"),
-	}
-	post.Rating = rating[post.Rating]
 
 	switch {
-	case strings.Contains(fmt.Sprint("https:", post.FileURL), ".webm"): // Not support yet. Show tip about "hidden" result
-		video := tg.NewInlineQueryResultVideo(strconv.Itoa(post.ID), fmt.Sprintf("%s/embed/%s", BlushBoard, post.Hash))
-		video.MimeType = "text/html"
-		video.ThumbURL = preview
-		video.Width = post.Width
-		video.Height = post.Height
-		video.Title = T("inline_title", map[string]interface{}{
-			"Type":  strings.Title(T("type_video")),
-			"Owner": post.Owner,
-		})
-		video.Description = T("inline_description", map[string]interface{}{
-			"Rating": post.Rating,
-			"Tags":   post.Tags,
-		})
-		video.InputMessageContent = tg.InputTextMessageContent{
-			Text: T("message_blushboard", map[string]interface{}{
-				"Type":  strings.Title(T("type_video")),
-				"Owner": post.Owner,
-				"URL":   fmt.Sprintf("%s/hash/%s", BlushBoard, post.Hash),
-			}),
-			ParseMode:             parseMarkdown,
-			DisableWebPagePreview: false,
-		}
-		results = append(results, video)
-	case strings.Contains(fmt.Sprint("https:", post.FileURL), ".mp4"): // Just in case. Why not? ¯\_(ツ)_/¯
-		video := tg.NewInlineQueryResultVideo(strconv.Itoa(post.ID), fmt.Sprint("https:", post.FileURL))
-		video.MimeType = "video/mp4"
-		video.ThumbURL = preview
-		video.Width = post.Width
-		video.Height = post.Height
-		/*
-			video.Title = T("inline_title", map[string]interface{}{
-				"Type":  strings.Title(T("type_video")),
-				"Owner": post.Owner,
-			})
-			video.Description = T("inline_description", map[string]interface{}{
-				"Rating": post.Rating,
-				"Tags":   post.Tags,
-			})
-		*/
-		video.ReplyMarkup = &markup
-		results = append(results, video)
-	case strings.Contains(fmt.Sprint("https:", post.FileURL), ".gif"):
-		gif := tg.NewInlineQueryResultGIF(strconv.Itoa(post.ID), fmt.Sprint("https:", post.FileURL))
-		gif.Width = post.Width
-		gif.Height = post.Height
-		gif.ThumbURL = fmt.Sprint("https:", post.FileURL)
-		/*
-			gif.Title = T("inline_title", map[string]interface{}{
-				"Type":  strings.Title(T("type_animation")),
-				"Owner": post.Owner,
-			})
-		*/
-		gif.ReplyMarkup = &markup
-		results = append(results, gif)
+	case len(posts) <= 0:
+		inlineCfg.SwitchPMParameter = cheatsheet
+		inlineCfg.SwitchPMText = T("inline_no_result")
+	case len(posts)%50 == 0:
+		page++
+		inlineCfg.NextOffset = strconv.Itoa(page)
+		inlineCfg.SwitchPMParameter = settings
+		inlineCfg.SwitchPMText = T("inline_button_dashboard")
 	default:
-		image := tg.NewInlineQueryResultPhoto(strconv.Itoa(post.ID), fmt.Sprint("https:", post.FileURL))
-		image.ThumbURL = preview
-		image.Width = post.Width
-		image.Height = post.Height
-		/*
-			image.Title = T("inline_title", map[string]interface{}{
-				"Type":  strings.Title(T("type_image")),
-				"Owner": post.Owner,
-			})
-			image.Description = T("inline_description", map[string]interface{}{
-				"Rating": post.Rating,
-				"Tags":   post.Tags,
-			})
-		*/
-		image.ReplyMarkup = &markup
-		results = append(results, image)
+		inlineCfg.SwitchPMParameter = settings
+		inlineCfg.SwitchPMText = T("inline_button_dashboard")
 	}
+
+	if _, err := bot.AnswerInlineQuery(inlineCfg); err != nil {
+		log.Fatalln("AnswerInlineQuery:", err.Error())
+	}
+
+	<-appMetrika // Send track to Yandex.AppMetrika
 }
 
-func TrackChosenInlineResult(result *tg.ChosenInlineResult) {
-	b.TrackAsync(result.From.ID, struct{ *tg.ChosenInlineResult }{result}, "Find", func(answer botan.Answer, err []error) {
-		log.Ln("Track Find", answer.Status)
-		metrika <- true
-	})
+func collectResults(usr *User, inline *tg.InlineQuery, T i18n.TranslateFunc, posts []gPost) []interface{} {
+	var results []interface{}
+	if len(posts) > 0 {
+		for _, post := range posts {
+			post.FileURL = fmt.Sprint("https:", post.FileURL)
 
-	go AddHitsDB(result.From.ID)
+			if len(post.Tags) >= 30 {
+				post.Tags = fmt.Sprint(post.Tags[:30], "...")
+			}
 
-	<-metrika // Send track to Yandex.AppMetrika
+			preview := fmt.Sprint(
+				glbr["url"].(string),
+				glbr["thumbs_dir"].(string),
+				post.Directory,
+				glbr["thumbs_part"].(string),
+				post.Hash,
+				".jpg",
+			)
+
+			markup := tg.NewInlineKeyboardMarkup(
+				tg.NewInlineKeyboardRow(
+					tg.NewInlineKeyboardButtonURL(T("button_original"), post.FileURL),
+				),
+			)
+
+			if !strings.HasSuffix(post.Image, ".webm") {
+				markup.InlineKeyboard[0] = append(markup.InlineKeyboard[0], tg.NewInlineKeyboardButtonData(
+					T("button_info"),
+					fmt.Sprintf("info %s", fmt.Sprint("glbr", post.ID)),
+				))
+			}
+
+			if inline.Query != "" {
+				markup.InlineKeyboard[0] = append(markup.InlineKeyboard[0], tg.InlineKeyboardButton{
+					Text: T("button_more"),
+					SwitchInlineQueryCurrentChat: &inline.Query,
+				})
+			}
+
+			switch post.Rating {
+			case "s":
+				post.Rating = T("rating_safe")
+			case "q":
+				post.Rating = T("rating_questionable")
+			case "e":
+				post.Rating = T("rating_explicit")
+			default:
+				post.Rating = T("rating_unknown")
+			}
+
+			switch {
+			case strings.Contains(post.FileURL, ".webm"): // Not support yet. Show tip about "hidden" result
+				video := tg.NewInlineQueryResultVideo(fmt.Sprint("glbr", post.ID), fmt.Sprint(bb, "/embed/", post.Hash))
+				video.MimeType = "text/html"
+				video.ThumbURL = preview
+				video.Width = post.Width
+				video.Height = post.Height
+				video.Title = T("inline_title", map[string]interface{}{
+					"Type":  strings.Title(T("type_video")),
+					"Owner": post.Owner,
+				})
+				video.Description = T("inline_description", map[string]interface{}{
+					"Rating": post.Rating,
+					"Tags":   post.Tags,
+				})
+				video.InputMessageContent = tg.InputTextMessageContent{
+					Text: T("message_blushboard", map[string]interface{}{
+						"Type":  strings.Title(T("type_video")),
+						"Owner": post.Owner,
+						"URL":   fmt.Sprint(bb, "/hash/", post.Hash),
+					}),
+					ParseMode:             tg.ModeMarkdown,
+					DisableWebPagePreview: false,
+				}
+				results = append(results, video)
+			case strings.Contains(post.FileURL, ".mp4"): // Just in case. Why not? ¯\_(ツ)_/¯
+				video := tg.NewInlineQueryResultVideo(fmt.Sprint("glbr", post.ID), post.FileURL)
+				video.MimeType = "video/mp4"
+				video.ThumbURL = preview
+				video.Width = post.Width
+				video.Height = post.Height
+				video.Title = T("inline_title", map[string]interface{}{
+					"Type":  strings.Title(T("type_video")),
+					"Owner": post.Owner,
+				})
+				video.Description = T("inline_description", map[string]interface{}{
+					"Rating": post.Rating,
+					"Tags":   post.Tags,
+				})
+				video.ReplyMarkup = &markup
+				results = append(results, video)
+			case strings.Contains(post.FileURL, ".gif"):
+				gif := tg.NewInlineQueryResultGIF(fmt.Sprint("glbr", post.ID), post.FileURL)
+				gif.Width = post.Width
+				gif.Height = post.Height
+				gif.ThumbURL = post.FileURL
+				gif.Title = T("inline_title", map[string]interface{}{
+					"Type":  strings.Title(T("type_animation")),
+					"Owner": post.Owner,
+				})
+				gif.ReplyMarkup = &markup
+				results = append(results, gif)
+			default:
+				image := tg.NewInlineQueryResultPhoto(fmt.Sprint("glbr", post.ID), post.FileURL)
+				image.ThumbURL = preview
+				image.Width = post.Width
+				image.Height = post.Height
+				image.Title = T("inline_title", map[string]interface{}{
+					"Type":  strings.Title(T("type_image")),
+					"Owner": post.Owner,
+				})
+				image.Description = T("inline_description", map[string]interface{}{
+					"Rating": post.Rating,
+					"Tags":   post.Tags,
+				})
+				image.ReplyMarkup = &markup
+				results = append(results, image)
+			}
+		}
+	}
+	return results
+}
+
+func chosenResult(result *tg.ChosenInlineResult) {
+	trackChosenResult(result)
+	<-appMetrika // Send track to Yandex.AppMetrika
 }

@@ -1,28 +1,21 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"log"
+	"net/url"
 	"strconv"
 
-	f "github.com/valyala/fasthttp"
+	json "github.com/pquerna/ffjson/ffjson"
+	http "github.com/valyala/fasthttp"
 )
 
 type (
-	// Arguments for getPosts()
-	Request struct {
-		Limit    int
-		PageID   int
-		Tags     string
-		ChangeID int
-		ID       int
+	request struct {
+		ID, PageID, ChangeID, Limit int
+		Tags                        string
 	}
 
-	// Post defines a structure for Gelbooru only(?)
-	Post struct {
-		Change       int    `json:"change"`
+	gPost struct {
+		Change       int64  `json:"change"`
 		Directory    string `json:"directory"`
 		FileURL      string `json:"file_url"`
 		Hash         string `json:"hash"`
@@ -41,36 +34,41 @@ type (
 	}
 )
 
-func getPosts(req Request) []Post {
-	var args f.Args
-	args.Add("page", "dapi")
-	args.Add("s", "post")
-	args.Add("q", "index")
-	args.Add("json", strconv.Itoa(1))
+func getPosts(req *request) ([]gPost, error) {
+	uri := url.URL{
+		Scheme: "https",
+		Host:   "gelbooru.com",
+		Path:   "index.php",
+	}
+
+	q := uri.Query()
+	q.Add("page", "dapi")
+	q.Add("s", "post")
+	q.Add("q", "index")
+	q.Add("json", strconv.Itoa(1))
 	if req.Limit > 0 {
-		args.Add("limit", strconv.Itoa(req.Limit))
+		q.Add("limit", strconv.Itoa(req.Limit))
 	}
 	if req.PageID > 0 {
-		args.Add("pid", strconv.Itoa(req.PageID))
+		q.Add("pid", strconv.Itoa(req.PageID))
 	}
 	if req.ChangeID > 0 {
-		args.Add("cid", strconv.Itoa(req.ChangeID))
+		q.Add("cid", strconv.Itoa(req.ChangeID))
 	}
 	if req.ID > 0 {
-		args.Add("id", strconv.Itoa(req.ID))
+		q.Add("id", strconv.Itoa(req.ID))
 	}
 	if req.Tags != "" {
-		args.Add("tags", req.Tags)
+		q.Add("tags", req.Tags)
 	}
+	uri.RawQuery = q.Encode()
 
-	repository := fmt.Sprintf("%s/index.php?%s", cfg["resource_url"].(string), args.String())
-	_, resp, err := f.Get(nil, repository)
+	_, resp, err := http.Get(nil, uri.String())
 	if err != nil {
-		log.Printf("[Bot] GET request error: %+v", err)
+		return nil, err
 	}
 
-	var obj []Post
-	json.NewDecoder(bytes.NewReader(resp)).Decode(&obj)
-
-	return obj
+	var obj []gPost
+	err = json.NewDecoder().Decode(resp, &obj)
+	return obj, err
 }

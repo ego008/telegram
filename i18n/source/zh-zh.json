@@ -1,14 +1,10 @@
 [
 	{
 		"id": "language_name",
-		"translation": "🇹🇼 正體中文"
+		"translation": "正體中文"
 	},
 	{
-		"id": "status_true",
-		"translation": "開啟"
-	},
-	{
-		"id": "status_false",
-		"translation": "關閉"
+		"id": "language_flag",
+		"translation": "🇹🇼"
 	}
 ]
