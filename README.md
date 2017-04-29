@@ -8,13 +8,6 @@
 
 Search content from popular repositories in inline-mode.
 
-## Requirements
-- [Golang bindings for the Telegram Bot API](https://github.com/go-telegram-bot-api/telegram-bot-api)
-- [Botan SDK](https://github.com/botanio/sdk#go)
-- [fasthttp](https://github.com/valyala/fasthttp)
-- [myutils](https://github.com/kirillDanshin/myutils)
-- [durafmt](https://github.com/hako/durafmt)
-
 ## Documentation
 - [Contributors](CONTRIBUTORS.md) and Patrons!
 - [License](LICENSE.md)
