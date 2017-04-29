@@ -1,5 +1,5 @@
 build:
-	go build -tags="eggs"
+	go build
 
 production:
 	make translation
