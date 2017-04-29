@@ -3,24 +3,21 @@
 package main
 
 import (
-	"github.com/botanio/sdk/go"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
+
+	tg "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 func init() {
-	log.Println("[Easter eggs] Deactivated!")
+	log.Println("Easter Eggs deactivated!")
 }
 
-// GetEasterEgg could send an easeter egg. But no.
-func getEggMessage(message *tgbotapi.Message) {
-	if message.Chat.IsPrivate() || bot.IsMessageToMe(*message) {
-		// Track all other messages
-		metrika.TrackAsync(message.From.ID, MetrikaMessage{message}, "Message", func(answer botan.Answer, err []error) {
-			log.Printf("[Botan] Track Message %s", answer.Status)
-			appMetrika <- true
-		})
+func msgEasterEgg(msg *tg.Message) {
+	trackMessage(msg, "Message")
+	<-appMetrika
+}
 
-		<-appMetrika
-	}
+func cmdEasterEgg(msg *tg.Message) {
+	trackMessage(msg, "Message")
+	<-appMetrika
 }

@@ -1,0 +1,18 @@
+[
+	{
+		"id": "inline_title",
+		"translation": "{{.Type}} от {{.Owner}}"
+	},
+	{
+		"id": "inline_button_dashboard",
+		"translation": "Открыть настройки"
+	},
+	{
+		"id": "inline_description",
+		"translation": "Рейтинг: {{.Rating}}\nТеги: {{.Tags}}"
+	},
+	{
+		"id": "inline_no_result",
+		"translation": "Здесь никого, кроме нас, цыплят!"
+	}
+]

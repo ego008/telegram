@@ -1,0 +1,40 @@
+superadmin: 00000000
+
+botan:
+  token: ""
+
+patreon:
+  client:
+    id: ""
+    secret: ""
+    redirect_uri: https://site.com/
+  campaign: 000000
+
+telegram:
+  bot:
+    token: 000000:ABCdefGhJKlmnOPQrstuvWXYz0123456789
+  channel:
+    id: -0000000000000
+    invite: https://t.me/joinchat/AAAAADvrT1AbPXlPcyygPQ
+  content:
+    demo: ""
+    cover: ""
+  group:
+    id: -0000000000000
+    invite: https://t.me/joinchat/AkuYYz7PW2FfAKpzVLby7A
+  webhook:
+    set: https://site.com/
+    listen: /
+    serve: 0.0.0.0:8080
+
+discord:
+  invite: https://discord.gg/M8BG7tZ
+
+resource:
+  - name: glbr
+    url: https://gelbooru.com
+    template: glbr
+    cheatsheet: https://gelbooru.com/index.php?page=help&topic=cheatsheet
+    thumbs_dir: /thumbnails/
+    images_dir: images/
+    thumbs_part: /thumbnail_

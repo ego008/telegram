@@ -2,324 +2,578 @@ package main
 
 import (
 	"fmt"
-	"github.com/botanio/sdk/go"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/hako/durafmt"
-	"github.com/valyala/fasthttp"
 	"log"
-	"math/rand"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
-)
 
-const (
-	modeMarkdown = "markdown"
-	//modeHTML     = "html"
-	versionCover     = "AgADAgADO8cxG2OYSwL1_YNSINBpb48ycQ0ABF4-pz5UE6UE1DYCAAEC"
-	versionCodeName  = "2.0 \"Busujima Saeko\""
-	demonstrationGIF = "BQADAgADNwYAAmOYSwLFYMl_HVAaDwI"
+	tg "github.com/go-telegram-bot-api/telegram-bot-api"
+	durafmt "github.com/hako/durafmt"
+	i18n "github.com/nicksnyder/go-i18n/i18n"
+	http "github.com/valyala/fasthttp"
 )
 
 var startUptime = time.Now()
 
-func sendMessages(message *tgbotapi.Message) {
-	isCommand := message.IsCommand()
-	isPrivate := message.Chat.IsPrivate()
-	isMessageToMe := bot.IsMessageToMe(*message)
-	switch {
-	case isCommand && (isPrivate || isMessageToMe):
-		go commandActions(message)
-	case isPrivate && message.From.ID == config.Telegram.Admin && message.Text == "":
-		go getTelegramFileID(message) // Admin feature without tracking
-	default:
-		go getEggMessage(message) // Secret actions and commands ;)
-	}
-}
-
-func commandActions(message *tgbotapi.Message) {
-	lowerCommand := strings.ToLower(message.Command())
-	switch lowerCommand {
-	case "start": // Requirement Telegram platform
-		messageText := fmt.Sprintf(locale.English.Messages.Start, message.From.FirstName, bot.Self.UserName)
-		go sendSimpleMessage(message, lowerCommand, messageText)
-	case "help": // Requirement Telegram platform
-		go sendSimpleMessage(message, lowerCommand, locale.English.Messages.Help)
-	case "cheatsheet":
-		go sendSimpleMessage(message, lowerCommand, locale.English.Messages.CheatSheet)
-	case "random":
-		go sendRandomPost(message)
-	case "info":
-		go sendBotInfo(message)
-	case "donate":
-		go sendSimpleMessage(message, lowerCommand, locale.English.Messages.Donate)
-	}
-}
-
-func sendSimpleMessage(message *tgbotapi.Message, command string, text string) {
-	// Track action
-	metrika.TrackAsync(message.From.ID, MetrikaMessage{message}, "/"+command, func(answer botan.Answer, err []error) {
-		log.Printf("[Botan] Track /%s %s", command, answer.Status)
-		appMetrika <- true
-	})
-
-	// Force feedback
-	if _, err := bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatTyping)); err != nil {
-		log.Printf("[Bot] ChatAction send error: %+v", err)
+func message(msg *tg.Message) {
+	if msg.From.ID == chID || msg.From.ID == bot.Self.ID {
+		return
 	}
 
-	reply := tgbotapi.NewMessage(message.Chat.ID, text)
-	reply.ParseMode = modeMarkdown
-	reply.DisableWebPagePreview = true
-	reply.ReplyToMessageID = message.MessageID
-
-	switch command {
-	case "start":
-		document := tgbotapi.NewDocumentShare(message.Chat.ID, demonstrationGIF)
-		if _, err := bot.Send(document); err != nil {
-			log.Printf("[Bot] Sending message error: %+v", err)
+	if !msg.Chat.IsPrivate() {
+		reply := tg.NewMessage(msg.Chat.ID, "You're an idiot? *I'm only for testing.* 😕\nUse @HentaiDBot instead.")
+		reply.ParseMode = tg.ModeMarkdown
+		if _, err := bot.Send(reply); err != nil {
+			log.Fatalln("Sending message error:", err.Error())
 		}
 
-		inlineKeyboard := tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				// Showing tutorial button for demonstration work
-				tgbotapi.NewInlineKeyboardButtonSwitch(locale.English.Buttons.FastStart, "hatsune_miku rating:safe"),
-			),
-		)
-		reply.ReplyMarkup = &inlineKeyboard
-	case "donate":
-		var donateURL string
-		if message.Chat.IsPrivate() {
-			donateURL = getBotanURL(message.From.ID, config.Links.Donate)
-		} else {
-			donateURL = config.Links.Donate
-		}
-
-		inlineKeyboard := tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Donate, donateURL),
-			),
-		)
-		reply.ReplyMarkup = &inlineKeyboard
-	}
-
-	if _, err := bot.Send(reply); err != nil {
-		log.Printf("[Bot] Sending message error: %+v", err)
-	}
-
-	if command == "help" {
-		document := tgbotapi.NewDocumentShare(message.Chat.ID, demonstrationGIF)
-		if _, err := bot.Send(document); err != nil {
-			log.Printf("[Bot] Sending message error: %+v", err)
+		if _, err := bot.LeaveChat(tg.ChatConfig{ChatID: msg.Chat.ID}); err != nil {
+			log.Fatalln(err.Error())
 		}
 	}
 
-	<-appMetrika // Send track to Yandex.AppMetrika
-}
-
-func sendRandomPost(message *tgbotapi.Message) {
-	// Track action
-	metrika.TrackAsync(message.From.ID, MetrikaMessage{message}, "/random", func(answer botan.Answer, err []error) {
-		log.Printf("[Botan] Track /random %s", answer.Status)
-		appMetrika <- true
-	})
-
-	// Force feedback
-	if _, err := bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatUploadDocument)); err != nil {
-		log.Printf("[Bot] ChatAction send error: %+v", err)
-	}
-
-	randomSource := rand.NewSource(time.Now().UnixNano()) // Maximum randomizing dice
-	totalPosts := getPosts(Request{ID: 0})                // Get last upload post
-	random := rand.New(randomSource)                      // Create magical dice
-	var randomFile []Post
-
-	for {
-		randomPost := random.Intn(totalPosts[0].ID)    // Generate a random ID number from first to last ID post
-		randomFile = getPosts(Request{ID: randomPost}) // Call to selected ID
-		if len(randomFile) > 0 {
-			break // If post is NOT blocked or erroneous
-		}
-		log.Println("[Bot] Nothing. Reroll dice!")
-	}
-
-	log.Printf("[Bot] Get random file by URL: %s", randomFile[0].FileURL)
-	_, body, err := fasthttp.Get(nil, randomFile[0].FileURL)
+	usr, err := getUser(msg.From.ID)
 	if err != nil {
-		log.Printf("[Bot] Get random image by URL error: %+v", err)
+		usr, err = createUser(msg.From.ID)
+		if err != nil {
+			trackMessage(msg, "Message")
+			log.Println("Create user:", err.Error())
+			<-appMetrika
+			return
+		}
 	}
-	bytes := tgbotapi.FileBytes{
-		Name:  randomFile[0].Image,
-		Bytes: body,
-	}
-	uploadFilesProcess(message, bytes, randomFile[0])
 
-	<-appMetrika // Send track to Yandex.AppMetrika
+	T, err := i18n.Tfunc(usr.Language)
+	if err != nil {
+		trackMessage(msg, "Message")
+		log.Println(err.Error())
+		<-appMetrika
+		return
+	}
+
+	isCommand := msg.IsCommand()
+	isPrivate := msg.Chat.IsPrivate()
+	switch {
+	case isCommand:
+		switch strings.ToLower(msg.Command()) {
+		case "start": // Requirement Telegram platform
+			cmdStart(usr, msg, T)
+		case "help": // Requirement Telegram platform
+			cmdHelp(usr, msg, T)
+		case "settings":
+			cmdSettings(usr, msg, T)
+		case "cheatsheet":
+			cmdCheatsheet(usr, msg, T)
+		case "info":
+			cmdInfo(usr, msg, T)
+		case "patreon":
+			cmdPatreon(usr, msg, T)
+		default:
+			cmdEasterEgg(msg)
+		}
+	case !isCommand && msg.ReplyToMessage != nil:
+		if msg.ReplyToMessage.Text == "" || msg.Text == "" {
+			trackMessage(msg, "Message")
+			<-appMetrika
+			return
+		}
+		analyzeReply(usr, msg, T)
+	case !isCommand && isPrivate && msg.Text == "":
+		for _, role := range usr.Roles {
+			if role == "admin" {
+				getTelegramFileID(msg) // Admin feature without tracking
+			}
+		}
+	default:
+		msgEasterEgg(msg) // Secret actions and commands ;)
+	}
 }
 
-func sendBotInfo(message *tgbotapi.Message) {
-	// Track action
-	metrika.TrackAsync(message.From.ID, MetrikaMessage{message}, "/info", func(answer botan.Answer, err []error) {
-		log.Printf("[Botan] Track /info %s", answer.Status)
-		appMetrika <- true
-	})
+func analyzeReply(usr *User, msg *tg.Message, T i18n.TranslateFunc) {
+	trackMessage(msg, "/settings") // Track action
 
-	// Force feedback
-	if _, err := bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatTyping)); err != nil {
-		log.Printf("[Bot] ChatAction send error: %+v", err)
+	limit := 5
+	for _, role := range usr.Roles {
+		if role == patron {
+			limit = 15
+		}
 	}
+
+	switch msg.ReplyToMessage.Text {
+	case T("message_input_blacklist_tags", map[string]interface{}{"Limit": limit}):
+		tags := strings.Split(strings.ToLower(msg.Text), " ")
+
+		limit := 5
+		for _, role := range usr.Roles {
+			if role == patron {
+				limit = 15
+			}
+		}
+
+		if len(tags) >= limit {
+			tags = tags[:limit]
+		}
+
+		if err := usr.tagsRewrite(true, tags); err != nil {
+			log.Println(err.Error())
+			<-appMetrika // Send track to Yandex.metrika
+			return
+		}
+
+		reply := tg.NewMessage(
+			msg.Chat.ID,
+			T(
+				"message_input_tags_success",
+				map[string]interface{}{
+					"Tags": strings.Join(tags, " "),
+				},
+			),
+		)
+		reply.ParseMode = tg.ModeMarkdown
+		if _, err := bot.Send(reply); err != nil {
+			log.Println("Sending message error:", err.Error())
+		}
+	case T("message_input_whitelist_tags", map[string]interface{}{"Limit": limit}):
+		tags := strings.Split(strings.ToLower(msg.Text), " ")
+
+		limit := 5
+		for _, role := range usr.Roles {
+			if role == patron {
+				limit = 15
+			}
+		}
+
+		if len(tags) >= limit {
+			tags = tags[:limit]
+		}
+
+		if err := usr.tagsRewrite(false, tags); err != nil {
+			log.Println(err.Error())
+			<-appMetrika // Send track to Yandex.metrika
+			return
+		}
+
+		reply := tg.NewMessage(
+			msg.Chat.ID,
+			T(
+				"message_input_tags_success",
+				map[string]interface{}{
+					"Tags": strings.Join(tags, " "),
+				},
+			),
+		)
+		reply.ParseMode = tg.ModeMarkdown
+		if _, err := bot.Send(reply); err != nil {
+			log.Println(err.Error())
+		}
+	}
+	<-appMetrika // Send track to Yandex.metrika
+}
+
+func cmdStart(usr *User, msg *tg.Message, T i18n.TranslateFunc) {
+	trackMessage(msg, "/start") // Track action
+
+	args := strings.Split(msg.CommandArguments(), " ")
+	switch {
+	case args[0] == "settings":
+		cmdSettings(usr, msg, T)
+		return
+	case args[0] == "cheatsheet":
+		cmdCheatsheet(usr, msg, T)
+		return
+	case strings.HasPrefix(args[0], "code_"):
+		args = strings.Split(args[0], "_")
+		id, err := strconv.Atoi(args[1])
+		if err != nil {
+			log.Println(err.Error())
+			<-appMetrika // Send track to Yandex.metrika
+			return
+		}
+
+		if id != msg.From.ID {
+			log.Println("not contain or not compare id")
+			<-appMetrika // Send track to Yandex.metrika
+			return
+		}
+
+		resp, err := p.ValidateReceipt(args[2])
+		if err != nil {
+			log.Println(err.Error())
+			<-appMetrika // Send track to Yandex.metrika
+			return
+		}
+
+		pUser, err := p.GetCurrentUser(resp.AccessToken)
+		if err != nil {
+			log.Println(err.Error())
+			<-appMetrika // Send track to Yandex.metrika
+			return
+		}
+
+		usr, err = usr.patreonSave(pUser.Data.Attributes.FullName, resp.AccessToken, resp.RefreshToken)
+		if err != nil {
+			log.Println(err.Error())
+			<-appMetrika // Send track to Yandex.metrika
+			return
+		}
+
+		reply := tg.NewMessage(
+			msg.Chat.ID,
+			T(
+				"message_patron_connected",
+				map[string]interface{}{
+					"FullName": usr.Patreon.FullName,
+				},
+			),
+		)
+		reply.ParseMode = tg.ModeMarkdown
+		if _, err := bot.Send(reply); err != nil {
+			log.Println("Sending message error:", err.Error())
+		}
+
+		<-appMetrika // Send track to Yandex.metrika
+		return
+	}
+
+	bot.Send(tg.NewChatAction(msg.Chat.ID, tg.ChatTyping)) // Force feedback
+
+	demo := cfg.UString("telegram.content.demo")
+	if demo != "" {
+		document := tg.NewDocumentShare(msg.Chat.ID, demo)
+		if _, err := bot.Send(document); err != nil {
+			log.Println("Sending message error:", err.Error())
+			<-appMetrika // Send track to Yandex.metrika
+			return
+		}
+	}
+
+	exampleQuery := "hatsune_miku rating:safe"
+	markup := tg.NewInlineKeyboardMarkup(
+		tg.NewInlineKeyboardRow(
+			tg.InlineKeyboardButton{
+				Text: T("button_try"),
+				SwitchInlineQueryCurrentChat: &exampleQuery,
+			},
+		),
+	)
+
+	text := T("message_start", map[string]interface{}{"FirstName": msg.From.FirstName, "BotName": bot.Self.UserName})
+	reply := tg.NewMessage(msg.Chat.ID, text)
+	reply.ParseMode = tg.ModeMarkdown
+	reply.ReplyMarkup = &markup
+	if _, err := bot.Send(reply); err != nil {
+		log.Println("Sending message error:", err.Error())
+	}
+
+	<-appMetrika // Send track to Yandex.metrika
+}
+
+func cmdHelp(usr *User, msg *tg.Message, T i18n.TranslateFunc) {
+	trackMessage(msg, "/help")                             // Track action
+	bot.Send(tg.NewChatAction(msg.Chat.ID, tg.ChatTyping)) // Force feedback
+
+	demo := cfg.UString("telegram.content.demo")
+	if demo != "" {
+		document := tg.NewDocumentShare(msg.Chat.ID, demo)
+		if _, err := bot.Send(document); err != nil {
+			log.Println("Sending message error:", err.Error())
+			<-appMetrika // Send track to Yandex.metrika
+			return
+		}
+	}
+
+	reply := tg.NewMessage(msg.Chat.ID, T("message_help"))
+	reply.ParseMode = tg.ModeMarkdown
+	reply.DisableWebPagePreview = true
+	if _, err := bot.Send(reply); err != nil {
+		log.Println("Sending message error:", err.Error())
+	}
+
+	<-appMetrika // Send track to Yandex.metrika
+}
+
+func cmdSettings(usr *User, msg *tg.Message, T i18n.TranslateFunc) {
+	trackMessage(msg, "/settings")                         // Track action
+	bot.Send(tg.NewChatAction(msg.Chat.ID, tg.ChatTyping)) // Force feedback
+
+	var ratings string
+	rt := usr.Ratings
+	switch {
+	case !rt.Safe && !rt.Questionale && !rt.Explicit, rt.Safe && rt.Questionale && rt.Explicit:
+		ratings = T("rating_all")
+	case rt.Safe && !rt.Questionale && !rt.Explicit:
+		ratings = T("rating_safe")
+	case !rt.Safe && rt.Questionale && !rt.Explicit:
+		ratings = T("rating_questionable")
+	case !rt.Safe && !rt.Questionale && rt.Explicit:
+		ratings = T("rating_explicit")
+	case !rt.Safe && rt.Questionale && rt.Explicit:
+		ratings = fmt.Sprint(T("rating_questionable"), "+", T("rating_explicit"))
+	case rt.Safe && !rt.Questionale && rt.Explicit:
+		ratings = fmt.Sprint(T("rating_safe"), "+", T("rating_explicit"))
+	case rt.Safe && rt.Questionale && !rt.Explicit:
+		ratings = fmt.Sprint(T("rating_safe"), "+", T("rating_questionable"))
+	}
+
+	markup := tg.NewInlineKeyboardMarkup(
+		tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonData(T("button_language", map[string]interface{}{"Flag": T("language_flag")}), "language menu"),
+		),
+		tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonData(T("button_resources"), "resources menu"),
+		),
+		tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonData(T("button_ratings"), "ratings menu"),
+		),
+		tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonData(T("button_blacklist"), "blacklist menu"),
+		),
+		tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonData(T("button_whitelist"), "whitelist menu"),
+		),
+	)
+
+	text := T("message_settings", map[string]interface{}{
+		"Language":  T("language_name"),
+		"Ratings":   ratings,
+		"Blacklist": strings.Join(usr.Blacklist, " "),
+		"Whitelist": strings.Join(usr.Whitelist, " "),
+	})
+	reply := tg.NewMessage(msg.Chat.ID, text)
+	reply.ParseMode = tg.ModeMarkdown
+	reply.DisableWebPagePreview = true
+	reply.ReplyMarkup = &markup
+	if _, err := bot.Send(reply); err != nil {
+		log.Println("Sending message error:", err.Error())
+	}
+
+	<-appMetrika // Send track to Yandex.metrika
+}
+
+func cmdCheatsheet(usr *User, msg *tg.Message, T i18n.TranslateFunc) {
+	trackMessage(msg, "/cheatsheet")                       // Track action
+	bot.Send(tg.NewChatAction(msg.Chat.ID, tg.ChatTyping)) // Force feedback
+
+	reply := tg.NewMessage(msg.Chat.ID, T("message_cheatsheet"))
+	reply.ParseMode = tg.ModeMarkdown
+	reply.DisableWebPagePreview = true
+	if _, err := bot.Send(reply); err != nil {
+		log.Println("Sending message error:", err.Error())
+	}
+
+	<-appMetrika // Send track to Yandex.metrika
+}
+
+func cmdPatreon(usr *User, msg *tg.Message, T i18n.TranslateFunc) {
+	trackMessage(msg, "/patreon")                          // Track action
+	bot.Send(tg.NewChatAction(msg.Chat.ID, tg.ChatTyping)) // Force feedback
+
+	users, err := getUsers()
+	if err != nil {
+		log.Println(err.Error())
+		<-appMetrika // Send track to Yandex.metrika
+		return
+	}
+
+	pCheckout := &url.URL{
+		Scheme: "https",
+		Host:   "patreon.com",
+		Path:   "/bePatron",
+	}
+	q := pCheckout.Query()
+	q.Add("u", strconv.Itoa(pCampaign))
+	pCheckout.RawQuery = q.Encode()
+
+	var markup tg.InlineKeyboardMarkup
+	markup.InlineKeyboard = append(markup.InlineKeyboard, tg.NewInlineKeyboardRow(
+		tg.NewInlineKeyboardButtonURL(T("button_patreon_checkout"), pCheckout.String()),
+	))
+
+	if usr.Patreon.AccessToken == "" {
+		pConnect := &url.URL{
+			Scheme: "https",
+			Host:   "patreon.com",
+			Path:   "/oauth2/authorize",
+		}
+		q := pConnect.Query()
+		q.Add("response_type", "code")
+		q.Add("client_id", p.ID)
+		q.Add("redirect_uri", p.RedirectURI)
+		q.Add("scope", "users pledges-to-me")
+		q.Add("state", strconv.Itoa(msg.From.ID))
+		pConnect.RawQuery = q.Encode()
+
+		markup.InlineKeyboard = append(markup.InlineKeyboard, tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonURL(T("button_patreon_connect"), pConnect.String()),
+		))
+	} else {
+		markup.InlineKeyboard = append(markup.InlineKeyboard, tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonData(T("button_patreon_check"), "patreon check"),
+		))
+		markup.InlineKeyboard = append(markup.InlineKeyboard, tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButtonData(
+				T("button_patreon_disconnect", map[string]interface{}{"Account": usr.Patreon.FullName}),
+				"patreon unlink",
+			),
+		))
+	}
+
+	text := T("message_patreon_empty")
+	var names []string
+	for _, user := range users {
+		isPatron := false
+		for _, role := range user.Roles {
+			if role == patron {
+				isPatron = true
+			}
+		}
+		if isPatron && user.Patreon.FullName != "" {
+			names = append(names, user.Patreon.FullName)
+		}
+	}
+
+	if len(names) > 0 {
+		text = T("message_patreon", map[string]interface{}{
+			"Patrons": strings.Join(names, "\n"),
+		})
+	}
+
+	reply := tg.NewMessage(msg.Chat.ID, text)
+	reply.ParseMode = tg.ModeMarkdown
+	reply.DisableWebPagePreview = true
+	reply.ReplyMarkup = &markup
+	if _, err := bot.Send(reply); err != nil {
+		log.Println("Sending message error:", err.Error())
+	}
+
+	<-appMetrika // Send track to Yandex.metrika
+}
+
+func cmdInfo(usr *User, msg *tg.Message, T i18n.TranslateFunc) {
+	trackMessage(msg, "/info")                             // Track action
+	bot.Send(tg.NewChatAction(msg.Chat.ID, tg.ChatTyping)) // Force feedback
 
 	uptimePeriod := time.Since(startUptime).String()
 	uptime, err := durafmt.ParseString(uptimePeriod)
 	if err != nil {
-		fmt.Printf("[Bot] DuraFmt error: %+v", err)
+		log.Println(err.Error())
+		<-appMetrika // Send track to Yandex.metrika
+		return
 	}
 
-	inlineKeyboard := tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Channel, config.Links.Channel),
-			tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Group, config.Links.Group),
-		),
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Rate, config.Links.Rate+bot.Self.UserName),
-		),
-	)
-	photo := tgbotapi.NewPhotoShare(message.Chat.ID, versionCover)
-	photo.Caption = fmt.Sprintf(locale.English.Messages.Info, versionCodeName, uptime.String())
-	photo.ReplyToMessageID = message.MessageID
-	photo.ReplyMarkup = &inlineKeyboard
-	if _, err := bot.Send(photo); err != nil {
-		log.Printf("[Bot] Sending message error: %+v", err)
+	var markup tg.InlineKeyboardMarkup
+	var social []tg.InlineKeyboardButton
+
+	chInvite := cfg.UString("telegram.channel.invite")
+	if chInvite != "" {
+		social = append(social, tg.NewInlineKeyboardButtonURL(
+			T("button_channel"), chInvite,
+		))
 	}
 
-	<-appMetrika // Send track to Yandex.AppMetrika
-}
+	gInvite := cfg.UString("telegram.group.invite")
+	if gInvite != "" {
+		social = append(social, tg.NewInlineKeyboardButtonURL(
+			T("button_group"), gInvite,
+		))
+	}
 
-func uploadFilesProcess(message *tgbotapi.Message, bytes tgbotapi.FileBytes, randomFile Post) {
-	var inlineKeyboard tgbotapi.InlineKeyboardMarkup
-	if message.Chat.IsPrivate() == true { // Add share-button if chat is private
-		originalLink := getBotanURL(message.From.ID, randomFile.FileURL)
-		inlineKeyboard = tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Original, originalLink),
-				tgbotapi.NewInlineKeyboardButtonSwitch(locale.English.Buttons.Share, "id:"+strconv.Itoa(randomFile.ID)),
-			),
-		)
+	dInvite := cfg.UString("discord.invite")
+	if dInvite != "" {
+		social = append(social, tg.NewInlineKeyboardButtonURL(
+			T("button_discord"), dInvite,
+		))
+	}
+
+	markup.InlineKeyboard = append(markup.InlineKeyboard, social)
+	markup.InlineKeyboard = append(markup.InlineKeyboard, tg.NewInlineKeyboardRow(
+		tg.NewInlineKeyboardButtonURL(T("button_rate"), fmt.Sprint("https://t.me/storebot?start=", bot.Self.UserName)),
+	))
+
+	cover := cfg.UString("telegram.content.cover")
+	if cover != "" {
+		photo := tg.NewPhotoShare(msg.Chat.ID, cover)
+		photo.Caption = T("message_info_caption", map[string]interface{}{
+			"Version": fmt.Sprintf("%s (%d)", version, build),
+			"UpTime":  uptime.String(),
+		})
+		photo.ReplyMarkup = &markup
+		if _, err := bot.Send(photo); err != nil {
+			log.Println("Sending message error:", err.Error())
+		}
 	} else {
-		inlineKeyboard = tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonURL(locale.English.Buttons.Original, randomFile.FileURL),
-			),
-		)
+		reply := tg.NewMessage(msg.Chat.ID, T("message_info", map[string]interface{}{
+			"Version": fmt.Sprintf("%s (%d)", version, build),
+			"UpTime":  uptime.String(),
+		}))
+		reply.ReplyMarkup = &markup
+		reply.ParseMode = tg.ModeMarkdown
+		if _, err := bot.Send(reply); err != nil {
+			log.Println("Sending message error:", err.Error())
+		}
 	}
 
-	// Force feedback
-	if _, err := bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatUploadDocument)); err != nil {
-		log.Printf("[Bot] ChatAction send error: %+v", err)
-	}
-
-	switch {
-	case strings.Contains(randomFile.FileURL, ".mp4"):
-		video := tgbotapi.NewVideoUpload(message.Chat.ID, bytes)
-		video.ReplyToMessageID = message.MessageID
-		video.ReplyMarkup = &inlineKeyboard
-		if _, err := bot.Send(video); err != nil {
-			log.Printf("[Bot] Sending message error: %+v", err)
-		}
-	case strings.Contains(randomFile.FileURL, ".gif") || strings.Contains(randomFile.FileURL, ".webm"):
-		gif := tgbotapi.NewDocumentUpload(message.Chat.ID, bytes)
-		gif.ReplyToMessageID = message.MessageID
-		gif.ReplyMarkup = &inlineKeyboard
-		if _, err := bot.Send(gif); err != nil {
-			log.Printf("[Bot] Sending message error: %+v", err)
-		}
-	default:
-		image := tgbotapi.NewPhotoUpload(message.Chat.ID, bytes)
-		image.ReplyToMessageID = message.MessageID
-		image.ReplyMarkup = &inlineKeyboard
-		if _, err := bot.Send(image); err != nil {
-			log.Printf("[Bot] Sending message error: %+v", err)
-		}
-	}
+	<-appMetrika // Send track to Yandex.metrika
 }
 
-func getTelegramFileID(message *tgbotapi.Message) {
+func getTelegramFileID(msg *tg.Message) {
 	var uploadFileInfo string
 	switch {
-	case message.Audio != nil: // Upload file as Voice
-		if strings.Contains(message.Audio.MimeType, "ogg") == true {
-			voice := getVoiceFromAudio(message)
+	case msg.Audio != nil: // Upload file as Voice
+		if strings.Contains(msg.Audio.MimeType, "ogg") {
+			voice, err := getVoiceFromAudio(msg)
+			if err != nil {
+				log.Println(err.Error())
+				return
+			}
 			uploadFileInfo = fmt.Sprintf("ID: %s", voice)
 		} else {
-			uploadFileInfo = fmt.Sprintf("ID: %s", message.Audio.FileID)
+			uploadFileInfo = fmt.Sprintf("ID: %s", msg.Audio.FileID)
 		}
-	case message.Document != nil:
-		uploadFileInfo = fmt.Sprintf("ID: %s", message.Document.FileID)
-	case message.Photo != nil: // Get large file ID
-		photo := getLargePhoto(message)
-		uploadFileInfo = fmt.Sprintf("ID: %s", photo)
-	case message.Sticker != nil:
-		uploadFileInfo = fmt.Sprintf("ID: %s", message.Sticker.FileID)
-	case message.Video != nil:
-		uploadFileInfo = fmt.Sprintf("ID: %s", message.Video.FileID)
-	case message.Voice != nil:
-		uploadFileInfo = fmt.Sprintf("ID: %s", message.Voice.FileID)
+	case msg.Document != nil:
+		uploadFileInfo = fmt.Sprintf("ID: %s", msg.Document.FileID)
+	case msg.Photo != nil: // Get large file ID
+		photos := *msg.Photo
+		uploadFileInfo = fmt.Sprintf("ID: %s", photos[len(photos)-1].FileID)
+	case msg.Sticker != nil:
+		uploadFileInfo = fmt.Sprintf("ID: %s", msg.Sticker.FileID)
+	case msg.Video != nil:
+		uploadFileInfo = fmt.Sprintf("ID: %s", msg.Video.FileID)
+	case msg.Voice != nil:
+		uploadFileInfo = fmt.Sprintf("ID: %s", msg.Voice.FileID)
 	}
-	reply := tgbotapi.NewMessage(message.Chat.ID, uploadFileInfo)
-	reply.ReplyToMessageID = message.MessageID
+	reply := tg.NewMessage(msg.Chat.ID, uploadFileInfo)
+	reply.ReplyToMessageID = msg.MessageID
 	if _, err := bot.Send(reply); err != nil {
-		log.Printf("[Bot] Sending message error: %+v", err)
+		log.Println(err.Error())
 	}
 }
 
-func getLargePhoto(message *tgbotapi.Message) string {
-	photo := *message.Photo
-	id := 0
-	for i, v := range photo {
-		if v.Width > photo[id].Width {
-			id = i
-		}
-	}
-	return photo[id].FileID
-}
+func getVoiceFromAudio(msg *tg.Message) (string, error) {
+	bot.Send(tg.NewChatAction(msg.Chat.ID, tg.ChatRecordAudio))
 
-func getVoiceFromAudio(message *tgbotapi.Message) string {
-	if _, err := bot.Send(tgbotapi.NewChatAction(message.Chat.ID, tgbotapi.ChatRecordAudio)); err != nil {
-		log.Printf("[Bot] ChatAction send error: %+v", err)
-	}
-
-	url, err := bot.GetFileDirectURL(message.Audio.FileID)
+	link, err := bot.GetFileDirectURL(msg.Audio.FileID)
 	if err != nil {
-		log.Printf("ERROR: %+v", err)
+		return "", err
 	}
 
-	_, body, err := fasthttp.Get(nil, url)
+	_, body, err := http.Get(nil, link)
 	if err != nil {
-		log.Printf("Get file error: %+v", err)
+		return "", err
 	}
-	bytes := tgbotapi.FileBytes{
-		Name:  message.Audio.FileID,
+	bytes := tg.FileBytes{
+		Name:  msg.Audio.FileID,
 		Bytes: body,
 	}
 
-	voice := tgbotapi.NewVoiceUpload(message.Chat.ID, bytes)
-	voice.Duration = message.Audio.Duration
-	voice.ReplyToMessageID = message.MessageID
+	voice := tg.NewVoiceUpload(msg.Chat.ID, bytes)
+	voice.Duration = msg.Audio.Duration
+	voice.ReplyToMessageID = msg.MessageID
 	resp, err := bot.Send(voice)
 	if err != nil {
-		log.Printf("Sending message error: %+v", err)
+		return "", err
 	}
 
-	return resp.Voice.FileID
-}
-
-// Generate personal tracking-link
-func getBotanURL(ID int, URL string) string {
-	const botan = "https://api.botan.io/s/"
-	status, botanURL, err := fasthttp.Get(nil, botan+"?token="+config.Botan.Token+"&user_ids="+strconv.Itoa(ID)+"&url="+URL)
-	if err != nil || status != 200 {
-		log.Printf("[Botan] Generate URL error: %+v", err)
-		botanURL = []byte(URL)
-	}
-	return string(botanURL)
+	return resp.Voice.FileID, nil
 }

@@ -1,70 +1,74 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
-	"github.com/kirillDanshin/myutils"
-	"github.com/valyala/fasthttp"
-	"log"
 	"net/url"
 	"strconv"
+
+	json "github.com/pquerna/ffjson/ffjson"
+	http "github.com/valyala/fasthttp"
 )
 
 type (
-	// Arguments for getPosts()
-	Request struct {
-		Limit    int
-		PageID   int
-		Tags     string
-		ChangeID int
-		ID       int
+	request struct {
+		ID, PageID, ChangeID, Limit int
+		Tags                        string
 	}
 
-	// Post defines a structure for Danbooru only(?)
-	Post struct {
+	gPost struct {
+		Change       int64  `json:"change"`
 		Directory    string `json:"directory"`
+		FileURL      string `json:"file_url"`
 		Hash         string `json:"hash"`
 		Height       int    `json:"height"`
 		ID           int    `json:"id"`
 		Image        string `json:"image"`
-		Change       int    `json:"change"`
 		Owner        string `json:"owner"`
 		ParentID     int    `json:"parent_id"`
 		Rating       string `json:"rating"`
-		Sample       string `json:"sample"`
+		Sample       bool   `json:"sample"`
 		SampleHeight int    `json:"sample_height"`
 		SampleWidth  int    `json:"sample_width"`
 		Score        int    `json:"score"`
 		Tags         string `json:"tags"`
 		Width        int    `json:"width"`
-		FileURL      string `json:"file_url"`
 	}
 )
 
-// Universal(?) function obtain content
-func getPosts(req Request) []Post {
-	repository := myutils.Concat(config.Resource[20].Settings.URL, "index.php?page=dapi&s=post&q=index&json=1")
-	switch {
-	case req.Limit > 0:
-		repository = myutils.Concat(repository, "&limit=", strconv.Itoa(req.Limit))
-		fallthrough
-	case req.PageID > 0:
-		repository = myutils.Concat(repository, "&pid=", strconv.Itoa(req.PageID))
-		fallthrough
-	case req.Tags != "":
-		repository = myutils.Concat(repository, "&tags=", url.QueryEscape(req.Tags))
-		fallthrough
-	case req.ChangeID > 0:
-		repository = myutils.Concat(repository, "&cid=", strconv.Itoa(req.ChangeID))
-		fallthrough
-	case req.ID > 0:
-		repository = myutils.Concat(repository, "&id=", strconv.Itoa(req.ID))
+func getPosts(req *request) ([]gPost, error) {
+	uri := url.URL{
+		Scheme: "https",
+		Host:   "gelbooru.com",
+		Path:   "index.php",
 	}
-	_, resp, err := fasthttp.Get(nil, repository)
+
+	q := uri.Query()
+	q.Add("page", "dapi")
+	q.Add("s", "post")
+	q.Add("q", "index")
+	q.Add("json", strconv.Itoa(1))
+	if req.Limit > 0 {
+		q.Add("limit", strconv.Itoa(req.Limit))
+	}
+	if req.PageID > 0 {
+		q.Add("pid", strconv.Itoa(req.PageID))
+	}
+	if req.ChangeID > 0 {
+		q.Add("cid", strconv.Itoa(req.ChangeID))
+	}
+	if req.ID > 0 {
+		q.Add("id", strconv.Itoa(req.ID))
+	}
+	if req.Tags != "" {
+		q.Add("tags", req.Tags)
+	}
+	uri.RawQuery = q.Encode()
+
+	_, resp, err := http.Get(nil, uri.String())
 	if err != nil {
-		log.Printf("[Bot] GET request error: %+v", err)
+		return nil, err
 	}
-	var obj []Post
-	json.NewDecoder(bytes.NewReader(resp)).Decode(&obj)
-	return obj
+
+	var obj []gPost
+	err = json.NewDecoder().Decode(resp, &obj)
+	return obj, err
 }

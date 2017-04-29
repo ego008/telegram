@@ -1,0 +1,14 @@
+[
+	{
+		"id": "achievements_hidden_title",
+		"translation":  "Скрытых достижений осталось: {{.Count}}"
+	},
+	{
+		"id": "achievements_hidden_description",
+		"translation": "Информация о каждом достижении будет доступна после его получения"
+	},
+	{
+		"id": "achievements_unlocked",
+		"translation": "Ты получил все достижения. Поздравляем!"
+	}
+]
