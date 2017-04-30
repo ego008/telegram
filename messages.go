@@ -17,31 +17,23 @@ import (
 var startUptime = time.Now()
 
 func message(msg *tg.Message) {
-	if msg.From.ID == chID || msg.From.ID == bot.Self.ID {
+	if msg.From.ID == bot.Self.ID {
 		return
 	}
 
 	if !msg.Chat.IsPrivate() {
-		reply := tg.NewMessage(msg.Chat.ID, "You're an idiot? *I'm only for testing.* 😕\nUse @HentaiDBot instead.")
-		reply.ParseMode = tg.ModeMarkdown
-		if _, err := bot.Send(reply); err != nil {
-			log.Fatalln("Sending message error:", err.Error())
-		}
-
 		if _, err := bot.LeaveChat(tg.ChatConfig{ChatID: msg.Chat.ID}); err != nil {
-			log.Fatalln(err.Error())
+			log.Println(err.Error())
+			return
 		}
 	}
 
 	usr, err := getUser(msg.From.ID)
 	if err != nil {
-		usr, err = createUser(msg.From.ID)
-		if err != nil {
-			trackMessage(msg, "Message")
-			log.Println("Create user:", err.Error())
-			<-appMetrika
-			return
-		}
+		trackMessage(msg, "Message")
+		log.Println("Get user:", err.Error())
+		<-appMetrika
+		return
 	}
 
 	T, err := i18n.Tfunc(usr.Language)

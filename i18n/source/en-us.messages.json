@@ -9,7 +9,7 @@
 	},
 	{
 		"id": "message_help",
-		"translation": "/settings - your personal search settings;\n/cheatsheet - get a cheatsheet of advanced search;\n/random - get an absolutely random post (based on the settings);\n/patreon - support for bot and activation of awards through Patreon system;\n/info - other information and official communities;"
+		"translation": "/settings - your personal search settings;\n/cheatsheet - get a cheatsheet of advanced search;\n/patreon - support for bot and activation of awards through Patreon system;\n/info - other information and official communities;"
 	},
 	{
 		"id": "message_info",

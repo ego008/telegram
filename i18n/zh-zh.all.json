@@ -117,7 +117,7 @@
     "other": "*標籤一 標籤二*\n用以搜尋帶有 `標籤一` 和 `標籤二` 的文章。\n\n*~標籤一 ~標籤二*\n用來搜尋帶有 `標籤一` 或者是 `標籤二` 的文章。（目前還不支援）\n\n*夜晚~*\n模糊搜尋 `夜晚` 標籤。這將會使得符合 `夜晚 傍晚 晚上` 或者是任何符合[萊文斯坦距離](http://en.wikipedia.org/wiki/Levenshtein_distance)的文章都成為搜尋結果。\n\n*-標籤一*\n搜尋沒有 `標籤一` 的文章。\n\n*標∗一*\n用以搜尋 `標` 開頭然後 `一` 結尾的文章。\n\n*user:bob*\n搜尋使用者 `Bob` 發表的任何文章。\n\n*md5:foo*\n用以搜尋 MD5 碼是 `foo` 的文章。\n\n*md5:foo∗*\n用以搜尋開 MD5 碼開頭是 `foo` 的文章。\n\n*page:16*\n顯示從第 16 頁開始的結果。\n\n*lang:en*\n取得以英文顯示的搜尋結果。\n\n*rating:questionable*\n搜尋被評級為 `questionable` 的文章。\n\n*-rating:questionable*\n用以搜尋沒有被評級為 `questionable` 的文章。\n\n*parent:1234*\n用以搜尋父文章是 `1234` 的文章（同時包含 `1234` 的文章）。\n\n*rating:questionable rating:safe*\n你沒有辦法使用這種方式，因為有兩個重複的標籤。\n\n*rating:questionable parent:100*\n不過你可以將不同標籤組合在一起。\n\n*width:\u003e=1000 height:\u003e1000*\n尋找寬度大於或是等於 `1000` 而且高度大於 `1000` 的圖片。\n\n*score:\u003e=10*\n搜尋分數大於或是等於 `10` 的圖片。這個數值會在每天的 12AM CST 更新。\n\n*sort:updated:desc*\n由最新排序為主。\n\n*其他的排序方式：*\n• `id`\n• `score`\n• `rating`\n• `user`\n• `height`\n• `width`\n• `parent`\n• `source`\n• `updated`\n這些都可以由 `asc` 或是 `desc` 排序。"
   },
   "message_help": {
-    "other": "/settings - 你的個人化搜尋設置；\n/cheatsheet - 得知在 Gelbooru 中進階搜尋的用法；\n/random - 取得隨機文章（基於設定）；\n/patreon - 透過 Patreon 來支援這個機器人並解鎖獎勵；\n/info - 其他資訊和官方社群；"
+    "other": "/settings - 你的個人化搜尋設置；\n/cheatsheet - 得知在 Gelbooru 中進階搜尋的用法；\n/patreon - 透過 Patreon 來支援這個機器人並解鎖獎勵；\n/info - 其他資訊和官方社群；"
   },
   "message_info": {
     "other": "*建立者:* @toby3d\n*倉庫：* [HentaiDB](https://github.com/HentaiDB)/[HentaiDBot](https://github.com/HentaiDB/HentaiDBot)\n*版本：* {{.Version}}\n*上線時間：* {{.UpTime}}"
