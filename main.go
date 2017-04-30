@@ -17,7 +17,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
-	log.Printf("Authorized as @%s", bot.Self.UserName)
+	log.Print("Authorized as @", bot.Self.UserName)
 
 	bot.Debug = *flagDebug
 

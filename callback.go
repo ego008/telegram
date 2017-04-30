@@ -31,12 +31,12 @@ func callback(callback *tg.CallbackQuery) {
 
 	usr, err := getUser(callback.From.ID)
 	if err != nil {
-		log.Fatalln("Create user:", err.Error())
+		log.Println("Get user:", err.Error())
 	}
 
 	T, err := i18n.Tfunc(usr.Language)
 	if err != nil {
-		log.Fatalln(err.Error())
+		log.Println(err.Error())
 	}
 
 	data := strings.Split(callback.Data, " ")
@@ -60,7 +60,7 @@ func callback(callback *tg.CallbackQuery) {
 	case "soon":
 		call := tg.NewCallback(callback.ID, "Soon™")
 		if _, err := bot.AnswerCallbackQuery(call); err != nil {
-			log.Fatalln(err.Error())
+			log.Println(err.Error())
 		}
 	}
 
@@ -72,19 +72,23 @@ func callPatreon(usr *User, callback *tg.CallbackQuery, T i18n.TranslateFunc, da
 	case "check":
 		pUser, err := p.GetCurrentUser(usr.Patreon.AccessToken)
 		if err != nil {
-			log.Fatalln(err.Error())
+			log.Println(err.Error())
+			if _, err := usr.removeRoles(patron); err != nil {
+				log.Println(err.Error())
+			}
+			return
 		}
 
 		for _, inc := range pUser.Included {
 			if inc.Type == "reward" {
 				if inc.Relationships.Campaign.Data.ID == pCampaign {
 					if _, err := usr.addRoles(patron); err != nil {
-						log.Fatalln(err.Error())
+						log.Println(err.Error())
 					}
 
 					call := tg.NewCallback(callback.ID, T("message_patreon_has_reward"))
 					if _, err := bot.AnswerCallbackQuery(call); err != nil {
-						log.Fatalln(err.Error())
+						log.Println(err.Error())
 					}
 					return
 				}
@@ -92,29 +96,29 @@ func callPatreon(usr *User, callback *tg.CallbackQuery, T i18n.TranslateFunc, da
 		}
 
 		if _, err := usr.removeRoles(patron); err != nil {
-			log.Fatalln(err.Error())
+			log.Println(err.Error())
 		}
 
 		call := tg.NewCallback(callback.ID, T("message_patreon_no_reward"))
 		if _, err := bot.AnswerCallbackQuery(call); err != nil {
-			log.Fatalln(err.Error())
+			log.Println(err.Error())
 		}
 	case "unlink":
 		usr, err = usr.patreonSave("", "", "")
 		if err != nil {
-			log.Fatalln(err.Error())
+			log.Println(err.Error())
 		}
 
 		usr, err = usr.removeRoles(patron)
 		if err != nil {
-			log.Fatalln(err.Error())
+			log.Println(err.Error())
 		}
 
 		showPatreonKeyboard(usr, callback, T)
 
 		call := tg.NewCallback(callback.ID, T("message_patron_disconnected"))
 		if _, err := bot.AnswerCallbackQuery(call); err != nil {
-
+			log.Println(err.Error())
 		}
 	}
 }
@@ -129,19 +133,19 @@ func callRatings(usr *User, callback *tg.CallbackQuery, T i18n.TranslateFunc, da
 		case "s":
 			usr, err = usr.changeRatings(!usr.Ratings.Safe, usr.Ratings.Questionale, usr.Ratings.Explicit)
 			if err != nil {
-				log.Fatalln(err.Error())
+				log.Println(err.Error())
 			}
 			showRatingsKeyboard(usr, callback, T)
 		case "q":
 			usr, err = usr.changeRatings(usr.Ratings.Safe, !usr.Ratings.Questionale, usr.Ratings.Explicit)
 			if err != nil {
-				log.Fatalln(err.Error())
+				log.Println(err.Error())
 			}
 			showRatingsKeyboard(usr, callback, T)
 		case "e":
 			usr, err = usr.changeRatings(usr.Ratings.Safe, usr.Ratings.Questionale, !usr.Ratings.Explicit)
 			if err != nil {
-				log.Fatalln(err.Error())
+				log.Println(err.Error())
 			}
 			showRatingsKeyboard(usr, callback, T)
 		}
@@ -156,7 +160,7 @@ func callLanguage(usr *User, callback *tg.CallbackQuery, T i18n.TranslateFunc, d
 	case "change":
 		usr, err = usr.changeLanguage(data[2])
 		if err != nil {
-			log.Fatalln(err.Error())
+			log.Println(err.Error())
 		}
 
 		T, _ = i18n.Tfunc(usr.Language)
@@ -166,7 +170,7 @@ func callLanguage(usr *User, callback *tg.CallbackQuery, T i18n.TranslateFunc, d
 
 		call := tg.NewCallback(callback.ID, T("message_language_selected"))
 		if _, err := bot.AnswerCallbackQuery(call); err != nil {
-			log.Fatalln(err.Error())
+			log.Println(err.Error())
 		}
 	}
 }
@@ -181,7 +185,7 @@ func callTagList(usr *User, callback *tg.CallbackQuery, T i18n.TranslateFunc, da
 	case "remove":
 		usr, err = usr.tagRemove(black, data[2])
 		if err != nil {
-			log.Fatalln(err.Error())
+			log.Println(err.Error())
 		}
 		showTagListKeyboard(usr, callback, T, black)
 	}
@@ -208,7 +212,7 @@ func showInfoPopup(usr *User, callback *tg.CallbackQuery, T i18n.TranslateFunc, 
 	if err != nil {
 		call := tg.NewCallback(callback.ID, "🤷🏻‍♀️")
 		if _, err := bot.AnswerCallbackQuery(call); err != nil {
-			log.Fatalln(err.Error())
+			log.Println(err.Error())
 		}
 		return
 	}
@@ -240,7 +244,7 @@ func showInfoPopup(usr *User, callback *tg.CallbackQuery, T i18n.TranslateFunc, 
 	call := tg.NewCallbackWithAlert(callback.ID, text)
 	call.CacheTime = *flagCache
 	if _, err := bot.AnswerCallbackQuery(call); err != nil {
-		log.Fatalln(err.Error())
+		log.Println(err.Error())
 	}
 }
 
@@ -252,7 +256,7 @@ func showRatingsMessage(usr *User, callback *tg.CallbackQuery, T i18n.TranslateF
 	}))
 	edit.ParseMode = tg.ModeMarkdown
 	if _, err := bot.Send(edit); err != nil {
-		log.Fatalln(err.Error())
+		log.Println(err.Error())
 	}
 }
 
@@ -283,7 +287,7 @@ func showRatingsKeyboard(usr *User, callback *tg.CallbackQuery, T i18n.Translate
 
 	edit := tg.NewEditMessageReplyMarkup(callback.Message.Chat.ID, callback.Message.MessageID, markup)
 	if _, err := bot.Send(edit); err != nil {
-		log.Fatalln(err.Error())
+		log.Println(err.Error())
 	}
 }
 
@@ -291,7 +295,7 @@ func showLanguagesMessage(usr *User, callback *tg.CallbackQuery, T i18n.Translat
 	edit := tg.NewEditMessageText(callback.Message.Chat.ID, callback.Message.MessageID, T("message_language"))
 	edit.ParseMode = tg.ModeMarkdown
 	if _, err := bot.Send(edit); err != nil {
-		log.Fatalln(err.Error())
+		log.Println(err.Error())
 	}
 }
 
@@ -300,7 +304,7 @@ func showLanguagesKeyboard(usr *User, callback *tg.CallbackQuery, T i18n.Transla
 	for _, locale := range locales {
 		t, err := i18n.Tfunc(locale)
 		if err != nil {
-			log.Fatalln(err.Error())
+			log.Println(err.Error())
 		}
 		markup.InlineKeyboard = append(markup.InlineKeyboard, tg.NewInlineKeyboardRow(
 			tg.NewInlineKeyboardButtonData(
@@ -314,7 +318,7 @@ func showLanguagesKeyboard(usr *User, callback *tg.CallbackQuery, T i18n.Transla
 
 	edit := tg.NewEditMessageReplyMarkup(callback.Message.Chat.ID, callback.Message.MessageID, markup)
 	if _, err := bot.Send(edit); err != nil {
-		log.Fatalln(err.Error())
+		log.Println(err.Error())
 	}
 }
 
@@ -347,7 +351,7 @@ func showSettingsMessage(usr *User, callback *tg.CallbackQuery, T i18n.Translate
 	edit := tg.NewEditMessageText(callback.Message.Chat.ID, callback.Message.MessageID, text)
 	edit.ParseMode = tg.ModeMarkdown
 	if _, err := bot.Send(edit); err != nil {
-		log.Fatalln(err.Error())
+		log.Println(err.Error())
 	}
 }
 
@@ -372,7 +376,7 @@ func showSettingsKeyboard(usr *User, callback *tg.CallbackQuery, T i18n.Translat
 
 	edit := tg.NewEditMessageReplyMarkup(callback.Message.Chat.ID, callback.Message.MessageID, markup)
 	if _, err := bot.Send(edit); err != nil {
-		log.Fatalln(err.Error())
+		log.Println(err.Error())
 	}
 }
 
@@ -422,7 +426,7 @@ func showPatreonKeyboard(usr *User, callback *tg.CallbackQuery, T i18n.Translate
 
 	edit := tg.NewEditMessageReplyMarkup(callback.Message.Chat.ID, callback.Message.MessageID, markup)
 	if _, err := bot.Send(edit); err != nil {
-		log.Fatalln(err.Error())
+		log.Println(err.Error())
 	}
 }
 
@@ -436,7 +440,7 @@ func showTagRewriteMessage(usr *User, callback *tg.CallbackQuery, T i18n.Transla
 
 	call := tg.NewCallback(callback.ID, "tag1 tag2 tag* tag_4...")
 	if _, err := bot.AnswerCallbackQuery(call); err != nil {
-		log.Fatalln(err.Error())
+		log.Println(err.Error())
 	}
 
 	limit := 5
@@ -453,7 +457,7 @@ func showTagRewriteMessage(usr *User, callback *tg.CallbackQuery, T i18n.Transla
 	reply.ParseMode = tg.ModeMarkdown
 	reply.ReplyMarkup = &tg.ForceReply{ForceReply: true}
 	if _, err := bot.Send(reply); err != nil {
-		log.Fatalln("Sending message error:", err.Error())
+		log.Println("Sending message error:", err.Error())
 	}
 }
 
@@ -467,7 +471,7 @@ func showTagListMessage(usr *User, callback *tg.CallbackQuery, T i18n.TranslateF
 	edit := tg.NewEditMessageText(callback.Message.Chat.ID, callback.Message.MessageID, text)
 	edit.ParseMode = tg.ModeMarkdown
 	if _, err := bot.Send(edit); err != nil {
-		log.Fatalln(err.Error())
+		log.Println(err.Error())
 	}
 }
 
@@ -497,7 +501,7 @@ func showTagListKeyboard(usr *User, callback *tg.CallbackQuery, T i18n.Translate
 
 	edit := tg.NewEditMessageReplyMarkup(callback.Message.Chat.ID, callback.Message.MessageID, markup)
 	if _, err := bot.Send(edit); err != nil {
-		log.Fatalln(err.Error())
+		log.Println(err.Error())
 	}
 }
 
@@ -505,7 +509,7 @@ func showResourcesMessage(usr *User, callback *tg.CallbackQuery, T i18n.Translat
 	edit := tg.NewEditMessageText(callback.Message.Chat.ID, callback.Message.MessageID, T("message_resources"))
 	edit.ParseMode = tg.ModeMarkdown
 	if _, err := bot.Send(edit); err != nil {
-		log.Fatalln(err.Error())
+		log.Println(err.Error())
 	}
 }
 
@@ -521,6 +525,6 @@ func showResourcesKeyboard(usr *User, callback *tg.CallbackQuery, T i18n.Transla
 
 	edit := tg.NewEditMessageReplyMarkup(callback.Message.Chat.ID, callback.Message.MessageID, markup)
 	if _, err := bot.Send(edit); err != nil {
-		log.Fatalln(err.Error())
+		log.Println(err.Error())
 	}
 }

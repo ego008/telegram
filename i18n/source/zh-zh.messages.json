@@ -9,7 +9,7 @@
 	},
 	{
 		"id": "message_help",
-		"translation": "/settings - 你的個人化搜尋設置；\n/cheatsheet - 得知在 Gelbooru 中進階搜尋的用法；\n/random - 取得隨機文章（基於設定）；\n/patreon - 透過 Patreon 來支援這個機器人並解鎖獎勵；\n/info - 其他資訊和官方社群；"
+		"translation": "/settings - 你的個人化搜尋設置；\n/cheatsheet - 得知在 Gelbooru 中進階搜尋的用法；\n/patreon - 透過 Patreon 來支援這個機器人並解鎖獎勵；\n/info - 其他資訊和官方社群；"
 	},
 	{
 		"id": "message_start",
