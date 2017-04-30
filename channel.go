@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -10,10 +11,24 @@ import (
 
 func channelPost(msg *tg.Message) {
 	if msg.Chat.ID == int64(chID) {
-		ifDev := strings.Contains(msg.Text, "#dev")
-		ifNews := strings.Contains(msg.Text, "#news")
-		ifBot := strings.Contains(msg.Text, "#bot")
-		if msg.Text != "" && ifDev && ifNews && ifBot {
+		ifNews := false
+		ifBot := false
+		ifUserName := false
+
+		if msg.Text == "" {
+			if msg.Caption == "" {
+				return
+			}
+			ifNews = strings.Contains(msg.Caption, "#news")
+			ifBot = strings.Contains(msg.Caption, "#bot")
+			ifUserName = strings.Contains(msg.Caption, fmt.Sprint("@", bot.Self.UserName))
+		} else {
+			ifNews = strings.Contains(msg.Text, "#news")
+			ifBot = strings.Contains(msg.Text, "#bot")
+			ifUserName = strings.Contains(msg.Text, fmt.Sprint("@", bot.Self.UserName))
+		}
+
+		if ifNews && (ifBot || ifUserName) {
 			users, err := getUsers()
 			if err != nil {
 				log.Println(err.Error())

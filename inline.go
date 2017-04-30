@@ -29,12 +29,12 @@ func inline(inline *tg.InlineQuery) {
 
 	usr, err := getUser(inline.From.ID)
 	if err != nil {
-		log.Fatalln("Create user:", err.Error())
+		log.Println("Create user:", err.Error())
 	}
 
 	T, err := i18n.Tfunc(usr.Language)
 	if err != nil {
-		log.Fatalln(err.Error())
+		log.Println(err.Error())
 	}
 
 	inline.Query = strings.ToLower(inline.Query)
@@ -101,7 +101,7 @@ func inline(inline *tg.InlineQuery) {
 	case len(inline.Offset) > 0:
 		page, err = strconv.Atoi(inline.Offset)
 		if err != nil {
-			log.Fatalln(err.Error())
+			log.Println(err.Error())
 		}
 		req.PageID = page
 		posts, _ = getPosts(req)
@@ -132,7 +132,7 @@ func inline(inline *tg.InlineQuery) {
 	}
 
 	if _, err := bot.AnswerInlineQuery(inlineCfg); err != nil {
-		log.Fatalln("AnswerInlineQuery:", err.Error())
+		log.Println("AnswerInlineQuery:", err.Error())
 	}
 
 	<-appMetrika // Send track to Yandex.AppMetrika
