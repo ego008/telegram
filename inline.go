@@ -56,7 +56,11 @@ func inline(inline *tg.InlineQuery) {
 			case "page":
 				page, _ = strconv.Atoi(op[1])
 			case "lang":
-				T, _ = i18n.Tfunc(op[1])
+				T, err = i18n.Tfunc(op[1])
+				if err != nil {
+					log.Println(err.Error())
+					T, _ = i18n.Tfunc(usr.Language)
+				}
 			}
 
 			inline.Query = strings.TrimSuffix(strings.Replace(inline.Query, operator[0], "", -1), " ")
