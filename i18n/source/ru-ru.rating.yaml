@@ -1,0 +1,10 @@
+rating_explicit:
+  other: "откровенный"
+rating_questionable:
+  other: "сомнительный"
+rating_safe:
+  other: "безопасный"
+rating_unknown:
+  other: "неизвестный"
+rating_all:
+  other: "всё подряд"

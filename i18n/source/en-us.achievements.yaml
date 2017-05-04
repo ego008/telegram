@@ -1,0 +1,6 @@
+achievements_hidden_title:
+  other: "{{.Count}} hidden achievements remaining"
+achievements_hidden_description:
+  other: "Details for each achievement will be revealed once unlocked"
+achievements_unlocked:
+  other: "You've unlocked every single achievement. Congratulations!"

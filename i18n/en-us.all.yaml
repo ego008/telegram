@@ -1,0 +1,260 @@
+achievements_hidden_description:
+  other: Details for each achievement will be revealed once unlocked
+achievements_hidden_title:
+  other: '{{.Count}} hidden achievements remaining'
+achievements_unlocked:
+  other: You've unlocked every single achievement. Congratulations!
+button_achievements:
+  other: "\U0001F3C6 Achievements"
+button_blacklist:
+  other: ⚫️ Black list
+button_cancel:
+  other: ↩️ Cancel
+button_channel:
+  other: "\U0001F4E2 Channel"
+button_cheatsheet:
+  other: "\U0001F4DD CheatSheet"
+button_discord:
+  other: "\U0001F47E Discord"
+button_feedback:
+  other: "\U0001F48C Contact us"
+button_group:
+  other: "\U0001F465 Group"
+button_help:
+  other: ❔ Help
+button_info:
+  other: ❔ Info
+button_language:
+  other: "\U0001F3C1 Language"
+button_more:
+  other: "\U0001F300 More"
+button_original:
+  other: "\U0001F4BE Original"
+button_patreon_check:
+  other: "\U0001F504 Check rewards"
+button_patreon_checkout:
+  other: "\U0001F4B8 Become a sponsor!"
+button_patreon_connect:
+  other: "\U0001F50C Connect Patreon account"
+button_patreon_disconnect:
+  other: "\U0001F50C Unlink {{.Account}} account"
+button_random:
+  other: "\U0001F3B2 Random"
+button_rate:
+  other: Rate ⭐️⭐️⭐️⭐️⭐️
+button_ratings:
+  other: "\U0001F51E Filter by rating"
+button_resources:
+  other: "\U0001F310 Resources"
+button_return:
+  other: ↩️ Return
+button_settings:
+  other: ⚙ Settings
+button_share:
+  other: "\U0001F5E3 Share"
+button_tags_add:
+  other: "\U0001F516 Overwrite tags"
+button_try:
+  other: "\U0001F441 Let me try!"
+button_whitelist:
+  other: ⚪️ White list
+inline_button_dashboard:
+  other: Open settings
+inline_description:
+  other: |-
+    Rating: {{.Rating}}
+    Tags: {{.Tags}}
+inline_no_result:
+  other: Nobody here but us chickens!
+inline_title:
+  other: '{{.Type}} by {{.Owner}}'
+language_flag:
+  other: "\U0001F1EC\U0001F1E7"
+language_name:
+  other: english
+message_blacklist:
+  other: Here you can set up a black tag list. Any content containing _at least one
+    tag_ from this list will be hidden by default, _even if the tag is explicitly
+    used_ during the search. You can apply modifiers from /cheatsheet. Click on the
+    tag to remove it from the list.
+message_blushboard:
+  other: ☺️ [{{.Type}} by {{.Owner}}]({{.URL}})️
+message_cheatsheet:
+  other: |-
+    *tag1 tag2*
+    Search for posts that have `tag1` and `tag2`.
+
+    *~tag1 ~tag2*
+    Search for posts that have `tag1` or `tag2`. (Currently does not work)
+
+    *night~*
+    Fuzzy search for the tag `night`. This will return results such as `night fight bright` and so on according to the [Levenshtein distance](http://en.wikipedia.org/wiki/Levenshtein_distance).
+
+    *-tag1*
+    Search for posts that don't have `tag1`.
+
+    *ta∗1*
+    Search for posts with tags that starts with `ta` and ends with `1`.
+
+    *user:bob*
+    Search for posts uploaded by the user `Bob`.
+
+    *md5:foo*
+    Search for posts with the MD5 hash `foo`.
+
+    *md5:foo∗*
+    Search for posts whose MD5 starts with the MD5 hash `foo`.
+
+    *page:16*
+    Show results from 16-th page and the next.
+
+    *lang:zh*
+    Send the result with buttons on Chinese language.
+
+    *rating:questionable*
+    Search for posts that are rated `questionable`.
+
+    *-rating:questionable*
+    Search for posts that are not rated `questionable`.
+
+    *parent:1234*
+    Search for posts that have `1234` as a parent (and include post `1234`).
+
+    *rating:questionable rating:safe*
+    In general, combining the same metatags (the ones that have colons in them) will not work.
+
+    *rating:questionable parent:100*
+    You can combine different metatags, however.
+
+    *width:>=1000 height:>1000*
+    Find images with a width greater than or equal to `1000` and a height greater than `1000`.
+
+    *score:>=10*
+    Find images with a score greater than or equal to `10`. This value is updated once daily at 12AM CST.
+
+    *sort:updated:desc*
+    Sort posts by their most recently updated order.
+
+    *Other sortable types:*
+    • `id`
+    • `score`
+    • `rating`
+    • `user`
+    • `height`
+    • `width`
+    • `parent`
+    • `source`
+    • `updated`
+    Can be sorted by both `asc` or `desc`.
+message_help:
+  other: |-
+    /settings - your personal search settings;
+    /cheatsheet - get a cheatsheet of advanced search;
+    /patreon - support for bot and activation of awards through Patreon system;
+    /info - other information and official communities;
+message_info:
+  other: |-
+    *Creator:* @toby3d
+    *Repositories:* [HentaiDB](https://github.com/HentaiDB)/[HentaiDBot](https://github.com/HentaiDB/HentaiDBot)
+    *Version:* {{.Version}}
+    *UpTime:* {{.UpTime}}
+message_info_caption:
+  other: |-
+    Creator: @toby3d
+    Repository: https://github.com/HentaiDB/HentaiDBot
+    Version: {{.Version}}
+    UpTime: {{.UpTime}}
+message_input_blacklist_tags:
+  other: 'Enter the list of prohibited tags (up to {{.Limit}}) separated by a space:'
+message_input_tags_success:
+  other: |-
+    The following tags have been successfully added to list:
+    `{{.Tags}}`
+message_input_whitelist_tags:
+  other: 'Enter a list of mandatory tags (up to {{.Limit}}) separated by a space:'
+message_language:
+  other: Here you can configure the language of all messages sent to you, as well
+    as the language of the buttons of all the results to be sent to chats. The result
+    language can be switched through explicit use `lang:[en|ru|zh|...]` in the search.
+message_language_selected:
+  other: "\U0001F44B\U0001F3FB Hello!"
+message_patreon:
+  other: |-
+    *These people support the bot monthly:*
+    {{.Patrons}}
+
+    Thank you so much, you are amazing! ☺️
+message_patreon_empty:
+  other: "*While no one supported the free development of the bot.* \U0001F614\nBecome
+    a sponsor through Patreon, write your name into history and get access to special
+    functions!"
+message_patreon_has_reward:
+  other: "\U0001F3C6 Awards are registered!"
+message_patreon_no_reward:
+  other: "\U0001F614 There are no awards."
+message_patron_connected:
+  other: You successfully connected through Patreon system as {{.FullName}}!
+message_patron_disconnected:
+  other: "\U0001F44B\U0001F3FB Connection with Patreon was dropped."
+message_post:
+  other: |-
+    ID: {{.ID}}
+    Posted: {{.Posted}}
+    by {{.Owner}}
+    Size: {{.Size}}
+    Rating: {{.Rating}}
+    Score: {{.Score}}
+    Tags: {{.Tags}}
+message_ratings:
+  other: |-
+    Here you can configure the default content rating. The filter will be disabled if you explicitly use `rating:[safe|questionable|explicit]` in the search, and when you enable/disable all options below.
+
+    All content has one of three types of ratings: `{{.Safe}}`, _{{.Questionable}}_ and *{{.Explicit}}*.
+
+    *{{.Explicit}}*
+    Any content where the genitals are open and easily visible. This includes the demonstration of sex, masturbation or any other penetration.
+
+    `{{.Safe}}`
+    Content for a public viewing of which you would not feel guilty. Images of nudity, naked nipples or pubic hair, camel hair or any kind of sexually challenging posture are NOT `{{.Safe}}` and are _{{.Questionable}}_. Swimsuits and underwear are borderline cases.
+
+    _{{.Questionable}}_
+    Basically everything that is not in the category above. This is a large middle area, you should not expect anything in this or that way when viewing such content.
+
+    Please note: sometimes *{{.Explicit}}* can be marked as `{{.Safe}}`, and vice versa.
+message_resources:
+  other: Here you can customize the sources of search results. Please note that the
+    same result in two or more resources may have different ratings or contain a different
+    set of tags.
+message_settings:
+  other: |-
+    *Language:* {{.Language}}
+    *Resources:* Gelbooru
+    *Ratings:* {{.Ratings}}
+    *Black list:* `{{.Blacklist}}`
+    *White list:* `{{.Whitelist}}`
+message_start:
+  other: "Hi, {{.FirstName}}!\nI'm the official bot of @HentaiDB project.\n\nYou can
+    search images and GIF's in Gelbooru through me. Just type `@{{.BotName}} hatsune_miku`
+    in any chat and select post which you want to send. *Don't hit Send*, just wait
+    for results. \U0001F60F\n\nLet me know if you need a /cheatsheet of advanced search
+    or other /help to me. Enjoy! ☺️"
+message_whitelist:
+  other: Here you can set up a white list of tags. Any content *NOT* containing _all
+    the tags_ from this list will be hidden by default. You can use modifiers from
+    /cheatsheet. Click on the tag to remove it from the list.
+rating_all:
+  other: all
+rating_explicit:
+  other: explicit
+rating_questionable:
+  other: questionable
+rating_safe:
+  other: safe
+rating_unknown:
+  other: unknown
+type_animation:
+  other: animation
+type_image:
+  other: image
+type_video:
+  other: video

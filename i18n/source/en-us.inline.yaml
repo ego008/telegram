@@ -1,0 +1,10 @@
+inline_title:
+  other: "{{.Type}} by {{.Owner}}"
+inline_button_dashboard:
+  other: "Open settings"
+inline_description:
+  other: |-
+    Rating: {{.Rating}}
+    Tags: {{.Tags}}
+inline_no_result:
+  other: "Nobody here but us chickens!"

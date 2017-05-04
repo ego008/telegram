@@ -1,0 +1,54 @@
+button_achievements:
+  other: "🏆 Achievements"
+button_cancel:
+  other: "↩️ Cancel"
+button_channel:
+  other: "📢 Channel"
+button_cheatsheet:
+  other: "📝 CheatSheet"
+button_try:
+  other: "👁 Let me try!"
+button_feedback:
+  other: "💌 Contact us"
+button_group:
+  other: "👥 Group"
+button_help:
+  other: "❔ Help"
+button_language:
+  other: "🏁 Language"
+button_more:
+  other: "🌀 More"
+button_original:
+  other: "💾 Original"
+button_random:
+  other: "🎲 Random"
+button_rate:
+  other: "Rate ⭐️⭐️⭐️⭐️⭐️"
+button_settings:
+  other: "⚙ Settings"
+button_share:
+  other: "🗣 Share"
+button_discord:
+  other: "👾 Discord"
+button_return:
+  other: "↩️ Return"
+button_blacklist:
+  other: "⚫️ Black list"
+button_patreon_check:
+  other: "🔄 Check rewards"
+button_patreon_checkout:
+  other: "💸 Become a sponsor!"
+button_patreon_connect:
+  other: "🔌 Connect Patreon account"
+button_patreon_disconnect:
+  other: "🔌 Unlink {{.Account}} account"
+button_ratings:
+  other: "🔞 Filter by rating"
+button_resources:
+  other: "🌐 Resources"
+button_tags_add:
+  other: "🔖 Overwrite tags"
+button_whitelist:
+  other: "⚪️ White list"
+button_info:
+  other: "❔ Info"

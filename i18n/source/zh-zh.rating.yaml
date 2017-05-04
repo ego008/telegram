@@ -1,0 +1,10 @@
+rating_explicit:
+  other: "暴露的"
+rating_questionable:
+  other: "具疑問性"
+rating_safe:
+  other: "安全"
+rating_unknown:
+  other: "未知"
+rating_all:
+  other: "所有"
