@@ -1,4 +1,4 @@
-# HentaiDBot [![discord](https://discordapp.com/api/guilds/209880969702932490/widget.png)](https://discord.gg/M8BG7tZ)
+# HentaiDBot [![discord](https://discordapp.com/api/guilds/209880969702932490/widget.png)](https://discord.gg/zev2pdp)
 > [Official bot](https://telegram.me/HentaiDBot) for [HentaiDB](https://telegram.me/HentaiDB) project in [Telegram](https://telegram.org), written on GoLang.
 
 [![License](https://img.shields.io/npm/l/express.svg?maxAge=2592000)](LICENSE.md)
