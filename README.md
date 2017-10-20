@@ -6,6 +6,10 @@
 [![Build Status](https://travis-ci.org/HentaiDB/HentaiDBot.svg?branch=master)](https://travis-ci.org/HentaiDB/HentaiDBot)
 [![Patreon](https://img.shields.io/badge/support-patreon-E66500.svg?maxAge=2592000)](https://www.patreon.com/toby3d)
 
+<a target='_blank' rel='nofollow' href='https://app.codesponsor.io/link/35rkCoL4sttSs4cRQMsPg2ZJ/HentaiDB/HentaiDBot'>
+  <img alt='Sponsor' width='888' height='68' src='https://app.codesponsor.io/embed/35rkCoL4sttSs4cRQMsPg2ZJ/HentaiDB/HentaiDBot.svg' />
+</a>
+
 Search content from popular repositories in inline-mode.
 
 ## Documentation
