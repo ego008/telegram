@@ -22,8 +22,8 @@ const (
 )
 
 var marker = map[bool]string{
-	true:  "✅",
-	false: "☑️",
+	true:  "✅ ",
+	false: "☑️ ",
 }
 
 func callback(callback *tg.CallbackQuery) {
@@ -264,7 +264,7 @@ func showRatingsKeyboard(usr *User, callback *tg.CallbackQuery, T i18n.Translate
 	markup := tg.NewInlineKeyboardMarkup(
 		tg.NewInlineKeyboardRow(
 			tg.NewInlineKeyboardButtonData(
-				fmt.Sprintf("%s %s", marker[usr.Ratings.Safe], strings.Title(T("rating_safe"))),
+				fmt.Sprint(marker[usr.Ratings.Safe], strings.Title(T("rating_safe"))),
 				"ratings change s",
 			),
 		),

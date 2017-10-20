@@ -25,7 +25,7 @@ func trackCallback(call *tg.CallbackQuery) {
 		botanCallback{call},
 		"Callback",
 		func(answer botan.Answer, err []error) {
-			log.Printf("Track Callback %s", answer.Status)
+			log.Println("Track Callback", answer.Status)
 			appMetrika <- true
 		},
 	)
@@ -37,7 +37,7 @@ func trackChosenResult(result *tg.ChosenInlineResult) {
 		botanResult{result},
 		"Find",
 		func(answer botan.Answer, err []error) {
-			log.Printf("Track Find %s", answer.Status)
+			log.Println("Track Find", answer.Status)
 			appMetrika <- true
 		},
 	)
@@ -49,7 +49,7 @@ func trackMessage(msg *tg.Message, label string) {
 		botanMessage{msg},
 		label,
 		func(answer botan.Answer, err []error) {
-			log.Printf("Track %s %s", label, answer.Status)
+			log.Println("Track", label, answer.Status)
 			appMetrika <- true
 		},
 	)
@@ -61,7 +61,7 @@ func trackInline(inline *tg.InlineQuery) {
 		botanInline{inline},
 		"Search",
 		func(answer botan.Answer, err []error) {
-			log.Printf("Track Search %s", answer.Status)
+			log.Println("Track Search", answer.Status)
 			appMetrika <- true
 		},
 	)

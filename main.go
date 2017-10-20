@@ -44,11 +44,11 @@ func main() {
 
 func setUpdates(isWebhook bool) <-chan tg.Update {
 	if isWebhook {
-		if _, err := bot.SetWebhook(tg.NewWebhook(fmt.Sprintf(webSet, botToken))); err != nil {
+		if _, err := bot.SetWebhook(tg.NewWebhook(fmt.Sprint(webSet, botToken))); err != nil {
 			log.Fatalln(err.Error())
 		}
 		go http.ListenAndServe(webServe, nil)
-		return bot.ListenForWebhook(fmt.Sprintf(webListen, botToken))
+		return bot.ListenForWebhook(fmt.Sprint(webListen, botToken))
 	}
 
 	upd := tg.NewUpdate(0)
