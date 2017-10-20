@@ -1,0 +1,10 @@
+inline_title:
+  other: "{{.Type}} 原作者為 {{.Owner}}"
+inline_button_dashboard:
+  other: "開啟設定"
+inline_description:
+  other: |-
+    評分：{{.Rating}}
+    標籤：{{.Tags}}
+inline_no_result:
+  other: "雖然沒有任何東西在這但還有你的鳥！"

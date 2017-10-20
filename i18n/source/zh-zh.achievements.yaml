@@ -1,0 +1,6 @@
+achievements_hidden_title:
+  other: "剩餘 {{.Count}} 個隱藏的成就"
+achievements_hidden_description:
+  other: "相關訊息會在每個成就解鎖後說明"
+achievements_unlocked:
+  other: "你成功地解鎖了全部的成就。恭喜！"

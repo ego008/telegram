@@ -1,0 +1,10 @@
+inline_title:
+  other: "{{.Type}} от {{.Owner}}"
+inline_button_dashboard:
+  other: "Открыть настройки"
+inline_description:
+  other: |-
+    Рейтинг: {{.Rating}}
+    Теги: {{.Tags}}
+inline_no_result:
+  other: "Здесь никого, кроме нас, цыплят!"

@@ -1,0 +1,6 @@
+achievements_hidden_title:
+  other: "Скрытых достижений осталось: {{.Count}}"
+achievements_hidden_description:
+  other: "Информация о каждом достижении будет доступна после его получения"
+achievements_unlocked:
+  other: "Ты получил все достижения. Поздравляем!"

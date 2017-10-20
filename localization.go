@@ -13,10 +13,10 @@ var locales []string
 
 func langInit() {
 	if err := filepath.Walk(*flagLocale, func(path string, file os.FileInfo, err error) error {
-		if !strings.HasPrefix(path, "i18n/source/") && strings.HasSuffix(path, ".all.json") {
+		if !strings.HasPrefix(path, "i18n/source/") && strings.HasSuffix(path, ".all.yaml") {
 			log.Println("Load translation file", file.Name())
 			i18n.MustLoadTranslationFile(path)
-			locales = append(locales, strings.TrimSuffix(file.Name(), ".all.json"))
+			locales = append(locales, strings.TrimSuffix(file.Name(), ".all.yaml"))
 		}
 		return nil
 	}); err != nil {

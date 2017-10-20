@@ -1,0 +1,54 @@
+button_achievements:
+  other: "🏆 Достижения"
+button_cancel:
+  other: "↩️ Отмена"
+button_channel:
+  other: "📢 Канал"
+button_cheatsheet:
+  other: "📝 Шпаргалка"
+button_try:
+  other: "👁 Дай мне попробовать!"
+button_feedback:
+  other: "💌 Обратная связь"
+button_group:
+  other: "👥 Группа"
+button_help:
+  other: "❔ Помощь"
+button_language:
+  other: "{{.Flag}} Язык"
+button_more:
+  other: "🌀 Ещё"
+button_original:
+  other: "💾 Оригинал"
+button_random:
+  other: "🎲 Случайно"
+button_rate:
+  other: "Оценить на ⭐️⭐️⭐️⭐️⭐️"
+button_settings:
+  other: "⚙ Настройки"
+button_share:
+  other: "🗣 Поделиться"
+button_discord:
+  other: "👾 Discord"
+button_return:
+  other: "↩️ Вернуться"
+button_patreon_checkout:
+  other: "💸 Стать спонсором!"
+button_patreon_connect:
+  other: "🔌 Привязать аккаунт Patreon"
+button_patreon_disconnect:
+  other: "🔌 Отвязать аккаунт {{.Account}}"
+button_patreon_check:
+  other: "🔄 Проверить награды"
+button_ratings:
+  other: "🔞 Фильтр по рейтингу"
+button_blacklist:
+  other: "⚫️ Чёрный список"
+button_whitelist:
+  other: "⚪️ Белый список"
+button_resources:
+  other: "🌐 Ресурсы"
+button_tags_add:
+  other: "🔖 Перезаписать теги"
+button_info:
+  other: "❔ Инфо"

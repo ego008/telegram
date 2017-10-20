@@ -56,7 +56,11 @@ func inline(inline *tg.InlineQuery) {
 			case "page":
 				page, _ = strconv.Atoi(op[1])
 			case "lang":
-				T, _ = i18n.Tfunc(op[1])
+				T, err = i18n.Tfunc(op[1])
+				if err != nil {
+					log.Println(err.Error())
+					T, _ = i18n.Tfunc(usr.Language)
+				}
 			}
 
 			inline.Query = strings.TrimSuffix(strings.Replace(inline.Query, operator[0], "", -1), " ")
@@ -142,8 +146,6 @@ func collectResults(usr *User, inline *tg.InlineQuery, T i18n.TranslateFunc, pos
 	var results []interface{}
 	if len(posts) > 0 {
 		for _, post := range posts {
-			post.FileURL = fmt.Sprint("https:", post.FileURL)
-
 			if len(post.Tags) >= 30 {
 				post.Tags = fmt.Sprint(post.Tags[:30], "...")
 			}

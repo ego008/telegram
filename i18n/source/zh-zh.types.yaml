@@ -1,0 +1,6 @@
+type_image:
+  other: "圖片"
+type_animation:
+  other: "動畫"
+type_video:
+  other: "影片"

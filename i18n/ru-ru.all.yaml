@@ -1,0 +1,259 @@
+achievements_hidden_description:
+  other: Информация о каждом достижении будет доступна после его получения
+achievements_hidden_title:
+  other: 'Скрытых достижений осталось: {{.Count}}'
+achievements_unlocked:
+  other: Ты получил все достижения. Поздравляем!
+button_achievements:
+  other: "\U0001F3C6 Достижения"
+button_blacklist:
+  other: ⚫️ Чёрный список
+button_cancel:
+  other: ↩️ Отмена
+button_channel:
+  other: "\U0001F4E2 Канал"
+button_cheatsheet:
+  other: "\U0001F4DD Шпаргалка"
+button_discord:
+  other: "\U0001F47E Discord"
+button_feedback:
+  other: "\U0001F48C Обратная связь"
+button_group:
+  other: "\U0001F465 Группа"
+button_help:
+  other: ❔ Помощь
+button_info:
+  other: ❔ Инфо
+button_language:
+  other: '{{.Flag}} Язык'
+button_more:
+  other: "\U0001F300 Ещё"
+button_original:
+  other: "\U0001F4BE Оригинал"
+button_patreon_check:
+  other: "\U0001F504 Проверить награды"
+button_patreon_checkout:
+  other: "\U0001F4B8 Стать спонсором!"
+button_patreon_connect:
+  other: "\U0001F50C Привязать аккаунт Patreon"
+button_patreon_disconnect:
+  other: "\U0001F50C Отвязать аккаунт {{.Account}}"
+button_random:
+  other: "\U0001F3B2 Случайно"
+button_rate:
+  other: Оценить на ⭐️⭐️⭐️⭐️⭐️
+button_ratings:
+  other: "\U0001F51E Фильтр по рейтингу"
+button_resources:
+  other: "\U0001F310 Ресурсы"
+button_return:
+  other: ↩️ Вернуться
+button_settings:
+  other: ⚙ Настройки
+button_share:
+  other: "\U0001F5E3 Поделиться"
+button_tags_add:
+  other: "\U0001F516 Перезаписать теги"
+button_try:
+  other: "\U0001F441 Дай мне попробовать!"
+button_whitelist:
+  other: ⚪️ Белый список
+inline_button_dashboard:
+  other: Открыть настройки
+inline_description:
+  other: |-
+    Рейтинг: {{.Rating}}
+    Теги: {{.Tags}}
+inline_no_result:
+  other: Здесь никого, кроме нас, цыплят!
+inline_title:
+  other: '{{.Type}} от {{.Owner}}'
+language_flag:
+  other: "\U0001F1F7\U0001F1FA"
+language_name:
+  other: русский
+message_blacklist:
+  other: Здесь ты можешь настроить чёрный список тегов. Любой контент содержащий _хотя
+    бы один тег_ из этого списка будет скрыт по-умолчанию, _даже при явном использовании
+    тега_ во время поиска. Можно применять модификаторы из /cheatsheet. Нажми на тег
+    чтобы убрать его из списка.
+message_blushboard:
+  other: ☺️ [{{.Type}} от {{.Owner}}]({{.URL}})️
+message_cheatsheet:
+  other: |-
+    *tag1 tag2*
+    Искать посты с тегами `tag1` и `tag2`.
+
+    *~tag1 ~tag2*
+    Искать посты с тегом `tag1` или `tag2`. (В настоящее время не работает)
+
+    *night~*
+    Нечеткий поиск по тегу `night`. Это вернёт результаты, такие как `night fight bright` и так далее в соответствии с [Расстоянием Левенштейна](http://en.wikipedia.org/wiki/Levenshtein_distance).
+
+    *-tag1*
+    Искать посты не содержащие тег `tag1`.
+
+    *ta∗1*
+    Искать посты с тегами, начинающиеся с `ta` и оканчивающиеся на `1`.
+
+    *user:bob*
+    Искать посты загруженные пользователем `Bob`.
+
+    *md5:foo*
+    Искать посты с MD5 хэшем `foo`.
+
+    *md5:foo∗*
+    Искать посты, MD5 хэш которого начинается с `foo`.
+
+    *page:16*
+    Показать результаты с 16-й страницы и дальше.
+
+    *lang:en*
+    Отправить результат с кнопками на английском языке.
+
+    *rating:questionable*
+    Искать посты с рейтингом `questionable`.
+
+    *-rating:questionable*
+    Искать посты без рейтинга `questionable`.
+
+    *parent:1234*
+    Искать посты имеющие `1234` в качестве родителя (включая пост `1234`).
+
+    *rating:questionable rating:safe*
+    В целом, комбинации тех же мета-тегов (в которых содержатся двоеточие) не будут работать.
+
+    *rating:questionable parent:100*
+    Впрочем, ты можешь комбинировать разные мета-теги.
+
+    *width:>=1000 height:>1000*
+    Искать изображения с шириной больше, либо равной `1000` и высотой больше `1000`.
+
+    *score:>=10*
+    Искать посты со счётом больше, либо равным `10`. Значение обновляется ежедневно в 12AM CST.
+
+    *sort:updated:desc*
+    Сортировка сообщений в совсем недавно обновленном порядке.
+
+    *Другие сортируемые типы:*
+    • `id`
+    • `score`
+    • `rating`
+    • `user`
+    • `height`
+    • `width`
+    • `parent`
+    • `source`
+    • `updated`
+    Может быть отсортировано по алфавиту (`asc`) или наоборот (`desc`).
+message_help:
+  other: |-
+    /settings - твои персональные настройки поиска;
+    /cheatsheet - получить шпаргалку продвинутого поиска;
+    /patreon - поддержка бота и активация наград через систему Patreon;
+    /info - другая информация и официальные сообщества;
+message_info:
+  other: |-
+    *Создатель:* @toby3d
+    *Репозитории:* [HentaiDB](https://github.com/HentaiDB)/[HentaiDBot](https://github.com/HentaiDB/HentaiDBot)
+    *Версия:* {{.Version}}
+    *UpTime:* {{.UpTime}}
+message_info_caption:
+  other: |-
+    Создатель: @toby3d
+    Репозиторий: https://github.com/HentaiDB/HentaiDBot
+    Версия: {{.Version}}
+    UpTime: {{.UpTime}}
+message_input_blacklist_tags:
+  other: 'Введи список запрещённых тегов (до {{.Limit}}) через пробел:'
+message_input_tags_success:
+  other: |-
+    Следующие теги были успешно добавлены в список:
+    `{{.Tags}}`
+message_input_whitelist_tags:
+  other: 'Введи список обязательных тегов (до {{.Limit}}) через пробел:'
+message_language:
+  other: Здесь ты можешь настроить язык всех _обращённых к тебе сообщений_, а также
+    язык кнопок всех отправляемых в чаты результатов. Язык результатов может быть
+    переключён через явное использование `lang:[en|ru|zh|...]` в поиске.
+message_language_selected:
+  other: "\U0001F44B\U0001F3FB Привет!"
+message_patreon:
+  other: |-
+    *Эти люди поддерживают бота ежемесячно:*
+    {{.Patrons}}
+
+    Огромное спасибо, вы восхитительны! ☺️
+message_patreon_empty:
+  other: "*Пока никто не поддержал бесплатную разработку бота.* \U0001F614\nСтань
+    спонсором через Patreon, впиши своё имя в историю и получи доступ к особым функциям!"
+message_patreon_has_reward:
+  other: "\U0001F3C6 Награды зарегистрированы!"
+message_patreon_no_reward:
+  other: "\U0001F614 Награды отсутствуют."
+message_patron_connected:
+  other: Ты успешно подключился через систему Patreon как {{.FullName}}!
+message_patron_disconnected:
+  other: "\U0001F44B\U0001F3FB Связь с Patreon была сброшена."
+message_post:
+  other: |-
+    ID: {{.ID}}
+    Отправлено: {{.Posted}}
+    от {{.Owner}}
+    Размер: {{.Size}}
+    Рейтинг: {{.Rating}}
+    Счёт: {{.Score}}
+    Теги: {{.Tags}}
+message_ratings:
+  other: |-
+    Здесь ты можешь настроить доступный _по-умолчанию_ рейтинг контента. Фильтр будет отключён при явном использовании `rating:[safe|questionable|explicit]` в поиске, а также при включении/выключении всех опций ниже .
+
+    Весь контент имеет один из трех типов рейтингов: `{{.Safe}}`, _{{.Questionable}}_ и *{{.Explicit}}*.
+
+    *{{.Explicit}}*
+    Любой контент, где половые органы открыты и хорошо видны. Сюда входит демонстрация секса, мастурбации или любое иное проникновение.
+
+    `{{.Safe}}`
+    Контент, за публичный просмотр которого ты бы не чувствовал себя виноватым. Изображения наготы, обнаженных сосков или лобковых волос, верблюжьей шерсти или любого рода сексуально вызывающей позы *НЕ* являются `{{.Safe}}` и являются _{{.Questionable}}_. Купальники и нижнее бельё - пограничные случаи.
+
+    _{{.Questionable}}_
+    В основном всё, что не входит в категории выше. Это большая средняя область, тебе не следует ожидать чего-либо в том или ином случае при просмотре такого контента.
+
+    Пожалуйста, обрати внимание: иногда *{{.Explicit}}* могут быть отмечено как `{{.Safe}}`, и наоборот.
+message_resources:
+  other: Здесь ты можешь настроить источники результатов поиска. Пожалуйста, обрати
+    внимание что один и тот же результат в двух и более ресурсах могут иметь разный
+    рейтинг или содержать разный набор тегов.
+message_settings:
+  other: |-
+    *Язык:* {{.Language}}
+    *Ресурсы:* Gelbooru
+    *Рейтинги:* {{.Ratings}}
+    *Чёрный список:* `{{.Blacklist}}`
+    *Белый список:* `{{.Whitelist}}`
+message_start:
+  other: "Привет, {{.FirstName}}!\nЯ официальный бот проекта @HentaiDB.\n\nТы можешь
+    осуществлять поиск изображений и GIF в Gelbooru через меня. Просто набери `@{{.BotName}}
+    hatsune_miku` в любом чате и выбери результат, который хочешь послать. *Не нажимай
+    Отправить*, просто дождись результатов. \U0001F60F\n\nДай знать, если тебе нужен
+    /cheatsheet продвинутого поиска или иной /help со мной. Наслаждайся! ☺️"
+message_whitelist:
+  other: Здесь ты можешь настроить белый список тегов. Любой контент *НЕ* содержащий
+    _все теги_ из этого списка будет скрыт по-умолчанию. Можно применять модификаторы
+    из шпаргалки (/cheatsheet). Нажми на тег чтобы убрать его из списка.
+rating_all:
+  other: всё подряд
+rating_explicit:
+  other: откровенный
+rating_questionable:
+  other: сомнительный
+rating_safe:
+  other: безопасный
+rating_unknown:
+  other: неизвестный
+type_animation:
+  other: анимация
+type_image:
+  other: изображение
+type_video:
+  other: видео

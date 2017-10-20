@@ -487,7 +487,7 @@ func cmdInfo(usr *User, msg *tg.Message, T i18n.TranslateFunc) {
 	if cover != "" {
 		photo := tg.NewPhotoShare(msg.Chat.ID, cover)
 		photo.Caption = T("message_info_caption", map[string]interface{}{
-			"Version": fmt.Sprintf("%s (%d)", version, build),
+			"Version": fmt.Sprintf(version, " (", build, ")"),
 			"UpTime":  uptime.String(),
 		})
 		photo.ReplyMarkup = &markup
@@ -496,7 +496,7 @@ func cmdInfo(usr *User, msg *tg.Message, T i18n.TranslateFunc) {
 		}
 	} else {
 		reply := tg.NewMessage(msg.Chat.ID, T("message_info", map[string]interface{}{
-			"Version": fmt.Sprintf("%s (%d)", version, build),
+			"Version": fmt.Sprintf(version, " (", build, ")"),
 			"UpTime":  uptime.String(),
 		}))
 		reply.ReplyMarkup = &markup
@@ -519,21 +519,21 @@ func getTelegramFileID(msg *tg.Message) {
 				log.Println(err.Error())
 				return
 			}
-			uploadFileInfo = fmt.Sprintf("ID: %s", voice)
+			uploadFileInfo = fmt.Sprint("ID: `", voice, "`")
 		} else {
-			uploadFileInfo = fmt.Sprintf("ID: %s", msg.Audio.FileID)
+			uploadFileInfo = fmt.Sprint("ID: `", msg.Audio.FileID, "`")
 		}
 	case msg.Document != nil:
-		uploadFileInfo = fmt.Sprintf("ID: %s", msg.Document.FileID)
+		uploadFileInfo = fmt.Sprint("ID: `", msg.Document.FileID, "`")
 	case msg.Photo != nil: // Get large file ID
 		photos := *msg.Photo
-		uploadFileInfo = fmt.Sprintf("ID: %s", photos[len(photos)-1].FileID)
+		uploadFileInfo = fmt.Sprint("ID: `", photos[len(photos)-1].FileID, "`")
 	case msg.Sticker != nil:
-		uploadFileInfo = fmt.Sprintf("ID: %s", msg.Sticker.FileID)
+		uploadFileInfo = fmt.Sprint("ID: `", msg.Sticker.FileID, "`")
 	case msg.Video != nil:
-		uploadFileInfo = fmt.Sprintf("ID: %s", msg.Video.FileID)
+		uploadFileInfo = fmt.Sprint("ID: `", msg.Video.FileID, "`")
 	case msg.Voice != nil:
-		uploadFileInfo = fmt.Sprintf("ID: %s", msg.Voice.FileID)
+		uploadFileInfo = fmt.Sprint("ID: `", msg.Voice.FileID, "`")
 	}
 	reply := tg.NewMessage(msg.Chat.ID, uploadFileInfo)
 	reply.ReplyToMessageID = msg.MessageID

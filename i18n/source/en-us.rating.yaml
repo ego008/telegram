@@ -1,0 +1,10 @@
+rating_explicit:
+  other: "explicit"
+rating_questionable:
+  other: "questionable"
+rating_safe:
+  other: "safe"
+rating_unknown:
+  other: "unknown"
+rating_all:
+  other: "all"

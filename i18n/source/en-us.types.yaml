@@ -1,0 +1,6 @@
+type_image:
+  other: "image"
+type_animation:
+  other: "animation"
+type_video:
+  other: "video"
