@@ -69,20 +69,20 @@ message_cheatsheet:
     這些都可以由 `asc` 或是 `desc` 排序。
 message_help:
   other: |-
-    /settings - 你的個人化搜尋設置；
-    /cheatsheet - 得知在 Gelbooru 中進階搜尋的用法；
-    /patreon - 透過 Patreon 來支援這個機器人並解鎖獎勵；
-    /info - 其他資訊和官方社群；
+    /{{.CommandSettings}} - 你的個人化搜尋設置；
+    /{{.CommandCheatsheet}} - 得知在 Gelbooru 中進階搜尋的用法；
+    /{{.CommandPatreon}} - 透過 Patreon 來支援這個機器人並解鎖獎勵；
+    /{{.CommandInfo}} - 其他資訊和官方社群；
 message_start:
   other: |-
     嗨，{{.FirstName}}！
-    我是 @HentaiDB 計劃的官方機器人。
+    我是 [@HentaiDB]({{.ChannelURL}}) 計劃的官方機器人。
 
-    你可以透過我搜尋 Gelbooru 的圖片或是 GIF。你只需要在任何聊天中輸入 `@{{.BotName}} hatsune_miku` 然後選擇你想發送的文章，*但是你不用按下送出鈕*，你只需要稍微等一下就會有結果了。😏
+    你可以透過我搜尋 Gelbooru 的圖片或是 GIF。你只需要在任何聊天中輸入 `@{{.Username}} {{.Query}}` 然後選擇你想發送的文章，*但是你不用按下送出鈕*，你只需要稍微等一下就會有結果了。😏
 
-    你可以透過 /cheatsheet 得知進階搜尋的用法，或者是對我說聲 /help 也行。盡情享受吧！☺️
+    你可以透過 /{{.CommandCheatsheet}} 得知進階搜尋的用法，或者是對我說聲 /{{.CommandHelp}} 也行。盡情享受吧！☺️
 message_blacklist:
-  other: "你能夠在此設置黑名單標籤。只要是任何結果有包含此清單中的_其中一個_標籤都會被隱藏，甚至你開啟了_暴露模式_也會。你可以套用 /cheatsheet 上的標記。點擊標籤來將他們從清單上移除。"
+  other: "你能夠在此設置黑名單標籤。只要是任何結果有包含此清單中的_其中一個_標籤都會被隱藏，甚至你開啟了_暴露模式_也會。你可以套用 /{{.CommandCheatsheet}} 上的標記。點擊標籤來將他們從清單上移除。"
 message_info:
   other: |-
     *建立者:* @toby3d
@@ -104,7 +104,7 @@ message_input_tags_success:
 message_input_whitelist_tags:
   other: "透過空白來分隔並輸入強制允許的標籤（最多{{.Limit}}）："
 message_language:
-  other: "你可以在此設置傳遞給你的訊息語系為何，當你轉發訊息時按鈕和相關結果的語系也都是與設定相同的。不過你可以在搜尋的時候透過 `lang:[en|ru|zh|...]` 標記複寫。"
+  other: "你可以在此設置傳遞給你的訊息語系為何，當你轉發訊息時按鈕和相關結果的語系也都是與設定相同的。不過你可以在搜尋的時候透過 `lang:[{{.LangCode}}]` 標記複寫。"
 message_language_selected:
   other: "👋🏻 哈囉！"
 message_patreon:
@@ -146,12 +146,12 @@ message_resources:
 message_settings:
   other: |-
     *語系：* {{.Language}}
-    *資源：* Gelbooru
+    *資源：* {{.Resources}}
     *評分：* {{.Ratings}}
     *黑名單：* `{{.Blacklist}}`
     *白名單：* `{{.Whitelist}}`
 message_whitelist:
-  other: "你可以在此設置個白名單標籤。任何*沒有*包含此清單中任一標籤的搜尋結果都會被隱藏。你可以套用 /cheatsheet 上的標記。點擊標籤來將他們從清單上移除。"
+  other: "你可以在此設置個白名單標籤。任何*沒有*包含此清單中任一標籤的搜尋結果都會被隱藏。你可以套用 /{{.CommandCheatsheet}} 上的標記。點擊標籤來將他們從清單上移除。"
 message_post:
   other: |-
     ID: {{.ID}}

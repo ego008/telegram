@@ -69,10 +69,10 @@ message_cheatsheet:
     Can be sorted by both `asc` or `desc`.
 message_help:
   other: |-
-    /settings - your personal search settings;
-    /cheatsheet - get a cheatsheet of advanced search;
-    /patreon - support for bot and activation of awards through Patreon system;
-    /info - other information and official communities;
+    /{{.CommandSettings}} - your personal search settings;
+    /{{.CommandCheatsheet}} - get a cheatsheet of advanced search;
+    /{{.CommandPatreon}} - support for bot and activation of awards through Patreon system;
+    /{{.CommandInfo}} - other information and official communities;
 message_info:
   other: |-
     *Creator:* @toby3d
@@ -88,20 +88,20 @@ message_info_caption:
 message_settings:
   other: |-
     *Language:* {{.Language}}
-    *Resources:* Gelbooru
+    *Resources:* {{.Resources}}
     *Ratings:* {{.Ratings}}
     *Black list:* `{{.Blacklist}}`
     *White list:* `{{.Whitelist}}`
 message_start:
   other: |-
     Hi, {{.FirstName}}!
-    I'm the official bot of @HentaiDB project.
+    I'm the official bot of [@HentaiDB]({{.ChannelURL}}) project.
 
-    You can search images and GIF's in Gelbooru through me. Just type `@{{.BotName}} hatsune_miku` in any chat and select post which you want to send. *Don't hit Send*, just wait for results. 😏
+    You can search images and GIF's in Gelbooru through me. Just type `@{{.Username}} {{.Query}}` in any chat and select post which you want to send. *Don't hit Send*, just wait for results. 😏
 
-    Let me know if you need a /cheatsheet of advanced search or other /help to me. Enjoy! ☺️
+    Let me know if you need a /{{.CommandCheatsheet}} of advanced search or other /{{.CommandHelp}} to me. Enjoy! ☺️
 message_blacklist:
-  other: "Here you can set up a black tag list. Any content containing _at least one tag_ from this list will be hidden by default, _even if the tag is explicitly used_ during the search. You can apply modifiers from /cheatsheet. Click on the tag to remove it from the list."
+  other: "Here you can set up a black tag list. Any content containing _at least one tag_ from this list will be hidden by default, _even if the tag is explicitly used_ during the search. You can apply modifiers from /{{.CommandCheatsheet}}. Click on the tag to remove it from the list."
 message_input_blacklist_tags:
   other: "Enter the list of prohibited tags (up to {{.Limit}}) separated by a space:"
 message_input_tags_success:
@@ -111,7 +111,7 @@ message_input_tags_success:
 message_input_whitelist_tags:
   other: "Enter a list of mandatory tags (up to {{.Limit}}) separated by a space:"
 message_language:
-  other: "Here you can configure the language of all messages sent to you, as well as the language of the buttons of all the results to be sent to chats. The result language can be switched through explicit use `lang:[en|ru|zh|...]` in the search."
+  other: "Here you can configure the language of all messages sent to you, as well as the language of the buttons of all the results to be sent to chats. The result language can be switched through explicit use `lang:[{{.LangCode}}]` in the search."
 message_language_selected:
   other: "👋🏻 Hello!"
 message_patreon:
@@ -151,7 +151,7 @@ message_ratings:
 message_resources:
   other: "Here you can customize the sources of search results. Please note that the same result in two or more resources may have different ratings or contain a different set of tags."
 message_whitelist:
-  other: "Here you can set up a white list of tags. Any content *NOT* containing _all the tags_ from this list will be hidden by default. You can use modifiers from /cheatsheet. Click on the tag to remove it from the list."
+  other: "Here you can set up a white list of tags. Any content *NOT* containing _all the tags_ from this list will be hidden by default. You can use modifiers from /{{.CommandCheatsheet}}. Click on the tag to remove it from the list."
 message_post:
   other: |-
     ID: {{.ID}}
