@@ -53,16 +53,7 @@ _testmain.go
 *.test
 *.prof
 
-### Workflow ###
-# Testing/production files
-config.yml
-cert.pem
+### Testing/production files ###
+config.yaml
 hentai.db
-key.pem
-
-# Easter eggs
-eggs_on.go
-eggs.yml
-
-# Build
-HentaiDBot
+hentaidbot
