@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"fmt"
 	"log"
@@ -267,3 +268,4 @@ func chosenResult(result *tg.ChosenInlineResult) {
 	trackChosenResult(result)
 	<-appMetrika // Send track to Yandex.AppMetrika
 }
+*/

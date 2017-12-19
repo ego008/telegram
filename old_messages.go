@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"fmt"
 	"log"
@@ -569,3 +570,4 @@ func getVoiceFromAudio(msg *tg.Message) (string, error) {
 
 	return resp.Voice.FileID, nil
 }
+*/

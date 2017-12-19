@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"net/url"
 	"strconv"
@@ -72,3 +73,4 @@ func getPosts(req *request) ([]gPost, error) {
 	err = json.NewDecoder().Decode(resp, &obj)
 	return obj, err
 }
+*/

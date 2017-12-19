@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"log"
 
@@ -66,3 +67,4 @@ func trackInline(inline *tg.InlineQuery) {
 		},
 	)
 }
+*/

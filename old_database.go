@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"errors"
 	"log"
@@ -359,3 +360,4 @@ func getUsers() ([]User, error) {
 	})
 	return users, err
 }
+*/

@@ -1,61 +1,38 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
-	tg "github.com/go-telegram-bot-api/telegram-bot-api"
-	http "github.com/valyala/fasthttp"
+	tg "github.com/toby3d/go-telegram"
 )
 
-var bot *tg.BotAPI
+var bot *tg.Bot
 
 func main() {
-	defer db.Close()
-
-	bot, err = tg.NewBotAPI(botToken)
+	var err error
+	bot, err = tg.NewBot(cfg.UString("telegram.token"))
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
-	log.Print("Authorized as @", bot.Self.UserName)
-
-	bot.Debug = *flagDebug
-
-	updates := make(<-chan tg.Update)
-	updates = setUpdates(*flagWebhook)
-	defer bot.RemoveWebhook()
+	log.Print("Authorized as @", bot.Self.Username)
 
 	// Updater
-	for upd := range updates {
+	for update := range getUpdatesChannel() {
 		switch {
-		case upd.Message != nil:
-			go message(upd.Message)
-		case upd.InlineQuery != nil && len(upd.InlineQuery.Query) <= 255: // Just don't update results if query exceeds the maximum length
-			go inline(upd.InlineQuery)
-		case upd.ChosenInlineResult != nil:
-			go chosenResult(upd.ChosenInlineResult)
-		case upd.CallbackQuery != nil:
-			go callback(upd.CallbackQuery)
-		case upd.ChannelPost != nil:
-			go channelPost(upd.ChannelPost)
+		case update.Message != nil:
+			message(update.Message)
+		case update.InlineQuery != nil &&
+			// Just don't update results if query exceeds the maximum length
+			len(update.InlineQuery.Query) <= 255:
+			// inlineQuery(update.InlineQuery)
+		case update.ChosenInlineResult != nil:
+			// ChosenInlineResult(update.ChosenInlineResult)
+		case update.CallbackQuery != nil:
+			// callbackQuery(update.CallbackQuery)
+		case update.ChannelPost != nil:
+			// channelPost(update.ChannelPost)
+		default:
+			continue
 		}
 	}
-}
-
-func setUpdates(isWebhook bool) <-chan tg.Update {
-	if isWebhook {
-		if _, err := bot.SetWebhook(tg.NewWebhook(fmt.Sprint(webSet, botToken))); err != nil {
-			log.Fatalln(err.Error())
-		}
-		go http.ListenAndServe(webServe, nil)
-		return bot.ListenForWebhook(fmt.Sprint(webListen, botToken))
-	}
-
-	upd := tg.NewUpdate(0)
-	upd.Timeout = 60
-	updates, err := bot.GetUpdatesChan(upd)
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-	return updates
 }

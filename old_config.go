@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"flag"
 	"log"
@@ -117,3 +118,4 @@ func init() {
 	log.Printf("%s configuration is loaded", *flagConfig)
 	log.Printf("Trying to run version %s (build %d).", version, build)
 }
+*/

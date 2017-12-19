@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"fmt"
 	"log"
@@ -528,3 +529,4 @@ func showResourcesKeyboard(usr *User, callback *tg.CallbackQuery, T i18n.Transla
 		log.Println(err.Error())
 	}
 }
+*/

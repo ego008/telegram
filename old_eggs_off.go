@@ -2,6 +2,7 @@
 
 package main
 
+/*
 import (
 	"log"
 
@@ -21,3 +22,4 @@ func cmdEasterEgg(msg *tg.Message) {
 	trackMessage(msg, "Message")
 	<-appMetrika
 }
+*/

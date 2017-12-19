@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"log"
 	"os"
@@ -23,3 +24,4 @@ func langInit() {
 		log.Fatalln(err.Error())
 	}
 }
+*/

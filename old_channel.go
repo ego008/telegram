@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"fmt"
 	"log"
@@ -45,3 +46,4 @@ func channelPost(msg *tg.Message) {
 		}
 	}
 }
+*/
