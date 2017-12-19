@@ -1,15 +1,30 @@
+all:
+	make translation
+	make localization
+	go build \
+	-ldflags \
+	"-X main.verHash=`git rev-parse --short HEAD` \
+	-X main.verTimeStamp=`date -u +%Y-%m-%d.%H:%M:%S`"
+
 build:
 	go build
 
-production:
-	make translation
-	goi18n -format yaml -sourceLanguage en-us -outdir ./i18n/ ./i18n/*.all.json ./i18n/*.untranslated.json
-	go build -tags="eggs"
+debug:
+	go build -tags=debug
 
 translation:
-	goi18n merge -format yaml -sourceLanguage en-us -outdir ./i18n/ ./i18n/source/*
+	goi18n merge \
+	-format yaml \
+	-sourceLanguage en \
+	-outdir ./i18n/ ./i18n/src/*/*
 
-development:
+localization:
 	make translation
-	goi18n -format yaml -sourceLanguage en-us -outdir ./i18n/ ./i18n/*.all.json ./i18n/*.untranslated.json
-	go build -tags="debug"
+	goi18n \
+	-format yaml \
+	-sourceLanguage en \
+	-outdir ./i18n/ \
+	./i18n/*.all.yaml ./i18n/*.untranslated.yaml
+
+image:
+	docker-compose build
