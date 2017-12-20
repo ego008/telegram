@@ -262,30 +262,6 @@ func cmdStart(usr *User, msg *tg.Message, T i18n.TranslateFunc) {
 	<-appMetrika // Send track to Yandex.metrika
 }
 
-func cmdHelp(usr *User, msg *tg.Message, T i18n.TranslateFunc) {
-	trackMessage(msg, "/help")                             // Track action
-	bot.Send(tg.NewChatAction(msg.Chat.ID, tg.ChatTyping)) // Force feedback
-
-	demo := cfg.UString("telegram.content.demo")
-	if demo != "" {
-		document := tg.NewDocumentShare(msg.Chat.ID, demo)
-		if _, err := bot.Send(document); err != nil {
-			log.Println("Sending message error:", err.Error())
-			<-appMetrika // Send track to Yandex.metrika
-			return
-		}
-	}
-
-	reply := tg.NewMessage(msg.Chat.ID, T("message_help"))
-	reply.ParseMode = tg.ModeMarkdown
-	reply.DisableWebPagePreview = true
-	if _, err := bot.Send(reply); err != nil {
-		log.Println("Sending message error:", err.Error())
-	}
-
-	<-appMetrika // Send track to Yandex.metrika
-}
-
 func cmdSettings(usr *User, msg *tg.Message, T i18n.TranslateFunc) {
 	trackMessage(msg, "/settings")                         // Track action
 	bot.Send(tg.NewChatAction(msg.Chat.ID, tg.ChatTyping)) // Force feedback
@@ -508,66 +484,5 @@ func cmdInfo(usr *User, msg *tg.Message, T i18n.TranslateFunc) {
 	}
 
 	<-appMetrika // Send track to Yandex.metrika
-}
-
-func getTelegramFileID(msg *tg.Message) {
-	var uploadFileInfo string
-	switch {
-	case msg.Audio != nil: // Upload file as Voice
-		if strings.Contains(msg.Audio.MimeType, "ogg") {
-			voice, err := getVoiceFromAudio(msg)
-			if err != nil {
-				log.Println(err.Error())
-				return
-			}
-			uploadFileInfo = fmt.Sprint("ID: `", voice, "`")
-		} else {
-			uploadFileInfo = fmt.Sprint("ID: `", msg.Audio.FileID, "`")
-		}
-	case msg.Document != nil:
-		uploadFileInfo = fmt.Sprint("ID: `", msg.Document.FileID, "`")
-	case msg.Photo != nil: // Get large file ID
-		photos := *msg.Photo
-		uploadFileInfo = fmt.Sprint("ID: `", photos[len(photos)-1].FileID, "`")
-	case msg.Sticker != nil:
-		uploadFileInfo = fmt.Sprint("ID: `", msg.Sticker.FileID, "`")
-	case msg.Video != nil:
-		uploadFileInfo = fmt.Sprint("ID: `", msg.Video.FileID, "`")
-	case msg.Voice != nil:
-		uploadFileInfo = fmt.Sprint("ID: `", msg.Voice.FileID, "`")
-	}
-	reply := tg.NewMessage(msg.Chat.ID, uploadFileInfo)
-	reply.ReplyToMessageID = msg.MessageID
-	if _, err := bot.Send(reply); err != nil {
-		log.Println(err.Error())
-	}
-}
-
-func getVoiceFromAudio(msg *tg.Message) (string, error) {
-	bot.Send(tg.NewChatAction(msg.Chat.ID, tg.ChatRecordAudio))
-
-	link, err := bot.GetFileDirectURL(msg.Audio.FileID)
-	if err != nil {
-		return "", err
-	}
-
-	_, body, err := http.Get(nil, link)
-	if err != nil {
-		return "", err
-	}
-	bytes := tg.FileBytes{
-		Name:  msg.Audio.FileID,
-		Bytes: body,
-	}
-
-	voice := tg.NewVoiceUpload(msg.Chat.ID, bytes)
-	voice.Duration = msg.Audio.Duration
-	voice.ReplyToMessageID = msg.MessageID
-	resp, err := bot.Send(voice)
-	if err != nil {
-		return "", err
-	}
-
-	return resp.Voice.FileID, nil
 }
 */

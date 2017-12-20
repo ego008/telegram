@@ -3,17 +3,12 @@ package main
 import (
 	"strings"
 
+	// log "github.com/kirillDanshin/dlog"
 	tg "github.com/toby3d/go-telegram"
 )
 
-func commandSettings(msg *tg.Message) {
-	usr, err := dbGetUserElseAdd(msg.From.ID, msg.From.LanguageCode)
-	errCheck(err)
-
-	_, err = bot.SendChatAction(msg.Chat.ID, tg.ActionTyping)
-	errCheck(err)
-
-	T, err := langSwitch(usr.Language, msg.From.LanguageCode)
+func callbackToSettings(usr *user, call *tg.CallbackQuery) {
+	T, err := langSwitch(usr.Language, call.From.LanguageCode)
 	errCheck(err)
 
 	var activeRes []string
@@ -35,15 +30,26 @@ func commandSettings(msg *tg.Message) {
 		"Whitelist": strings.Join(usr.Whitelist, "`, `"),
 	})
 
-	reply := tg.NewMessage(msg.Chat.ID, text)
-	reply.ParseMode = tg.ModeMarkdown
-	reply.ReplyMarkup = tg.NewInlineKeyboardMarkup(
+	editText := tg.NewMessageText(text)
+	editText.ChatID = call.Message.Chat.ID
+	editText.MessageID = call.Message.ID
+	editText.ParseMode = tg.ModeMarkdown
+	editText.ReplyMarkup = getSettingsMenuKeyboard(usr)
+
+	_, err = bot.EditMessageText(editText)
+	errCheck(err)
+}
+
+func getSettingsMenuKeyboard(usr *user) *tg.InlineKeyboardMarkup {
+	T, err := langSwitch(usr.Language)
+	errCheck(err)
+
+	return tg.NewInlineKeyboardMarkup(
 		tg.NewInlineKeyboardRow(
 			tg.NewInlineKeyboardButton(
-				T(
-					"button_language",
-					map[string]interface{}{"Flag": T("language_flag")},
-				),
+				T("button_language", map[string]interface{}{
+					"Flag": T("language_flag"),
+				}),
 				"to:languages",
 			),
 		),
@@ -68,7 +74,4 @@ func commandSettings(msg *tg.Message) {
 			),
 		),
 	)
-
-	_, err = bot.SendMessage(reply)
-	errCheck(err)
 }

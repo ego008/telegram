@@ -1,11 +1,16 @@
 package main
 
 import (
+	"fmt"
+
 	log "github.com/kirillDanshin/dlog"
 	config "github.com/olebedev/config"
 )
 
-var cfg *config.Config
+var (
+	cfg       *config.Config
+	resources = make(map[string]map[string]interface{})
+)
 
 func cfgInit() {
 	var err error
@@ -29,5 +34,16 @@ func cfgInit() {
 		log.Ln("Check telegram webhook serve...")
 		_, err = cfg.String("telegram.webhook.serve")
 		errCheck(err)
+	}
+
+	for i := 0; i == i; i++ {
+		res, err := cfg.Map(fmt.Sprint("resources.", i))
+		if err != nil {
+			break
+		}
+
+		name := res["name"].(string)
+		log.Ln("Getted", name, "resource config")
+		resources[name] = res
 	}
 }

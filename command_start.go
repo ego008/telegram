@@ -5,10 +5,13 @@ import tg "github.com/toby3d/go-telegram"
 const queryExample = "hatsune_miku"
 
 func commandStart(msg *tg.Message) {
-	_, err := bot.SendChatAction(msg.Chat.ID, tg.ActionTyping)
+	usr, err := dbGetUserElseAdd(msg.From.ID, msg.From.LanguageCode)
 	errCheck(err)
 
-	T, err := langSwitch(msg.From.LanguageCode)
+	_, err = bot.SendChatAction(msg.Chat.ID, tg.ActionTyping)
+	errCheck(err)
+
+	T, err := langSwitch(usr.Language, msg.From.LanguageCode)
 	errCheck(err)
 
 	channelURL := cfg.UString("telegram.channel.invite")

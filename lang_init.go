@@ -10,7 +10,8 @@ import (
 	"github.com/nicksnyder/go-i18n/i18n"
 )
 
-var langTags = make(map[string]string)
+var languageNames = make(map[string]string)
+var languageCodes []string
 
 func langInit() {
 	err := filepath.Walk("./i18n", func(path string, file os.FileInfo, err error) error {
@@ -24,14 +25,14 @@ func langInit() {
 	})
 	errCheck(err)
 
-	tags := i18n.LanguageTags()
-	for _, tag := range tags {
-		T, err := langSwitch(tag)
+	languageCodes = i18n.LanguageTags()
+	for _, code := range languageCodes {
+		T, err := langSwitch(code)
 		errCheck(err)
 
-		langTags[tag] = fmt.Sprint(
+		languageNames[code] = fmt.Sprint(
 			T("language_flag"), " ", strings.Title(T("language_name")),
 		)
-		log.Ln("Tag", tag, ":", langTags[tag])
+		log.Ln("Tag", code, ":", languageNames[code])
 	}
 }

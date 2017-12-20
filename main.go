@@ -9,6 +9,11 @@ import (
 var bot *tg.Bot
 
 func main() {
+	defer func() {
+		err := db.Close()
+		errCheck(err)
+	}()
+
 	var err error
 	bot, err = tg.NewBot(cfg.UString("telegram.token"))
 	if err != nil {
@@ -20,7 +25,7 @@ func main() {
 	for update := range getUpdatesChannel() {
 		switch {
 		case update.Message != nil:
-			message(update.Message)
+			messages(update.Message)
 		case update.InlineQuery != nil &&
 			// Just don't update results if query exceeds the maximum length
 			len(update.InlineQuery.Query) <= 255:
@@ -28,7 +33,7 @@ func main() {
 		case update.ChosenInlineResult != nil:
 			// ChosenInlineResult(update.ChosenInlineResult)
 		case update.CallbackQuery != nil:
-			// callbackQuery(update.CallbackQuery)
+			callbackQuery(update.CallbackQuery)
 		case update.ChannelPost != nil:
 			// channelPost(update.ChannelPost)
 		default:

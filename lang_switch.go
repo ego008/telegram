@@ -7,13 +7,9 @@ import (
 
 const langDefault = "en"
 
-func langSwitch(langCode string) (T i18n.TranslateFunc, err error) {
-	log.Ln("Trying set", langCode, "localization")
-	T, err = i18n.Tfunc(langCode)
-	if err != nil {
-		log.Ln("Unsupported language, set", langDefault, "language as default")
-		T, err = i18n.Tfunc(langDefault)
-		errCheck(err)
-	}
+func langSwitch(langCodes ...string) (T i18n.TranslateFunc, err error) {
+	log.Ln("Trying set localization")
+	langCodes = append(langCodes, langDefault)
+	T, err = i18n.Tfunc(langCodes[0], langCodes[1:]...)
 	return
 }

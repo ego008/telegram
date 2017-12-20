@@ -3,10 +3,13 @@ package main
 import tg "github.com/toby3d/go-telegram"
 
 func commandPatreon(msg *tg.Message) {
-	_, err := bot.SendChatAction(msg.Chat.ID, tg.ActionTyping)
+	usr, err := dbGetUserElseAdd(msg.From.ID, msg.From.LanguageCode)
 	errCheck(err)
 
-	T, err := langSwitch(msg.From.LanguageCode)
+	_, err = bot.SendChatAction(msg.Chat.ID, tg.ActionTyping)
+	errCheck(err)
+
+	T, err := langSwitch(usr.Language, msg.From.LanguageCode)
 	errCheck(err)
 
 	text := T("message_patreon", 0, map[string]interface{}{

@@ -5,7 +5,7 @@ import (
 	tg "github.com/toby3d/go-telegram"
 )
 
-func message(msg *tg.Message) {
+func messages(msg *tg.Message) {
 	// Getted message from myself
 	if msg.From.ID == bot.Self.ID {
 		return
@@ -23,5 +23,5 @@ func message(msg *tg.Message) {
 		return
 	}
 
-	command(msg)
+	commands(msg)
 }
