@@ -15,7 +15,7 @@ button_group:
 button_help:
   other: "❔ Help"
 button_language:
-  other: "🏁 Language"
+  other: "{{.Flag}} Language"
 button_more:
   other: "🌀 More"
 button_original:

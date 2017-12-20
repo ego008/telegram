@@ -25,7 +25,7 @@ button_help:
 button_info:
   other: ❔ 信息
 button_language:
-  other: "\U0001F3C1 語言"
+  other: '{{.Flag}} 語言'
 button_more:
   other: "\U0001F300 更多"
 button_original:
@@ -171,7 +171,7 @@ message_input_tags_success:
 message_input_whitelist_tags:
   other: 透過空白來分隔並輸入強制允許的標籤（最多{{.Limit}}）：
 message_language:
-  other: 你可以在此設置傳遞給你的訊息語系為何，當你轉發訊息時按鈕和相關結果的語系也都是與設定相同的。不過你可以在搜尋的時候透過 `lang:[{{.LangCode}}]`
+  other: 你可以在此設置傳遞給你的訊息語系為何，當你轉發訊息時按鈕和相關結果的語系也都是與設定相同的。不過你可以在搜尋的時候透過 `lang:[{{.LanguageCodes}}]`
     標記複寫。
 message_language_selected:
   other: "\U0001F44B\U0001F3FB 哈囉！"

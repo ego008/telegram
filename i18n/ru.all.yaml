@@ -175,7 +175,7 @@ message_input_whitelist_tags:
 message_language:
   other: Здесь ты можешь настроить язык всех _обращённых к тебе сообщений_, а также
     язык кнопок всех отправляемых в чаты результатов. Язык результатов может быть
-    переключён через явное использование `lang:[{{.LangCode}}]` в поиске.
+    переключён через явное использование `lang:[{{.LanguageCodes}}]` в поиске.
 message_language_selected:
   other: "\U0001F44B\U0001F3FB Привет!"
 message_patreon:

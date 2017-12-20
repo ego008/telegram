@@ -25,7 +25,7 @@ button_help:
 button_info:
   other: ❔ Info
 button_language:
-  other: "\U0001F3C1 Language"
+  other: '{{.Flag}} Language'
 button_more:
   other: "\U0001F300 More"
 button_original:
@@ -175,7 +175,8 @@ message_input_whitelist_tags:
 message_language:
   other: Here you can configure the language of all messages sent to you, as well
     as the language of the buttons of all the results to be sent to chats. The result
-    language can be switched through explicit use `lang:[{{.LangCode}}]` in the search.
+    language can be switched through explicit use `lang:[{{.LanguageCodes}}]` in the
+    search.
 message_language_selected:
   other: "\U0001F44B\U0001F3FB Hello!"
 message_patreon:
