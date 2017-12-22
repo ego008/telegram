@@ -27,9 +27,8 @@ func main() {
 		case update.Message != nil:
 			messages(update.Message)
 		case update.InlineQuery != nil &&
-			// Just don't update results if query exceeds the maximum length
 			len(update.InlineQuery.Query) <= 255:
-			// inlineQuery(update.InlineQuery)
+			inlineQuery(update.InlineQuery)
 		case update.ChosenInlineResult != nil:
 			// ChosenInlineResult(update.ChosenInlineResult)
 		case update.CallbackQuery != nil:

@@ -20,6 +20,14 @@ func callbackToggleRating(usr *user, call *tg.CallbackQuery, rating string) {
 	}
 	errCheck(err)
 
+	if !usr.Ratings.Safe &&
+		!usr.Ratings.Questionable &&
+		!usr.Ratings.Exlplicit {
+		usr.toggleSafe()
+		usr.toggleQuestionable()
+		usr.toggleExplicit()
+	}
+
 	callbackUpdateRatingsKeyboard(usr, call)
 }
 

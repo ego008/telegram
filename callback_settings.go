@@ -13,7 +13,7 @@ func callbackToSettings(usr *user, call *tg.CallbackQuery) {
 
 	var activeRes []string
 	for k, v := range usr.Resources {
-		if v {
+		if v && resources[k] != nil {
 			title := resources[k]["title"].(string)
 			activeRes = append(activeRes, title)
 		}

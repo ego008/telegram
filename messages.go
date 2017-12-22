@@ -7,21 +7,19 @@ import (
 
 func messages(msg *tg.Message) {
 	// Getted message from myself
-	if msg.From.ID == bot.Self.ID {
+	if bot.IsMessageFromMe(msg) {
 		return
 	}
 
-	// Getted forwarded message from myself
-	if msg.ForwardFrom != nil {
-		if msg.ForwardFrom.ID == bot.Self.ID {
-			return
-		}
-	}
+	log.Ln("IsMessageFromMe", false)
 
-	if !msg.IsCommand() {
-		log.D(*msg)
+	if bot.IsCommandToMe(msg) {
+		log.Ln("IsCommandToMe", true)
+		commands(msg)
 		return
 	}
 
-	commands(msg)
+	log.Ln("IsCommandToMe", false)
+
+	//log.D(*msg)
 }

@@ -37,8 +37,14 @@ func getListMenuKeyboard(usr *user, listType string) *tg.InlineKeyboardMarkup {
 		tags = usr.Whitelist
 	}
 
-	row := 0
-	var replyMarkup tg.InlineKeyboardMarkup
+	replyMarkup := tg.NewInlineKeyboardMarkup(
+		tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButton(
+				T("button_tags_add"), fmt.Sprint("add:tags:", listType),
+			),
+		),
+	)
+	row := 1
 	for i, tag := range tags {
 		if i%2 == 0 {
 			replyMarkup.InlineKeyboard = append(
@@ -61,7 +67,7 @@ func getListMenuKeyboard(usr *user, listType string) *tg.InlineKeyboardMarkup {
 		),
 	)
 
-	return &replyMarkup
+	return replyMarkup
 }
 
 func callbackUpdateListKeyboard(usr *user, call *tg.CallbackQuery, listType string) {

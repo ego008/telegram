@@ -35,11 +35,6 @@ func dbAddUser(id int, lang string) (*user, error) {
 	usr.Whitelist = make([]string, 0)
 
 	for k, _ := range resources {
-		if k == "glbr" {
-			usr.Resources[k] = true
-			continue
-		}
-
 		usr.Resources[k] = false
 	}
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 
 	log "github.com/kirillDanshin/dlog"
@@ -32,6 +33,8 @@ func callbackQuery(call *tg.CallbackQuery) {
 		callbackSwitch(usr, call, data[1:])
 	case "toggle":
 		callbackToggle(usr, call, data[1:])
+	case "add":
+		callbackAdd(usr, call, data[1:])
 	case "remove":
 		callbackRemove(usr, call, data[1:])
 	default:
@@ -76,6 +79,35 @@ func callbackToggle(usr *user, call *tg.CallbackQuery, options []string) {
 		callbackToggleResource(usr, call, options[1])
 	case "rating":
 		callbackToggleRating(usr, call, options[1])
+	default:
+		callbackAlert(call, "😱 Oh no!..")
+	}
+}
+
+func callbackAdd(usr *user, call *tg.CallbackQuery, options []string) {
+	switch options[0] {
+	case "tags":
+		go func() {
+			_, err := bot.AnswerCallbackQuery(tg.NewAnswerCallbackQuery(call.ID))
+			errCheck(err)
+		}()
+
+		usr, err := dbGetUserElseAdd(call.From.ID, call.From.LanguageCode)
+		errCheck(err)
+
+		T, err := langSwitch(usr.Language, call.From.LanguageCode)
+		errCheck(err)
+
+		text := T(fmt.Sprint("message_input_", options[1], "_tags"), map[string]interface{}{
+			"Limit": 5,
+		})
+
+		reply := tg.NewMessage(int64(call.From.ID), text)
+		reply.ParseMode = tg.ModeMarkdown
+		reply.ReplyMarkup = tg.NewForceReply(true)
+
+		_, err = bot.SendMessage(reply)
+		errCheck(err)
 	default:
 		callbackAlert(call, "😱 Oh no!..")
 	}

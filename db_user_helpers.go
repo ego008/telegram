@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -124,15 +125,14 @@ func (usr *user) setLanguage(lang string) error {
 	return nil
 }
 
-func (usr *user) addListTags(listType string, tag ...string) error {
+func (usr *user) addListTags(listType string, tags ...string) error {
 	log.Ln("db:user:add:" + listType + ":tags")
 
 	err := db.Update(func(tx *buntdb.Tx) error {
-		for i := range tag {
-			tag := strings.ToLower(tag[i])
+		for i := range tags {
+			tag := strings.ToLower(tags[i])
 			_, _, err := tx.Set(
-				fmt.Sprint("user:", usr.ID, ":", listType, ":", tag),
-				"", nil,
+				fmt.Sprint("user:", usr.ID, ":", listType, ":", tag), "", nil,
 			)
 			if err != nil {
 				return err
@@ -144,31 +144,27 @@ func (usr *user) addListTags(listType string, tag ...string) error {
 		return err
 	}
 
-	var tags []string
-	err = db.View(func(tx *buntdb.Tx) error {
-		pattern := fmt.Sprint("user:", usr.ID, ":", listType, ":")
-		err := tx.AscendKeys(
-			fmt.Sprint(pattern, "*"),
-			func(key, val string) bool {
-				tags = append(tags, strings.TrimPrefix(key, pattern))
-				return true
-			},
-		)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-
 	switch listType {
 	case whiteList:
-		usr.Whitelist = tags
+		for i := range tags {
+			for j := range usr.Whitelist {
+				if usr.Whitelist[j] == tags[i] {
+					continue
+				}
+
+				usr.Whitelist = append(usr.Whitelist, tags[i])
+			}
+		}
 	case blackList:
-		usr.Blacklist = tags
+		for i := range tags {
+			for j := range usr.Blacklist {
+				if usr.Blacklist[j] == tags[i] {
+					continue
+				}
+
+				usr.Blacklist = append(usr.Blacklist, tags[i])
+			}
+		}
 	}
 
 	return nil
@@ -179,27 +175,13 @@ func (usr *user) removeListTag(listType string, tag string) error {
 	pattern := fmt.Sprint("user:", usr.ID, ":", listType, ":")
 
 	err := db.Update(func(tx *buntdb.Tx) error {
-		return tx.AscendKeys(
+		var tagKey string
+		err := tx.AscendKeys(
 			fmt.Sprint(pattern, "*"), func(key, val string) bool {
 				if strings.TrimPrefix(key, pattern) == tag {
-					tx.Delete(key)
+					tagKey = key
 					return false
 				}
-				return true
-			},
-		)
-	})
-	if err != nil {
-		return err
-	}
-
-	var tags []string
-	err = db.View(func(tx *buntdb.Tx) error {
-		pattern := fmt.Sprint("user:", usr.ID, ":", listType, ":")
-		err := tx.AscendKeys(
-			fmt.Sprint(pattern, "*"),
-			func(key, val string) bool {
-				tags = append(tags, strings.TrimPrefix(key, pattern))
 				return true
 			},
 		)
@@ -207,7 +189,8 @@ func (usr *user) removeListTag(listType string, tag string) error {
 			return err
 		}
 
-		return nil
+		_, err = tx.Delete(tagKey)
+		return err
 	})
 	if err != nil {
 		return err
@@ -215,9 +198,25 @@ func (usr *user) removeListTag(listType string, tag string) error {
 
 	switch listType {
 	case whiteList:
-		usr.Whitelist = tags
+		for i := range usr.Whitelist {
+			if usr.Whitelist[i] != tag {
+				continue
+			}
+
+			usr.Whitelist = append(usr.Whitelist[:i], usr.Whitelist[i+1:]...)
+			break
+		}
+		sort.Strings(usr.Whitelist)
 	case blackList:
-		usr.Blacklist = tags
+		for i := range usr.Blacklist {
+			if usr.Blacklist[i] != tag {
+				continue
+			}
+
+			usr.Blacklist = append(usr.Blacklist[:i], usr.Blacklist[i+1:]...)
+			break
+		}
+		sort.Strings(usr.Blacklist)
 	}
 
 	return nil

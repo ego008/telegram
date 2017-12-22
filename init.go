@@ -18,7 +18,7 @@ func init() {
 	log.Ln("Running", ver, "version...")
 	flag.Parse()
 
-	go dbInit()
 	cfgInit()
 	langInit()
+	go dbInit()
 }

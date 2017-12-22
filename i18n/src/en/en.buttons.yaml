@@ -47,7 +47,7 @@ button_ratings:
 button_resources:
   other: "🌐 Resources"
 button_tags_add:
-  other: "🔖 Overwrite tags"
+  other: "🔖 Add tags"
 button_whitelist:
   other: "⚪️ White list"
 button_info:

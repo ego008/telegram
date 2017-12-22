@@ -49,6 +49,6 @@ button_whitelist:
 button_resources:
   other: "🌐 Ресурсы"
 button_tags_add:
-  other: "🔖 Перезаписать теги"
+  other: "🔖 Добавить теги"
 button_info:
   other: "❔ Инфо"

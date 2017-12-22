@@ -47,7 +47,7 @@ button_resources:
 button_return:
   other: "↩️ 返回"
 button_tags_add:
-  other: "🔖 覆蓋標籤"
+  other: ""
 button_whitelist:
   other: "⚪️ 白名單"
 button_info:

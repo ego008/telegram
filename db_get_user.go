@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -81,6 +82,9 @@ func dbGetUser(id int) (*user, error) {
 
 		return nil
 	})
+
+	sort.Strings(usr.Whitelist)
+	sort.Strings(usr.Blacklist)
 
 	return &usr, err
 }

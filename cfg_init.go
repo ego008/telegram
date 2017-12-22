@@ -36,7 +36,7 @@ func cfgInit() {
 		errCheck(err)
 	}
 
-	for i := 0; i == i; i++ {
+	for i := 0; true; i++ {
 		res, err := cfg.Map(fmt.Sprint("resources.", i))
 		if err != nil {
 			break
@@ -46,4 +46,26 @@ func cfgInit() {
 		log.Ln("Getted", name, "resource config")
 		resources[name] = res
 	}
+
+	log.Ln("Resources before:")
+	log.D(resources)
+
+	for res, conf := range resources {
+		if conf["template"] == nil {
+			log.Ln("Resource:", res, "template: none")
+			continue
+		}
+
+		template := conf["template"].(string)
+		for k, v := range resources[template] {
+			if resources[res][k] != nil {
+				continue
+			}
+
+			resources[res][k] = v
+		}
+	}
+
+	log.Ln("Resources after:")
+	log.D(resources)
 }

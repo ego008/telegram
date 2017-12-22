@@ -18,10 +18,12 @@ func commandSettings(msg *tg.Message) {
 
 	var activeRes []string
 	for k, v := range usr.Resources {
-		if v {
-			title := resources[k]["title"].(string)
-			activeRes = append(activeRes, title)
+		if !v {
+			continue
 		}
+
+		title := resources[k]["title"].(string)
+		activeRes = append(activeRes, title)
 	}
 
 	ratings, err := usr.getRatingsStatus()
@@ -37,37 +39,7 @@ func commandSettings(msg *tg.Message) {
 
 	reply := tg.NewMessage(msg.Chat.ID, text)
 	reply.ParseMode = tg.ModeMarkdown
-	reply.ReplyMarkup = tg.NewInlineKeyboardMarkup(
-		tg.NewInlineKeyboardRow(
-			tg.NewInlineKeyboardButton(
-				T(
-					"button_language",
-					map[string]interface{}{"Flag": T("language_flag")},
-				),
-				"to:languages",
-			),
-		),
-		tg.NewInlineKeyboardRow(
-			tg.NewInlineKeyboardButton(
-				T("button_resources"), "to:resources",
-			),
-		),
-		tg.NewInlineKeyboardRow(
-			tg.NewInlineKeyboardButton(
-				T("button_ratings"), "to:ratings",
-			),
-		),
-		tg.NewInlineKeyboardRow(
-			tg.NewInlineKeyboardButton(
-				T("button_blacklist"), "to:blacklist",
-			),
-		),
-		tg.NewInlineKeyboardRow(
-			tg.NewInlineKeyboardButton(
-				T("button_whitelist"), "to:whitelist",
-			),
-		),
-	)
+	reply.ReplyMarkup = getSettingsMenuKeyboard(usr)
 
 	_, err = bot.SendMessage(reply)
 	errCheck(err)

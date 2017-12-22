@@ -29,26 +29,25 @@ func commands(msg *tg.Message) {
 		commandSettings(msg)
 	case cmdCheatsheet:
 		commandCheatsheet(msg)
-	case blackList:
+	case blackList, whiteList:
 		if !msg.HasArgument() {
 			return
+		}
+
+		listType := blackList
+		if listType == whiteList {
+			listType = whiteList
 		}
 
 		usr, err := dbGetUserElseAdd(msg.From.ID, msg.From.LanguageCode)
 		errCheck(err)
 
 		tags := strings.Split(strings.ToLower(msg.CommandArgument()), " ")
-		for _, tag := range tags {
-			for i := range usr.Blacklist {
-				if usr.Blacklist[i] == tag {
-					tags = append(tags[:i], tags[i+1:]...)
-					continue
-				}
+		err = usr.addListTags(listType, tags...)
+		errCheck(err)
 
-			}
-		}
-
-		err = usr.addListTags(blackList, tags[1:]...)
+		reply := tg.NewMessage(msg.Chat.ID, "OK")
+		_, err = bot.SendMessage(reply)
 		errCheck(err)
 	}
 }

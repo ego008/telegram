@@ -34,19 +34,27 @@ func getResourcesMenuKeyboard(usr *user) *tg.InlineKeyboardMarkup {
 	T, err := langSwitch(usr.Language)
 	errCheck(err)
 
+	fmt.Printf("%#v", resources)
+
+	var i, row int
 	var replyMarkup tg.InlineKeyboardMarkup
 	for k, v := range resources {
-		replyMarkup.InlineKeyboard = append(
-			replyMarkup.InlineKeyboard,
-			tg.NewInlineKeyboardRow(
-				tg.NewInlineKeyboardButton(
-					fmt.Sprintln(
-						toggleStatus[usr.Resources[k]], v["title"].(string),
-					),
-					fmt.Sprint("toggle:resource:", k),
-				),
+		if i%2 == 0 {
+			replyMarkup.InlineKeyboard = append(
+				replyMarkup.InlineKeyboard, tg.NewInlineKeyboardRow(),
+			)
+			row++
+		}
+
+		replyMarkup.InlineKeyboard[row-1] = append(
+			replyMarkup.InlineKeyboard[row-1],
+			tg.NewInlineKeyboardButton(
+				fmt.Sprintln(toggleStatus[usr.Resources[k]], v["title"].(string)),
+				fmt.Sprint("toggle:resource:", k),
 			),
 		)
+
+		i++
 	}
 	replyMarkup.InlineKeyboard = append(
 		replyMarkup.InlineKeyboard,

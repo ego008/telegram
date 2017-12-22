@@ -79,6 +79,13 @@ func (usr *user) getRatingsFilter() string {
 		return "-rating:safe"
 	default:
 		// all ratings enabled/diabled
-		return "rating:*"
+		return ""
 	}
+}
+
+func checkInterface(src interface{}) string {
+	if src != nil {
+		return src.(string)
+	}
+	return ""
 }
