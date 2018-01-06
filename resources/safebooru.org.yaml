@@ -1,0 +1,9 @@
+name: sfbr
+title: Safebooru
+template: glbr
+
+host: safebooru.org
+
+thumbs:
+  name: images
+  format: images

@@ -2,20 +2,13 @@ package main
 
 import (
 	"fmt"
-	"net/url"
 	"strconv"
 	"strings"
 	"sync"
 
 	log "github.com/kirillDanshin/dlog"
-	tg "github.com/toby3d/go-telegram"
+	tg "github.com/toby3d/telegram"
 )
-
-var urlIV = &url.URL{
-	Scheme: "https",
-	Host:   "t.me",
-	Path:   "/iv",
-}
 
 func inlineQuery(query *tg.InlineQuery) {
 	usr, err := dbGetUserElseAdd(query.From.ID, query.From.LanguageCode)
@@ -50,10 +43,12 @@ func inlineQuery(query *tg.InlineQuery) {
 	)
 
 	switch {
-	case len(results) <= 0:
+	case offset <= 0 &&
+		len(results) <= 0:
 		answer.SwitchPrivateMessageText = T("inline_no_result")
 		answer.SwitchPrivateMessageParameter = "settings"
-	case offset > 0 && len(results) <= 0:
+	case offset > 0 &&
+		len(results) <= 0:
 	default:
 		answer.Results = results
 		answer.NextOffset = strconv.Itoa(offset)
@@ -88,6 +83,10 @@ func getResults(query *tg.InlineQuery, usr *user, p *params) (results []interfac
 		}
 	}
 
+	if len(res) <= 0 {
+		return nil
+	}
+
 	p.Limit = 50 / len(res)
 
 	log.Ln("getResults after resources")
@@ -99,6 +98,8 @@ func getResults(query *tg.InlineQuery, usr *user, p *params) (results []interfac
 		go func(res string, p *params) {
 			defer wg.Done()
 			log.Ln("Getted", p.Limit, "results from", res, "...")
+			log.D(resources[res].UMap(""))
+
 			posts, err := request(res, p)
 			if err != nil {
 				log.Ln("[ERROR]", err.Error())
@@ -107,7 +108,10 @@ func getResults(query *tg.InlineQuery, usr *user, p *params) (results []interfac
 
 			log.Ln("Getted", len(posts), "results from", res)
 			for j := range posts {
-				results = append(results, getResultByPost(query, usr, res, &posts[j]))
+				result := getResultByPost(query, usr, res, &posts[j])
+				if result != nil {
+					results = append(results, result)
+				}
 			}
 		}(res[i], p)
 	}
@@ -118,76 +122,13 @@ func getResults(query *tg.InlineQuery, usr *user, p *params) (results []interfac
 }
 
 func getResultByPost(query *tg.InlineQuery, usr *user, res string, post *post) interface{} {
-	log.Ln("getResultByPost")
 	T, err := langSwitch(usr.Language, query.From.LanguageCode)
 	errCheck(err)
-
-	resource := resources[res]
-	id := fmt.Sprint(res, post.ID)
-
-	urlScheme := checkInterface(resource["scheme"])
-	urlHost := checkInterface(resource["host"])
-
-	urlImagesDir := checkInterface(resource["images_dir"])
-	urlImagesPart := checkInterface(resource["images_part"])
-
-	urlThumbsDir := checkInterface(resource["thumbs_dir"])
-	urlThumbsPart := checkInterface(resource["thumbs_part"])
-
-	file := strings.Split(post.Image, ".")
-	fileHash := file[0]
-	urlFileFormat := file[1]
-
-	urlFileHash := fileHash
-	urlThumbsHash := post.Hash
-
-	if resource["hash"] != nil {
-		log.Ln("Hash by:", resource["hash"].(string))
-		switch resource["hash"].(string) {
-		case "file":
-			urlThumbsHash = urlFileHash
-		case "thumb":
-			urlFileHash = urlThumbsHash
-		case "invert":
-			urlFileHash = post.Hash
-			urlThumbsHash = fileHash
-		}
-	}
-
-	fileURL := &url.URL{
-		Scheme: urlScheme,
-		Host:   urlHost,
-		Path: fmt.Sprint(
-			urlImagesDir,
-			post.Directory,
-			urlImagesPart, urlFileHash, ".", urlFileFormat,
-		),
-	}
-
-	urlThumbsFormat := "jpg"
-	if resource["thumbs_format"] != nil {
-		urlThumbsFormat = resource["thumbs_format"].(string)
-		if urlThumbsFormat == "auto" {
-			urlThumbsFormat = urlFileFormat
-		}
-	}
-
-	thumbURL := &url.URL{
-		Scheme: urlScheme,
-		Host:   urlHost,
-		Path: fmt.Sprint(
-			urlThumbsDir, post.Directory,
-			urlThumbsPart, urlThumbsHash, ".", urlThumbsFormat,
-		),
-	}
-
-	log.Ln("PreviewURL:", thumbURL.String())
-	log.Ln("FileURL:", fileURL.String())
 
 	replyMarkup := tg.NewInlineKeyboardMarkup(
 		tg.NewInlineKeyboardRow(
 			tg.NewInlineKeyboardButtonURL(
-				T("button_original"), fileURL.String(),
+				T("button_original"), post.fileURL(res).String(),
 			),
 		),
 	)
@@ -201,16 +142,22 @@ func getResultByPost(query *tg.InlineQuery, usr *user, res string, post *post) i
 		)
 	}
 
-	switch urlFileFormat {
-	case "webm":
+	switch {
+	case strings.HasSuffix(post.fileURL(res).Path, "webm"):
+		if !usr.Types.Video {
+			return nil
+		}
+
 		inputMessageContent := tg.NewInputTextMessageContent(
 			T("message_blushboard", map[string]interface{}{
 				"Type":  strings.Title(T("type_video")),
 				"Owner": post.Owner,
 				"URL": fmt.Sprint(
-					urlScheme, "://",
-					urlHost,
-					checkInterface(resource["result"]), post.ID,
+					resources[res].UString("scheme", "http"),
+					"://",
+					resources[res].UString("host"),
+					resources[res].UString("result"),
+					post.ID,
 				),
 			}),
 		)
@@ -218,10 +165,10 @@ func getResultByPost(query *tg.InlineQuery, usr *user, res string, post *post) i
 		inputMessageContent.DisableWebPagePreview = false
 
 		video := tg.NewInlineQueryResultVideo(
-			id,
-			fileURL.String(),
+			fmt.Sprint(res, post.ID),
+			post.fileURL(res).String(),
 			tg.MimeHTML,
-			thumbURL.String(),
+			post.previewURL(res).String(),
 			T("inline_title", map[string]interface{}{
 				"Type":  strings.Title(T("type_video")),
 				"Owner": post.Owner,
@@ -236,8 +183,16 @@ func getResultByPost(query *tg.InlineQuery, usr *user, res string, post *post) i
 		video.InputMessageContent = inputMessageContent
 		video.ReplyMarkup = replyMarkup
 		return video
-	case "gif":
-		gif := tg.NewInlineQueryResultGif(id, fileURL.String(), fileURL.String())
+	case strings.HasSuffix(post.fileURL(res).Path, "gif"):
+		if !usr.Types.Animation {
+			return nil
+		}
+
+		gif := tg.NewInlineQueryResultGif(
+			fmt.Sprint(res, post.ID),
+			post.fileURL(res).String(),
+			post.fileURL(res).String(),
+		)
 		gif.GifWidth = post.Width
 		gif.GifHeight = post.Height
 		gif.Title = T("inline_title", map[string]interface{}{
@@ -247,9 +202,24 @@ func getResultByPost(query *tg.InlineQuery, usr *user, res string, post *post) i
 		gif.ReplyMarkup = replyMarkup
 		return gif
 	default:
-		photo := tg.NewInlineQueryResultPhoto(id, fileURL.String(), thumbURL.String())
+		if !usr.Types.Image {
+			return nil
+		}
+
+		photo := tg.NewInlineQueryResultPhoto(
+			fmt.Sprint(res, post.ID),
+			post.fileURL(res).String(),
+			post.previewURL(res).String(),
+		)
 		photo.PhotoWidth = post.Width
 		photo.PhotoHeight = post.Height
+
+		if post.Sample {
+			photo.PhotoURL = post.sampleURL(res).String()
+			photo.PhotoWidth = post.SampleWidth
+			photo.PhotoHeight = post.SampleHeight
+		}
+
 		photo.Title = T("inline_title", map[string]interface{}{
 			"Type":  strings.Title(T("type_image")),
 			"Owner": post.Owner,

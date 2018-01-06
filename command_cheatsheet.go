@@ -1,6 +1,6 @@
 package main
 
-import tg "github.com/toby3d/go-telegram"
+import tg "github.com/toby3d/telegram"
 
 func commandCheatsheet(msg *tg.Message) {
 	usr, err := dbGetUserElseAdd(msg.From.ID, msg.From.LanguageCode)

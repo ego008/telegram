@@ -49,6 +49,16 @@ func dbGetUser(id int) (*user, error) {
 		rateExplicit, _ := tx.Get(fmt.Sprint("user:", id, ":rating:explicit"))
 		usr.Ratings.Exlplicit, _ = strconv.ParseBool(rateExplicit)
 
+		// Types
+		typeImage, _ := tx.Get(fmt.Sprint("user:", id, ":type:image"))
+		usr.Types.Image, _ = strconv.ParseBool(typeImage)
+
+		typeAnimation, _ := tx.Get(fmt.Sprint("user:", id, ":type:animation"))
+		usr.Types.Animation, _ = strconv.ParseBool(typeAnimation)
+
+		typeVideo, _ := tx.Get(fmt.Sprint("user:", id, ":type:video"))
+		usr.Types.Video, _ = strconv.ParseBool(typeVideo)
+
 		// Resources
 		tx.AscendKeys(
 			fmt.Sprint("user:", id, ":resource:*"),

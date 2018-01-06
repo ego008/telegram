@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	log "github.com/kirillDanshin/dlog"
-	tg "github.com/toby3d/go-telegram"
+	tg "github.com/toby3d/telegram"
 )
 
 var channel = make(chan tg.Update, 100)

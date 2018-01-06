@@ -53,7 +53,7 @@ button_settings:
 button_share:
   other: "\U0001F5E3 Share"
 button_tags_add:
-  other: "\U0001F516 Overwrite tags"
+  other: "\U0001F516 Add tags"
 button_try:
   other: "\U0001F441 Let me try!"
 button_whitelist:
@@ -229,7 +229,7 @@ message_resources:
 message_settings:
   other: |-
     *Language:* {{.Language}}
-    *Resources:* {{.Resources}}
+    *Resources:* `{{.Resources}}`
     *Ratings:* {{.Ratings}}
     *Black list:* `{{.Blacklist}}`
     *White list:* `{{.Whitelist}}`

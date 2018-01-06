@@ -1,0 +1,13 @@
+name: tbib
+title: The Big ImageBoard (TBIB)
+template: glbr
+
+scheme: http
+host: tbib.org
+
+thumbs:
+  name: images
+  format: images
+
+samples:
+  format: images

@@ -35,7 +35,7 @@ func (usr *user) Destroy() error {
 	})
 }
 
-func (usr *user) toggleSafe() error {
+func (usr *user) toggleRatingSafe() error {
 	log.Ln("db:user:toggle:safe")
 
 	err := db.Update(func(tx *buntdb.Tx) error {
@@ -53,7 +53,7 @@ func (usr *user) toggleSafe() error {
 	return nil
 }
 
-func (usr *user) toggleQuestionable() error {
+func (usr *user) toggleRatingQuestionable() error {
 	log.Ln("db:user:toggle:questionable")
 
 	err := db.Update(func(tx *buntdb.Tx) error {
@@ -71,7 +71,7 @@ func (usr *user) toggleQuestionable() error {
 	return nil
 }
 
-func (usr *user) toggleExplicit() error {
+func (usr *user) toggleRatingExplicit() error {
 	log.Ln("db:user:toggle:explicit")
 
 	err := db.Update(func(tx *buntdb.Tx) error {
@@ -86,6 +86,60 @@ func (usr *user) toggleExplicit() error {
 	}
 
 	usr.Ratings.Exlplicit = !usr.Ratings.Exlplicit
+	return nil
+}
+
+func (usr *user) toggleTypeImage() error {
+	log.Ln("db:user:toggle:image")
+
+	err := db.Update(func(tx *buntdb.Tx) error {
+		_, _, err := tx.Set(
+			fmt.Sprint("user:", usr.ID, ":type:image"),
+			strconv.FormatBool(!usr.Types.Image), nil,
+		)
+		return err
+	})
+	if err != nil {
+		return err
+	}
+
+	usr.Types.Image = !usr.Types.Image
+	return nil
+}
+
+func (usr *user) toggleTypeAnimation() error {
+	log.Ln("db:user:toggle:animation")
+
+	err := db.Update(func(tx *buntdb.Tx) error {
+		_, _, err := tx.Set(
+			fmt.Sprint("user:", usr.ID, ":type:animation"),
+			strconv.FormatBool(!usr.Types.Animation), nil,
+		)
+		return err
+	})
+	if err != nil {
+		return err
+	}
+
+	usr.Types.Animation = !usr.Types.Animation
+	return nil
+}
+
+func (usr *user) toggleTypeVideo() error {
+	log.Ln("db:user:toggle:video")
+
+	err := db.Update(func(tx *buntdb.Tx) error {
+		_, _, err := tx.Set(
+			fmt.Sprint("user:", usr.ID, ":type:video"),
+			strconv.FormatBool(!usr.Types.Video), nil,
+		)
+		return err
+	})
+	if err != nil {
+		return err
+	}
+
+	usr.Types.Video = !usr.Types.Video
 	return nil
 }
 

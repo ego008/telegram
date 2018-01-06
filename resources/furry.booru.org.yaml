@@ -1,0 +1,16 @@
+name: frbr
+title: FurryBooru
+template: glbr
+
+scheme: http
+host: furry.booru.org
+
+thumbs:
+  name: images
+  format: images
+
+images:
+  part: /
+
+samples:
+  format: images

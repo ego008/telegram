@@ -39,55 +39,31 @@ type (
 func request(res string, req *params) ([]post, error) {
 	resource := resources[res]
 
-	requestURL := &url.URL{
-		Scheme: resource["scheme"].(string),
-		Host:   resource["host"].(string),
-		Path:   resource["path"].(string),
+	var requestURL url.URL
+	requestURL.Scheme = resource.UString("scheme", "http")
+	requestURL.Host = resource.UString("host")
+	requestURL.Path = resource.UString("path")
+
+	args := requestURL.Query()
+	args.Add("page", "dapi")
+	args.Add("s", "post")
+	args.Add("q", "index")
+	args.Add("json", strconv.Itoa(1))
+
+	if req.Limit != 0 {
+		args.Add("limit", strconv.Itoa(req.Limit))
+	}
+	if req.PageID > 0 {
+		args.Add("pid", strconv.Itoa(req.PageID))
+	}
+	if req.Tags != "" {
+		args.Add("tags", req.Tags)
+	}
+	if req.ID > 0 {
+		args.Add("id", strconv.Itoa(req.ID))
 	}
 
-	if resource["query"] != nil {
-		query := resource["query"].(map[string]interface{})
-		args := requestURL.Query()
-
-		if query["limit"] != nil &&
-			req.Limit != 0 {
-			args.Add(query["limit"].(string), strconv.Itoa(req.Limit))
-		}
-		if query["page"] != nil &&
-			req.PageID > 0 {
-			args.Add(query["page"].(string), strconv.Itoa(req.PageID))
-		}
-		if query["tags"] != nil &&
-			req.Tags != "" {
-			args.Add(query["tags"].(string), req.Tags)
-		}
-		if query["id"] != nil &&
-			req.ID > 0 {
-			args.Add(query["id"].(string), strconv.Itoa(req.ID))
-		}
-		if query["custom"] != nil {
-			rawCustom := query["custom"].([]interface{})
-			custom := make([]map[string]interface{}, len(rawCustom))
-			for i := range rawCustom {
-				custom[i] = rawCustom[i].(map[string]interface{})
-			}
-
-			for i := range custom {
-				for key, val := range custom[i] {
-					var value string
-					switch v := val.(type) {
-					case string:
-						value = v
-					case int:
-						value = strconv.Itoa(v)
-					}
-					args.Add(key, value)
-				}
-			}
-		}
-
-		requestURL.RawQuery = args.Encode()
-	}
+	requestURL.RawQuery = args.Encode()
 
 	log.Ln("RequestURL:", requestURL.String())
 	_, resp, err := http.Get(nil, requestURL.String())

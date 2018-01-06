@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	log "github.com/kirillDanshin/dlog"
@@ -11,7 +12,7 @@ import (
 )
 
 var languageNames = make(map[string]string)
-var languageCodes []string
+var languageTags []string
 
 func langInit() {
 	err := filepath.Walk("./i18n", func(path string, file os.FileInfo, err error) error {
@@ -25,14 +26,16 @@ func langInit() {
 	})
 	errCheck(err)
 
-	languageCodes = i18n.LanguageTags()
-	for _, code := range languageCodes {
-		T, err := langSwitch(code)
+	languageTags = i18n.LanguageTags()
+	for _, tag := range languageTags {
+		T, err := langSwitch(tag)
 		errCheck(err)
 
-		languageNames[code] = fmt.Sprint(
+		languageNames[tag] = fmt.Sprint(
 			T("language_flag"), " ", strings.Title(T("language_name")),
 		)
-		log.Ln("Tag", code, ":", languageNames[code])
+		log.Ln("Tag", tag, ":", languageNames[tag])
 	}
+
+	sort.Strings(languageTags)
 }

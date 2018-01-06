@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	tg "github.com/toby3d/go-telegram"
+	tg "github.com/toby3d/telegram"
 )
 
 var bot *tg.Bot

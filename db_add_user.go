@@ -32,6 +32,11 @@ func dbAddUser(id int, lang string) (*user, error) {
 		Manager: false,
 		Admin:   false,
 	}
+	usr.Types = types{
+		Image:     true,
+		Animation: true,
+		Video:     true,
+	}
 	usr.Whitelist = make([]string, 0)
 
 	for k, _ := range resources {
@@ -75,6 +80,20 @@ func dbAddUser(id int, lang string) (*user, error) {
 		tx.Set(
 			fmt.Sprint("user:", id, ":rating:explicit"),
 			strconv.FormatBool(usr.Ratings.Exlplicit), nil,
+		)
+
+		// Types
+		tx.Set(
+			fmt.Sprint("user:", id, ":type:image"),
+			strconv.FormatBool(usr.Types.Image), nil,
+		)
+		tx.Set(
+			fmt.Sprint("user:", id, ":type:animation"),
+			strconv.FormatBool(usr.Types.Animation), nil,
+		)
+		tx.Set(
+			fmt.Sprint("user:", id, ":type:video"),
+			strconv.FormatBool(usr.Types.Video), nil,
 		)
 
 		// Resources

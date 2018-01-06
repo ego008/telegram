@@ -53,7 +53,7 @@ button_settings:
 button_share:
   other: "\U0001F5E3 Поделиться"
 button_tags_add:
-  other: "\U0001F516 Перезаписать теги"
+  other: "\U0001F516 Добавить теги"
 button_try:
   other: "\U0001F441 Дай мне попробовать!"
 button_whitelist:
@@ -227,7 +227,7 @@ message_resources:
 message_settings:
   other: |-
     *Язык:* {{.Language}}
-    *Ресурсы:* {{.Resources}}
+    *Ресурсы:* `{{.Resources}}`
     *Рейтинги:* {{.Ratings}}
     *Чёрный список:* `{{.Blacklist}}`
     *Белый список:* `{{.Whitelist}}`

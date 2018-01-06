@@ -53,7 +53,7 @@ button_settings:
 button_share:
   other: "\U0001F5E3 分享"
 button_tags_add:
-  other: "\U0001F516 覆蓋標籤"
+  other: "\U0001F516 Add tags"
 button_try:
   other: "\U0001F441 讓我試試！"
 button_whitelist:
@@ -221,7 +221,7 @@ message_resources:
 message_settings:
   other: |-
     *語系：* {{.Language}}
-    *資源：* {{.Resources}}
+    *資源：* `{{.Resources}}`
     *評分：* {{.Ratings}}
     *黑名單：* `{{.Blacklist}}`
     *白名單：* `{{.Whitelist}}`

@@ -1,0 +1,9 @@
+name: xbru
+title: Xbooru
+template: glbr
+
+scheme: http
+host: xbooru.com
+
+thumbs:
+  format: jpg

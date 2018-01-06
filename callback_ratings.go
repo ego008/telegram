@@ -5,27 +5,27 @@ import (
 	"strings"
 
 	// log "github.com/kirillDanshin/dlog"
-	tg "github.com/toby3d/go-telegram"
+	tg "github.com/toby3d/telegram"
 )
 
 func callbackToggleRating(usr *user, call *tg.CallbackQuery, rating string) {
 	var err error
 	switch rating {
 	case "safe":
-		err = usr.toggleSafe()
+		err = usr.toggleRatingSafe()
 	case "questionable":
-		err = usr.toggleQuestionable()
+		err = usr.toggleRatingQuestionable()
 	case "explicit":
-		err = usr.toggleExplicit()
+		err = usr.toggleRatingExplicit()
 	}
 	errCheck(err)
 
 	if !usr.Ratings.Safe &&
 		!usr.Ratings.Questionable &&
 		!usr.Ratings.Exlplicit {
-		usr.toggleSafe()
-		usr.toggleQuestionable()
-		usr.toggleExplicit()
+		usr.toggleRatingSafe()
+		usr.toggleRatingQuestionable()
+		usr.toggleRatingExplicit()
 	}
 
 	callbackUpdateRatingsKeyboard(usr, call)
@@ -58,7 +58,7 @@ func getRatingsMenuKeyboard(usr *user) *tg.InlineKeyboardMarkup {
 	return tg.NewInlineKeyboardMarkup(
 		tg.NewInlineKeyboardRow(
 			tg.NewInlineKeyboardButton(
-				fmt.Sprintln(
+				fmt.Sprint(
 					toggleStatus[usr.Ratings.Safe],
 					strings.Title(T("rating_safe")),
 				),
@@ -67,7 +67,7 @@ func getRatingsMenuKeyboard(usr *user) *tg.InlineKeyboardMarkup {
 		),
 		tg.NewInlineKeyboardRow(
 			tg.NewInlineKeyboardButton(
-				fmt.Sprintln(
+				fmt.Sprint(
 					toggleStatus[usr.Ratings.Questionable],
 					strings.Title(T("rating_questionable")),
 				),
@@ -76,7 +76,7 @@ func getRatingsMenuKeyboard(usr *user) *tg.InlineKeyboardMarkup {
 		),
 		tg.NewInlineKeyboardRow(
 			tg.NewInlineKeyboardButton(
-				fmt.Sprintln(
+				fmt.Sprint(
 					toggleStatus[usr.Ratings.Exlplicit],
 					strings.Title(T("rating_explicit")),
 				),

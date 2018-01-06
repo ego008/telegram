@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	// log "github.com/kirillDanshin/dlog"
-	tg "github.com/toby3d/go-telegram"
+	tg "github.com/toby3d/telegram"
 )
 
 func callbackSwitchLanguage(usr *user, call *tg.CallbackQuery, lang string) {
@@ -34,7 +34,7 @@ func callbackToLanguages(usr *user, call *tg.CallbackQuery) {
 	errCheck(err)
 
 	text := T("message_language", map[string]interface{}{
-		"LanguageCodes": strings.Join(languageCodes, "|"),
+		"LanguageCodes": strings.Join(languageTags, "|"),
 	})
 
 	editText := tg.NewMessageText(text)
@@ -52,9 +52,9 @@ func getLanguagesMenuKeyboard(usr *user) *tg.InlineKeyboardMarkup {
 	errCheck(err)
 
 	var replyMarkup tg.InlineKeyboardMarkup
-	for _, code := range languageCodes {
+	for _, tag := range languageTags {
 		var this string
-		if usr.Language == code {
+		if usr.Language == tag {
 			this = switcherStatus
 		}
 
@@ -62,8 +62,8 @@ func getLanguagesMenuKeyboard(usr *user) *tg.InlineKeyboardMarkup {
 			replyMarkup.InlineKeyboard,
 			tg.NewInlineKeyboardRow(
 				tg.NewInlineKeyboardButton(
-					fmt.Sprintln(languageNames[code], this),
-					fmt.Sprint("switch:language:", code),
+					fmt.Sprint(languageNames[tag], this),
+					fmt.Sprint("switch:language:", tag),
 				),
 			),
 		)

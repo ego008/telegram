@@ -1,6 +1,6 @@
 package main
 
-import tg "github.com/toby3d/go-telegram"
+import tg "github.com/toby3d/telegram"
 
 func callbackAlert(call *tg.CallbackQuery, text string) {
 	answer := tg.NewAnswerCallbackQuery(call.ID)

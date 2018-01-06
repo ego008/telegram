@@ -3,7 +3,7 @@ package main
 import (
 	"strings"
 
-	tg "github.com/toby3d/go-telegram"
+	tg "github.com/toby3d/telegram"
 )
 
 func commandSettings(msg *tg.Message) {
@@ -22,7 +22,7 @@ func commandSettings(msg *tg.Message) {
 			continue
 		}
 
-		title := resources[k]["title"].(string)
+		title := resources[k].UString("title")
 		activeRes = append(activeRes, title)
 	}
 

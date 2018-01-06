@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	// log "github.com/kirillDanshin/dlog"
-	tg "github.com/toby3d/go-telegram"
+	tg "github.com/toby3d/telegram"
 )
 
 func callbackToSettings(usr *user, call *tg.CallbackQuery) {
@@ -14,8 +14,7 @@ func callbackToSettings(usr *user, call *tg.CallbackQuery) {
 	var activeRes []string
 	for k, v := range usr.Resources {
 		if v && resources[k] != nil {
-			title := resources[k]["title"].(string)
-			activeRes = append(activeRes, title)
+			activeRes = append(activeRes, resources[k].UString("title"))
 		}
 	}
 
@@ -24,7 +23,7 @@ func callbackToSettings(usr *user, call *tg.CallbackQuery) {
 
 	text := T("message_settings", map[string]interface{}{
 		"Language":  languageNames[usr.Language],
-		"Resources": strings.Join(activeRes, ", "),
+		"Resources": strings.Join(activeRes, "`, `"),
 		"Ratings":   ratings,
 		"Blacklist": strings.Join(usr.Blacklist, "`, `"),
 		"Whitelist": strings.Join(usr.Whitelist, "`, `"),
@@ -61,6 +60,11 @@ func getSettingsMenuKeyboard(usr *user) *tg.InlineKeyboardMarkup {
 		tg.NewInlineKeyboardRow(
 			tg.NewInlineKeyboardButton(
 				T("button_ratings"), "to:ratings",
+			),
+		),
+		tg.NewInlineKeyboardRow(
+			tg.NewInlineKeyboardButton(
+				"Type filters", "to:types",
 			),
 		),
 		tg.NewInlineKeyboardRow(

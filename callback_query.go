@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	log "github.com/kirillDanshin/dlog"
-	tg "github.com/toby3d/go-telegram"
+	tg "github.com/toby3d/telegram"
 )
 
 const (
@@ -13,12 +13,12 @@ const (
 	menuRating = "ratings"
 	menuRes    = "resources"
 
-	switcherStatus = "👈🏻"
+	switcherStatus = " 👈🏻"
 )
 
 var toggleStatus = map[bool]string{
-	true:  "✅",
-	false: "☑️",
+	true:  "✅ ",
+	false: "☑️ ",
 }
 
 func callbackQuery(call *tg.CallbackQuery) {
@@ -53,6 +53,8 @@ func callbackTo(usr *user, call *tg.CallbackQuery, option string) {
 		callbackToResources(usr, call)
 	case "ratings":
 		callbackToRatings(usr, call)
+	case "types":
+		callbackToTypes(usr, call)
 	case "blacklist":
 		callbackToList(usr, call, blackList)
 	case "whitelist":
@@ -79,6 +81,8 @@ func callbackToggle(usr *user, call *tg.CallbackQuery, options []string) {
 		callbackToggleResource(usr, call, options[1])
 	case "rating":
 		callbackToggleRating(usr, call, options[1])
+	case "type":
+		callbackToggleTypes(usr, call, options[1])
 	default:
 		callbackAlert(call, "😱 Oh no!..")
 	}

@@ -13,6 +13,7 @@ type (
 		Ratings   ratings
 		Resources map[string]bool
 		Roles     roles
+		Types     types
 		Whitelist []string
 	}
 
@@ -22,6 +23,10 @@ type (
 
 	ratings struct {
 		Safe, Questionable, Exlplicit bool
+	}
+
+	types struct {
+		Image, Animation, Video bool
 	}
 )
 

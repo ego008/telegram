@@ -88,7 +88,7 @@ message_info_caption:
 message_settings:
   other: |-
     *Language:* {{.Language}}
-    *Resources:* {{.Resources}}
+    *Resources:* `{{.Resources}}`
     *Ratings:* {{.Ratings}}
     *Black list:* `{{.Blacklist}}`
     *White list:* `{{.Whitelist}}`

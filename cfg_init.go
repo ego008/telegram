@@ -1,15 +1,19 @@
 package main
 
 import (
-	"fmt"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
 
 	log "github.com/kirillDanshin/dlog"
 	config "github.com/olebedev/config"
 )
 
 var (
-	cfg       *config.Config
-	resources = make(map[string]map[string]interface{})
+	cfg           *config.Config
+	resources     = make(map[string]*config.Config)
+	resourcesTags []string
 )
 
 func cfgInit() {
@@ -36,35 +40,39 @@ func cfgInit() {
 		errCheck(err)
 	}
 
-	for i := 0; true; i++ {
-		res, err := cfg.Map(fmt.Sprint("resources.", i))
-		if err != nil {
-			break
+	err = filepath.Walk("./resources", func(path string, file os.FileInfo, err error) error {
+		log.Ln("Walk to", path)
+		if !strings.HasSuffix(file.Name(), ".yaml") {
+			return nil
 		}
 
-		name := res["name"].(string)
-		log.Ln("Getted", name, "resource config")
-		resources[name] = res
-	}
+		res, err := config.ParseYamlFile(path)
+		if err != nil {
+			return err
+		}
+
+		resources[res.UString("name")] = res
+		return nil
+	})
+	errCheck(err)
 
 	log.Ln("Resources before:")
 	log.D(resources)
 
 	for res, conf := range resources {
-		if conf["template"] == nil {
+		template := conf.UString("template")
+		if template == "" {
 			log.Ln("Resource:", res, "template: none")
 			continue
 		}
 
-		template := conf["template"].(string)
-		for k, v := range resources[template] {
-			if resources[res][k] != nil {
-				continue
-			}
+		resources[res], err = resources[template].Extend(conf)
+		errCheck(err)
 
-			resources[res][k] = v
-		}
+		resourcesTags = append(resourcesTags, res)
 	}
+
+	sort.Strings(resourcesTags)
 
 	log.Ln("Resources after:")
 	log.D(resources)
