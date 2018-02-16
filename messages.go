@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/HentaiDB/HentaiDBot/internal/commands"
 	log "github.com/kirillDanshin/dlog"
 	tg "github.com/toby3d/telegram"
 )
@@ -15,7 +16,7 @@ func messages(msg *tg.Message) {
 
 	if bot.IsCommandToMe(msg) {
 		log.Ln("IsCommandToMe", true)
-		commands(msg)
+		commands.Commands(msg)
 		return
 	}
 

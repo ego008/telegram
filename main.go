@@ -3,6 +3,10 @@ package main
 import (
 	"log"
 
+	"github.com/HentaiDB/HentaiDBot/internal/callbacks"
+	"github.com/HentaiDB/HentaiDBot/internal/config"
+	"github.com/HentaiDB/HentaiDBot/internal/db"
+	"github.com/HentaiDB/HentaiDBot/internal/errors"
 	tg "github.com/toby3d/telegram"
 )
 
@@ -10,15 +14,13 @@ var bot *tg.Bot
 
 func main() {
 	defer func() {
-		err := db.Close()
-		errCheck(err)
+		err := db.DB.Close()
+		errors.Check(err)
 	}()
 
 	var err error
-	bot, err = tg.NewBot(cfg.UString("telegram.token"))
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
+	bot, err = tg.NewBot(config.Config.UString("telegram.token"))
+	errors.Check(err)
 	log.Print("Authorized as @", bot.Self.Username)
 
 	// Updater
@@ -32,11 +34,9 @@ func main() {
 		case update.ChosenInlineResult != nil:
 			// ChosenInlineResult(update.ChosenInlineResult)
 		case update.CallbackQuery != nil:
-			callbackQuery(update.CallbackQuery)
+			callbacks.CallbackQuery(update.CallbackQuery)
 		case update.ChannelPost != nil:
 			// channelPost(update.ChannelPost)
-		default:
-			continue
 		}
 	}
 }

@@ -54,6 +54,6 @@ _testmain.go
 *.prof
 
 ### Testing/production files ###
-config.yaml
+configs/config.yaml
 hentai.db
-hentaidbot
+HentaiDBot

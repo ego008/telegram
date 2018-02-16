@@ -1,0 +1,13 @@
+version: "3"
+services:
+  bot:
+    container_name: hentaidbot
+    image: golang:latest
+    expose:
+      - 2368
+    volumes:
+      - ./HentaiDBot:/go/HentaiDBot
+      - ./configs/translations/:/go/configs/translations/
+      - ./configs/config.yaml:/go/configs/config.yaml
+      - ./hentai.db:/go/hentai.db
+    entrypoint: ["/go/HentaiDBot", "-webhook"]

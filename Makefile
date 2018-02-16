@@ -1,10 +1,7 @@
-all:
-	make translation
-	make localization
-	go build \
-	-ldflags \
-	"-X main.verHash=`git rev-parse --short HEAD` \
-	-X main.verTimeStamp=`date -u +%Y-%m-%d.%H:%M:%S`"
+LANGUAGE_CODE = en
+LANGUAGE_FORMAT = yaml
+
+CONFIGS_TRANSLATIONS_FOLDER = ./configs/translations
 
 build:
 	go build
@@ -14,17 +11,19 @@ debug:
 
 translation:
 	goi18n merge \
-	-format yaml \
-	-sourceLanguage en \
-	-outdir ./i18n/ ./i18n/src/*/*
+	-format $(LANGUAGE_FORMAT) \
+	-sourceLanguage $(LANGUAGE_CODE) \
+	-outdir $(CONFIGS_TRANSLATIONS_FOLDER) \
+	$(CONFIGS_TRANSLATIONS_FOLDER)src/*/*
 
 localization:
 	make translation
 	goi18n \
-	-format yaml \
-	-sourceLanguage en \
-	-outdir ./i18n/ \
-	./i18n/*.all.yaml ./i18n/*.untranslated.yaml
+	-format $(LANGUAGE_FORMAT) \
+	-sourceLanguage $(LANGUAGE_CODE) \
+	-outdir $(CONFIGS_TRANSLATIONS_FOLDER) \
+	$(CONFIGS_TRANSLATIONS_FOLDER)*.all.$(LANGUAGE_FORMAT) \
+	$(CONFIGS_TRANSLATIONS_FOLDER)*.untranslated.$(LANGUAGE_FORMAT)
 
 image:
 	docker-compose build

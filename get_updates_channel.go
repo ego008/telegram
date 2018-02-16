@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/HentaiDB/HentaiDBot/internal/config"
+	"github.com/HentaiDB/HentaiDBot/internal/errors"
 	log "github.com/kirillDanshin/dlog"
 	tg "github.com/toby3d/telegram"
 )
@@ -14,7 +16,7 @@ func getUpdatesChannel() tg.UpdatesChannel {
 	if !*flagWebhook {
 		log.Ln("Remove old webhook...")
 		_, err := bot.DeleteWebhook()
-		errCheck(err)
+		errors.Check(err)
 
 		log.Ln("Create LongPolling updates channel...")
 		return bot.NewLongPollingChannel(&tg.GetUpdatesParameters{
@@ -24,9 +26,9 @@ func getUpdatesChannel() tg.UpdatesChannel {
 		})
 	}
 
-	set := cfg.UString("telegram.webhook.set")
-	listen := cfg.UString("telegram.webhook.listen")
-	serve := cfg.UString("telegram.webhook.serve")
+	set := config.Config.UString("telegram.webhook.set")
+	listen := config.Config.UString("telegram.webhook.listen")
+	serve := config.Config.UString("telegram.webhook.serve")
 
 	log.Ln("Trying set webhook on", fmt.Sprint(set, listen, bot.AccessToken))
 

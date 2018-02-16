@@ -1,0 +1,249 @@
+achievements_hidden_description:
+  other: 相關訊息會在每個成就解鎖後說明
+achievements_hidden_title:
+  other: 剩餘 {{.Count}} 個隱藏的成就
+achievements_unlocked:
+  other: 你成功地解鎖了全部的成就。恭喜！
+button_achievements:
+  other: "\U0001F3C6 成就"
+button_blacklist:
+  other: ⚫️ 黑名單
+button_cancel:
+  other: ↩️ 取消
+button_channel:
+  other: "\U0001F4E2 頻道"
+button_cheatsheet:
+  other: "\U0001F4DD 用法總彙"
+button_discord:
+  other: "\U0001F47E Discord"
+button_feedback:
+  other: "\U0001F48C 聯絡我們"
+button_group:
+  other: "\U0001F465 群組"
+button_help:
+  other: ❔ 說明
+button_info:
+  other: ❔ 信息
+button_language:
+  other: '{{.Flag}} 語言'
+button_more:
+  other: "\U0001F300 更多"
+button_original:
+  other: "\U0001F4BE 原圖"
+button_patreon_check:
+  other: "\U0001F504 檢查獎勵"
+button_patreon_checkout:
+  other: "\U0001F4B8 成為贊助者！"
+button_patreon_connect:
+  other: "\U0001F50C 連線到 Patreon 帳號"
+button_patreon_disconnect:
+  other: "\U0001F50C 取消連結 {{.Account}} 帳號"
+button_random:
+  other: "\U0001F3B2 隨機"
+button_rate:
+  other: 評分 ⭐️⭐️⭐️⭐️⭐️
+button_ratings:
+  other: "\U0001F51E 透過評分過濾"
+button_resources:
+  other: "\U0001F310 資源"
+button_return:
+  other: ↩️ 返回
+button_settings:
+  other: ⚙ 設定
+button_share:
+  other: "\U0001F5E3 分享"
+button_tags_add:
+  other: ""
+button_try:
+  other: "\U0001F441 讓我試試！"
+button_whitelist:
+  other: ⚪️ 白名單
+inline_button_dashboard:
+  other: 開啟設定
+inline_description:
+  other: |-
+    評分：{{.Rating}}
+    標籤：{{.Tags}}
+inline_no_result:
+  other: 雖然沒有任何東西在這但還有你的鳥！
+inline_title:
+  other: '{{.Type}} 原作者為 {{.Owner}}'
+language_flag:
+  other: "\U0001F1F9\U0001F1FC"
+language_name:
+  other: 正體中文
+message_blacklist:
+  other: 你能夠在此設置黑名單標籤。只要是任何結果有包含此清單中的_其中一個_標籤都會被隱藏，甚至你開啟了_暴露模式_也會。你可以套用 /{{.CommandCheatsheet}}
+    上的標記。點擊標籤來將他們從清單上移除。
+message_blushboard:
+  other: ☺️ [{{.Type}} 原作者為 {{.Owner}}]({{.URL}})
+message_cheatsheet:
+  other: |-
+    *標籤一 標籤二*
+    用以搜尋帶有 `標籤一` 和 `標籤二` 的文章。
+
+    *~標籤一 ~標籤二*
+    用來搜尋帶有 `標籤一` 或者是 `標籤二` 的文章。（目前還不支援）
+
+    *夜晚~*
+    模糊搜尋 `夜晚` 標籤。這將會使得符合 `夜晚 傍晚 晚上` 或者是任何符合[萊文斯坦距離](http://en.wikipedia.org/wiki/Levenshtein_distance)的文章都成為搜尋結果。
+
+    *-標籤一*
+    搜尋沒有 `標籤一` 的文章。
+
+    *標∗一*
+    用以搜尋 `標` 開頭然後 `一` 結尾的文章。
+
+    *user:bob*
+    搜尋使用者 `Bob` 發表的任何文章。
+
+    *md5:foo*
+    用以搜尋 MD5 碼是 `foo` 的文章。
+
+    *md5:foo∗*
+    用以搜尋開 MD5 碼開頭是 `foo` 的文章。
+
+    *page:16*
+    顯示從第 16 頁開始的結果。
+
+    *lang:en*
+    取得以英文顯示的搜尋結果。
+
+    *rating:questionable*
+    搜尋被評級為 `questionable` 的文章。
+
+    *-rating:questionable*
+    用以搜尋沒有被評級為 `questionable` 的文章。
+
+    *parent:1234*
+    用以搜尋父文章是 `1234` 的文章（同時包含 `1234` 的文章）。
+
+    *rating:questionable rating:safe*
+    你沒有辦法使用這種方式，因為有兩個重複的標籤。
+
+    *rating:questionable parent:100*
+    不過你可以將不同標籤組合在一起。
+
+    *width:>=1000 height:>1000*
+    尋找寬度大於或是等於 `1000` 而且高度大於 `1000` 的圖片。
+
+    *score:>=10*
+    搜尋分數大於或是等於 `10` 的圖片。這個數值會在每天的 12AM CST 更新。
+
+    *sort:updated:desc*
+    由最新排序為主。
+
+    *其他的排序方式：*
+    • `id`
+    • `score`
+    • `rating`
+    • `user`
+    • `height`
+    • `width`
+    • `parent`
+    • `source`
+    • `updated`
+    這些都可以由 `asc` 或是 `desc` 排序。
+message_help:
+  other: |-
+    /{{.CommandSettings}} - 你的個人化搜尋設置；
+    /{{.CommandCheatsheet}} - 得知在 Gelbooru 中進階搜尋的用法；
+    /{{.CommandPatreon}} - 透過 Patreon 來支援這個機器人並解鎖獎勵；
+    /{{.CommandInfo}} - 其他資訊和官方社群；
+message_info:
+  other: |-
+    *建立者:* @toby3d
+    *倉庫：* [HentaiDB](https://github.com/HentaiDB)/[HentaiDBot](https://github.com/HentaiDB/HentaiDBot)
+    *版本：* {{.Version}}
+    *上線時間：* {{.UpTime}}
+message_info_caption:
+  other: |-
+    建立者： @toby3d
+    倉庫： https://github.com/HentaiDB/HentaiDBot
+    版本： {{.Version}}
+    上線時間： {{.UpTime}}
+message_input_blacklist_tags:
+  other: 透過空白來分隔並輸入欲封鎖的標籤（最多{{.Limit}}）：
+message_input_tags_success:
+  other: |-
+    下列標籤已經成功地新增到了清單：
+    `{{.Tags}}`
+message_input_whitelist_tags:
+  other: 透過空白來分隔並輸入強制允許的標籤（最多{{.Limit}}）：
+message_language:
+  other: 你可以在此設置傳遞給你的訊息語系為何，當你轉發訊息時按鈕和相關結果的語系也都是與設定相同的。不過你可以在搜尋的時候透過 `lang:[{{.LanguageCodes}}]`
+    標記複寫。
+message_language_selected:
+  other: "\U0001F44B\U0001F3FB 哈囉！"
+message_patreon:
+  other: |-
+    *這些人每月都贊助了這個機器人的開銷：*
+    {{.Patrons}}
+
+    謝謝你們，你們真是太棒了！ ☺️
+message_patreon_empty:
+  other: "*目前還沒有人讚這個機器人的開發花費。* \U0001F614\n透過 Patreon 成為贊助者，將你的名字寫入歷史並透過特殊管道解鎖奇異功能！"
+message_patreon_has_reward:
+  other: "\U0001F3C6 獎勵已發放！"
+message_patreon_no_reward:
+  other: "\U0001F614 目前還沒有獎勵。"
+message_patron_connected:
+  other: 你已成功地與 Patreon 上的 {{.FullName}} 帳號有所連結！
+message_patron_disconnected:
+  other: "\U0001F44B\U0001F3FB 無法連線到 Patreon。"
+message_post:
+  other: |-
+    ID: {{.ID}}
+    发表: {{.Posted}}
+    由{{.Owner}}
+    尺寸: {{.Size}}
+    评分: {{.Rating}}
+    得分了: {{.Score}}
+    标签: {{.Tags}}
+message_ratings:
+  other: |-
+    你可以在此配置預設的內容評分。過濾器將會在你手動指定 `rating:[safe|questionable|explicit]` 標記時失效。
+
+    所有的內容被區分為三種：`{{.Safe}}`，_{{.Questionable}}_ 還有 *{{.Explicit}}*。
+
+    *{{.Explicit}}*
+    任何暴露的內容，如：性、自慰、活塞運動。
+
+    `{{.Safe}}`
+    內容是你能在公眾場合觀賞並且不會感到罪惡的。任何裸體、奶頭、性方面都不會是 `{{.Safe}}` 和 _{{.Questionable}}_。而泳衣與內衣則在模糊界線上。
+
+    _{{.Questionable}}_
+    基本上就是無法被分類的內容，這是個模糊地帶，觀看與此有關的內容時你不應該帶有期望。
+
+    請注意：有時候 *{{.Explicit}}* 也有可能被標記成 `{{.Safe}}`，反之亦然。
+message_resources:
+  other: 你可以在此設置搜尋結果的來源。但請注意，搜尋結果會因為不同的來源而有不同的評分和標籤。
+message_settings:
+  other: |-
+    *語系：* {{.Language}}
+    *資源：* `{{.Resources}}`
+    *評分：* {{.Ratings}}
+    *黑名單：* `{{.Blacklist}}`
+    *白名單：* `{{.Whitelist}}`
+message_start:
+  other: "嗨，{{.FirstName}}！\n我是 [@HentaiDB]({{.ChannelURL}}) 計劃的官方機器人。\n\n你可以透過我搜尋
+    Gelbooru 的圖片或是 GIF。你只需要在任何聊天中輸入 `@{{.Username}} {{.Query}}` 然後選擇你想發送的文章，*但是你不用按下送出鈕*，你只需要稍微等一下就會有結果了。\U0001F60F\n\n你可以透過
+    /{{.CommandCheatsheet}} 得知進階搜尋的用法，或者是對我說聲 /{{.CommandHelp}} 也行。盡情享受吧！☺️"
+message_whitelist:
+  other: 你可以在此設置個白名單標籤。任何*沒有*包含此清單中任一標籤的搜尋結果都會被隱藏。你可以套用 /{{.CommandCheatsheet}} 上的標記。點擊標籤來將他們從清單上移除。
+rating_all:
+  other: 所有
+rating_explicit:
+  other: 暴露的
+rating_questionable:
+  other: 具疑問性
+rating_safe:
+  other: 安全
+rating_unknown:
+  other: 未知
+type_animation:
+  other: 動畫
+type_image:
+  other: 圖片
+type_video:
+  other: 影片

@@ -6,16 +6,22 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/HentaiDB/HentaiDBot/internal/db"
+	"github.com/HentaiDB/HentaiDBot/internal/errors"
+	"github.com/HentaiDB/HentaiDBot/internal/i18n"
+	"github.com/HentaiDB/HentaiDBot/internal/models"
+	"github.com/HentaiDB/HentaiDBot/internal/requests"
+	"github.com/HentaiDB/HentaiDBot/internal/resources"
 	log "github.com/kirillDanshin/dlog"
 	tg "github.com/toby3d/telegram"
 )
 
 func inlineQuery(query *tg.InlineQuery) {
-	usr, err := dbGetUserElseAdd(query.From.ID, query.From.LanguageCode)
-	errCheck(err)
+	usr, err := db.GetUserElseAdd(query.From.ID, query.From.LanguageCode)
+	errors.Check(err)
 
-	T, err := langSwitch(usr.Language, query.From.LanguageCode)
-	errCheck(err)
+	T, err := i18n.SwitchTo(usr.Language, query.From.LanguageCode)
+	errors.Check(err)
 
 	if query.Offset == "" {
 		query.Offset = "-1"
@@ -36,7 +42,7 @@ func inlineQuery(query *tg.InlineQuery) {
 	results := getResults(
 		query,
 		usr,
-		&params{
+		&requests.Params{
 			PageID: offset,
 			Tags:   query.Query,
 		},
@@ -60,7 +66,7 @@ func inlineQuery(query *tg.InlineQuery) {
 	}
 }
 
-func getResults(query *tg.InlineQuery, usr *user, p *params) (results []interface{}) {
+func getResults(query *tg.InlineQuery, usr *models.User, p *requests.Params) (results []interface{}) {
 	if len(usr.Whitelist) > 0 {
 		p.Tags += fmt.Sprint(" ", strings.Join(usr.Whitelist, " "))
 	}
@@ -69,16 +75,16 @@ func getResults(query *tg.InlineQuery, usr *user, p *params) (results []interfac
 		p.Tags += fmt.Sprint(" -", strings.Join(usr.Blacklist, " -"))
 	}
 
-	filters := usr.getRatingsFilter()
+	filters := usr.GetRatingsFilter()
 	if filters != "" {
-		p.Tags += fmt.Sprint(" ", usr.getRatingsFilter())
+		p.Tags += fmt.Sprint(" ", usr.GetRatingsFilter())
 	}
 
 	log.Ln("getResults")
 	var res []string
 	for key, on := range usr.Resources {
 		if on &&
-			resources[key] != nil {
+			resources.Resources[key] != nil {
 			res = append(res, key)
 		}
 	}
@@ -95,12 +101,12 @@ func getResults(query *tg.InlineQuery, usr *user, p *params) (results []interfac
 
 	log.Ln("getResults preparing res")
 	for i := range res {
-		go func(res string, p *params) {
+		go func(res string, p *requests.Params) {
 			defer wg.Done()
 			log.Ln("Getted", p.Limit, "results from", res, "...")
-			log.D(resources[res].UMap(""))
+			log.D(resources.Resources[res].UMap(""))
 
-			posts, err := request(res, p)
+			posts, err := requests.Results(res, p)
 			if err != nil {
 				log.Ln("[ERROR]", err.Error())
 				return
@@ -121,14 +127,14 @@ func getResults(query *tg.InlineQuery, usr *user, p *params) (results []interfac
 	return results
 }
 
-func getResultByPost(query *tg.InlineQuery, usr *user, res string, post *post) interface{} {
-	T, err := langSwitch(usr.Language, query.From.LanguageCode)
-	errCheck(err)
+func getResultByPost(query *tg.InlineQuery, usr *models.User, res string, post *models.Result) interface{} {
+	T, err := i18n.SwitchTo(usr.Language, query.From.LanguageCode)
+	errors.Check(err)
 
 	replyMarkup := tg.NewInlineKeyboardMarkup(
 		tg.NewInlineKeyboardRow(
 			tg.NewInlineKeyboardButtonURL(
-				T("button_original"), post.fileURL(res).String(),
+				T("button_original"), post.FileURL(res).String(),
 			),
 		),
 	)
@@ -143,8 +149,8 @@ func getResultByPost(query *tg.InlineQuery, usr *user, res string, post *post) i
 	}
 
 	switch {
-	case strings.HasSuffix(post.fileURL(res).Path, "webm"):
-		if !usr.Types.Video {
+	case strings.HasSuffix(post.FileURL(res).Path, "webm"):
+		if !usr.ContentTypes.Video {
 			return nil
 		}
 
@@ -153,10 +159,10 @@ func getResultByPost(query *tg.InlineQuery, usr *user, res string, post *post) i
 				"Type":  strings.Title(T("type_video")),
 				"Owner": post.Owner,
 				"URL": fmt.Sprint(
-					resources[res].UString("scheme", "http"),
+					resources.Resources[res].UString("scheme", "http"),
 					"://",
-					resources[res].UString("host"),
-					resources[res].UString("result"),
+					resources.Resources[res].UString("host"),
+					resources.Resources[res].UString("result"),
 					post.ID,
 				),
 			}),
@@ -166,9 +172,9 @@ func getResultByPost(query *tg.InlineQuery, usr *user, res string, post *post) i
 
 		video := tg.NewInlineQueryResultVideo(
 			fmt.Sprint(res, post.ID),
-			post.fileURL(res).String(),
+			post.FileURL(res).String(),
 			tg.MimeHTML,
-			post.previewURL(res).String(),
+			post.PreviewURL(res).String(),
 			T("inline_title", map[string]interface{}{
 				"Type":  strings.Title(T("type_video")),
 				"Owner": post.Owner,
@@ -183,15 +189,15 @@ func getResultByPost(query *tg.InlineQuery, usr *user, res string, post *post) i
 		video.InputMessageContent = inputMessageContent
 		video.ReplyMarkup = replyMarkup
 		return video
-	case strings.HasSuffix(post.fileURL(res).Path, "gif"):
-		if !usr.Types.Animation {
+	case strings.HasSuffix(post.FileURL(res).Path, "gif"):
+		if !usr.ContentTypes.Animation {
 			return nil
 		}
 
 		gif := tg.NewInlineQueryResultGif(
 			fmt.Sprint(res, post.ID),
-			post.fileURL(res).String(),
-			post.fileURL(res).String(),
+			post.FileURL(res).String(),
+			post.FileURL(res).String(),
 		)
 		gif.GifWidth = post.Width
 		gif.GifHeight = post.Height
@@ -202,20 +208,20 @@ func getResultByPost(query *tg.InlineQuery, usr *user, res string, post *post) i
 		gif.ReplyMarkup = replyMarkup
 		return gif
 	default:
-		if !usr.Types.Image {
+		if !usr.ContentTypes.Image {
 			return nil
 		}
 
 		photo := tg.NewInlineQueryResultPhoto(
 			fmt.Sprint(res, post.ID),
-			post.fileURL(res).String(),
-			post.previewURL(res).String(),
+			post.FileURL(res).String(),
+			post.PreviewURL(res).String(),
 		)
 		photo.PhotoWidth = post.Width
 		photo.PhotoHeight = post.Height
 
 		if post.Sample {
-			photo.PhotoURL = post.sampleURL(res).String()
+			photo.PhotoURL = post.SampleURL(res).String()
 			photo.PhotoWidth = post.SampleWidth
 			photo.PhotoHeight = post.SampleHeight
 		}
