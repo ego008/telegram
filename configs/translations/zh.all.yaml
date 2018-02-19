@@ -56,6 +56,8 @@ button_tags_add:
   other: ""
 button_try:
   other: "\U0001F441 讓我試試！"
+button_types:
+  other: ""
 button_whitelist:
   other: ⚪️ 白名單
 inline_button_dashboard:
@@ -229,6 +231,8 @@ message_start:
   other: "嗨，{{.FirstName}}！\n我是 [@HentaiDB]({{.ChannelURL}}) 計劃的官方機器人。\n\n你可以透過我搜尋
     Gelbooru 的圖片或是 GIF。你只需要在任何聊天中輸入 `@{{.Username}} {{.Query}}` 然後選擇你想發送的文章，*但是你不用按下送出鈕*，你只需要稍微等一下就會有結果了。\U0001F60F\n\n你可以透過
     /{{.CommandCheatsheet}} 得知進階搜尋的用法，或者是對我說聲 /{{.CommandHelp}} 也行。盡情享受吧！☺️"
+message_types:
+  other: ""
 message_whitelist:
   other: 你可以在此設置個白名單標籤。任何*沒有*包含此清單中任一標籤的搜尋結果都會被隱藏。你可以套用 /{{.CommandCheatsheet}} 上的標記。點擊標籤來將他們從清單上移除。
 rating_all:

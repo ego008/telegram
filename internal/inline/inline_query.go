@@ -1,4 +1,4 @@
-package main
+package inline
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/HentaiDB/HentaiDBot/internal/bot"
 	"github.com/HentaiDB/HentaiDBot/internal/db"
 	"github.com/HentaiDB/HentaiDBot/internal/errors"
 	"github.com/HentaiDB/HentaiDBot/internal/i18n"
@@ -16,7 +17,7 @@ import (
 	tg "github.com/toby3d/telegram"
 )
 
-func inlineQuery(query *tg.InlineQuery) {
+func InlineQuery(query *tg.InlineQuery) {
 	usr, err := db.GetUserElseAdd(query.From.ID, query.From.LanguageCode)
 	errors.Check(err)
 
@@ -60,7 +61,7 @@ func inlineQuery(query *tg.InlineQuery) {
 		answer.NextOffset = strconv.Itoa(offset)
 	}
 
-	_, err = bot.AnswerInlineQuery(answer)
+	_, err = bot.Bot.AnswerInlineQuery(answer)
 	if err != nil {
 		log.Ln("[ERROR]", err.Error())
 	}

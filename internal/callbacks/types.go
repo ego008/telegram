@@ -25,22 +25,28 @@ func CallbackToggleTypes(usr *models.User, call *tg.CallbackQuery, resultType st
 	}
 	errors.Check(err)
 
+	if !usr.ContentTypes.Animation &&
+		!usr.ContentTypes.Image &&
+		!usr.ContentTypes.Video {
+		db.ToggleTypeImage(usr)
+		db.ToggleTypeAnimation(usr)
+		db.ToggleTypeVideo(usr)
+	}
+
 	CallbackUpdateTypesKeyboard(usr, call)
 }
 
 func CallbackToTypes(usr *models.User, call *tg.CallbackQuery) {
-	// T, err := i18n.SwitchTo(usr.Language, call.From.LanguageCode)
-	// errors.Check(err)
+	T, err := i18n.SwitchTo(usr.Language, call.From.LanguageCode)
+	errors.Check(err)
 
-	text := "Here you can select types of content which you want see in results."
-
-	editText := tg.NewMessageText(text)
+	editText := tg.NewMessageText(T("message_types"))
 	editText.ChatID = call.Message.Chat.ID
 	editText.MessageID = call.Message.ID
 	editText.ParseMode = tg.ModeMarkdown
 	editText.ReplyMarkup = GetTypesMenuKeyboard(usr)
 
-	_, err := bot.Bot.EditMessageText(editText)
+	_, err = bot.Bot.EditMessageText(editText)
 	errors.Check(err)
 }
 

@@ -161,3 +161,5 @@ message_post:
     Rating: {{.Rating}}
     Score: {{.Score}}
     Tags: {{.Tags}}
+message_types:
+  other: This filter works in conjunction with the whitelist/blacklist filters and hides those results whose types have been disabled here.

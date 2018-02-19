@@ -2,8 +2,4 @@ name: r34x
 title: Rule 34
 template: glbr
 
-scheme: http
 host: rule34.xxx
-
-images:
-  part: /

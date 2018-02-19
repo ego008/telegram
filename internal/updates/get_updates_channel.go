@@ -1,8 +1,9 @@
-package main
+package updates
 
 import (
 	"fmt"
 
+	"github.com/HentaiDB/HentaiDBot/internal/bot"
 	"github.com/HentaiDB/HentaiDBot/internal/config"
 	"github.com/HentaiDB/HentaiDBot/internal/errors"
 	log "github.com/kirillDanshin/dlog"
@@ -13,13 +14,13 @@ var channel = make(chan tg.Update, 100)
 
 func getUpdatesChannel() tg.UpdatesChannel {
 	log.Ln("getUpdatesChannel")
-	if !*flagWebhook {
+	if !config.WebhookMode {
 		log.Ln("Remove old webhook...")
-		_, err := bot.DeleteWebhook()
+		_, err := bot.Bot.DeleteWebhook()
 		errors.Check(err)
 
 		log.Ln("Create LongPolling updates channel...")
-		return bot.NewLongPollingChannel(&tg.GetUpdatesParameters{
+		return bot.Bot.NewLongPollingChannel(&tg.GetUpdatesParameters{
 			Offset:  0,
 			Limit:   100,
 			Timeout: 60,
@@ -30,16 +31,16 @@ func getUpdatesChannel() tg.UpdatesChannel {
 	listen := config.Config.UString("telegram.webhook.listen")
 	serve := config.Config.UString("telegram.webhook.serve")
 
-	log.Ln("Trying set webhook on", fmt.Sprint(set, listen, bot.AccessToken))
+	log.Ln("Trying set webhook on", fmt.Sprint(set, listen, bot.Bot.AccessToken))
 
 	log.Ln("Create new webhook...")
-	webhook := tg.NewWebhook(fmt.Sprint(set, listen, bot.AccessToken), nil)
+	webhook := tg.NewWebhook(fmt.Sprint(set, listen, bot.Bot.AccessToken), nil)
 	webhook.MaxConnections = 40
 
 	log.Ln("Create Webhook updates channel...")
-	return bot.NewWebhookChannel(
+	return bot.Bot.NewWebhookChannel(
 		webhook,
 		"", "",
-		set, fmt.Sprint(listen, bot.AccessToken), serve,
+		set, fmt.Sprint(listen, bot.Bot.AccessToken), serve,
 	)
 }

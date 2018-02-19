@@ -9,8 +9,5 @@ thumbs:
   name: images
   format: images
 
-images:
-  part: /
-
 samples:
   format: images

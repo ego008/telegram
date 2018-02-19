@@ -69,7 +69,7 @@ func GetSettingsMenuKeyboard(usr *models.User) *tg.InlineKeyboardMarkup {
 		),
 		tg.NewInlineKeyboardRow(
 			tg.NewInlineKeyboardButton(
-				"Type filters", "to:types",
+				T("button_types"), "to:types",
 			),
 		),
 		tg.NewInlineKeyboardRow(

@@ -1,2 +1,7 @@
 button_tags_add:
   other: "\U0001F516 Add tags"
+button_types:
+  other: "\U0001F3A8 Filter by type"
+message_types:
+  other: This filter works in conjunction with the whitelist/blacklist filters and
+    hides those results whose types have been disabled here.

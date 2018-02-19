@@ -14,7 +14,7 @@ translation:
 	-format $(LANGUAGE_FORMAT) \
 	-sourceLanguage $(LANGUAGE_CODE) \
 	-outdir $(CONFIGS_TRANSLATIONS_FOLDER) \
-	$(CONFIGS_TRANSLATIONS_FOLDER)src/*/*
+	$(CONFIGS_TRANSLATIONS_FOLDER)/src/*/*
 
 localization:
 	make translation

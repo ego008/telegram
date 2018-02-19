@@ -52,3 +52,5 @@ button_whitelist:
   other: "⚪️ White list"
 button_info:
   other: "❔ Info"
+button_types:
+  other: "🎨 Filter by type"

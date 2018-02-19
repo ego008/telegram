@@ -13,7 +13,7 @@ const (
 
 var DB *buntdb.DB
 
-func Init() {
+func Initialize() {
 	log.Ln("db:init")
 
 	go func() {

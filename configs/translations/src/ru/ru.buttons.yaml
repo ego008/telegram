@@ -52,3 +52,5 @@ button_tags_add:
   other: "🔖 Добавить теги"
 button_info:
   other: "❔ Инфо"
+button_types:
+  other: "🎨 Фильтр по типу"

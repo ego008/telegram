@@ -6,7 +6,10 @@ import (
 	config "github.com/olebedev/config"
 )
 
-var Config *config.Config
+var (
+	Config      *config.Config
+	WebhookMode = false
+)
 
 func Initialize(pathToConfig string, webhookMode bool) {
 	var err error
@@ -31,4 +34,6 @@ func Initialize(pathToConfig string, webhookMode bool) {
 		_, err = Config.String("telegram.webhook.serve")
 		errors.Check(err)
 	}
+
+	WebhookMode = webhookMode
 }
