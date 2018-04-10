@@ -7,20 +7,22 @@ import (
 	"time"
 
 	"github.com/HentaiDB/HentaiDBot/internal/bot"
+	"github.com/HentaiDB/HentaiDBot/internal/database"
 	"github.com/HentaiDB/HentaiDBot/internal/errors"
 	"github.com/HentaiDB/HentaiDBot/internal/requests"
 	"github.com/HentaiDB/HentaiDBot/internal/resources"
+	"github.com/HentaiDB/HentaiDBot/pkg/models"
 	tg "github.com/toby3d/telegram"
 )
 
 func commandRandom(msg *tg.Message) {
-	// usr, err := dbGetUserElseAdd(msg.From.ID, msg.From.LanguageCode)
-	// errors.Check(err)
+	user, err := database.DataBase.GetUser(msg.From)
+	errors.Check(err)
 
 	_, err := bot.Bot.SendChatAction(msg.Chat.ID, tg.ActionUploadPhoto)
 	errors.Check(err)
 
-	// T, err := langSwitch(usr.Language, msg.From.LanguageCode)
+	// T, err := langSwitch(user.Locale, msg.From.LanguageCode)
 	// errors.Check(err)
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -46,10 +48,10 @@ func commandRandom(msg *tg.Message) {
 	post := posts[r.Intn(len(posts))-1]
 
 	switch {
-	case strings.HasSuffix(post.Image, "webm"):
+	case strings.HasSuffix(post.Image, models.FormatWebM):
 		commandRandom(msg)
 		return
-	case strings.HasSuffix(post.Image, "gif"):
+	case strings.HasSuffix(post.Image, models.FormatGIF):
 		document := tg.NewDocument(msg.Chat.ID, post.FileURL(res))
 		_, err = bot.Bot.SendDocument(document)
 	default:

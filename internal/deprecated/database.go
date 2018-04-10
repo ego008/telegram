@@ -271,7 +271,7 @@ func getUser(userID int) (*User, error) {
 			return errors.New("user not exist")
 		}
 
-		usr.Language = string(user.Get([]byte("language")))
+		user.Locale = string(user.Get([]byte("language")))
 		usr.ID, err = strconv.Atoi(string(user.Get([]byte("id"))))
 		if err != nil {
 			return err
@@ -285,7 +285,7 @@ func getUser(userID int) (*User, error) {
 		}); err != nil {
 			return err
 		}
-		usr.Blacklist = list
+		user.Blacklist = list
 
 		white := user.Bucket(bktWhitelist)
 		list = nil

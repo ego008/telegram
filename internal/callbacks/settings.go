@@ -7,31 +7,31 @@ import (
 	"github.com/HentaiDB/HentaiDBot/internal/bot"
 	"github.com/HentaiDB/HentaiDBot/internal/errors"
 	"github.com/HentaiDB/HentaiDBot/internal/i18n"
-	"github.com/HentaiDB/HentaiDBot/internal/models"
 	"github.com/HentaiDB/HentaiDBot/internal/resources"
+	"github.com/HentaiDB/HentaiDBot/pkg/models"
 	tg "github.com/toby3d/telegram"
 )
 
-func CallbackToSettings(usr *models.User, call *tg.CallbackQuery) {
-	T, err := i18n.SwitchTo(usr.Language, call.From.LanguageCode)
+func CallbackToSettings(call *tg.CallbackQuery) {
+	T, err := i18n.SwitchTo(user.Locale, call.From.LanguageCode)
 	errors.Check(err)
 
 	var activeRes []string
-	for k, v := range usr.Resources {
+	for k, v := range user.Resources {
 		if v && resources.Resources[k] != nil {
 			activeRes = append(activeRes, resources.Resources[k].UString("title"))
 		}
 	}
 
-	ratings, err := usr.GetRatingsStatus()
+	ratings, err := user.GetRatingsStatus()
 	errors.Check(err)
 
 	text := T("message_settings", map[string]interface{}{
-		"Language":  i18n.Names[usr.Language],
+		"Language":  i18n.Names[user.Locale],
 		"Resources": strings.Join(activeRes, "`, `"),
 		"Ratings":   ratings,
-		"Blacklist": strings.Join(usr.Blacklist, "`, `"),
-		"Whitelist": strings.Join(usr.Whitelist, "`, `"),
+		"Blacklist": strings.Join(user.Blacklist, "`, `"),
+		"Whitelist": strings.Join(user.Whitelist, "`, `"),
 	})
 
 	editText := tg.NewMessageText(text)
@@ -44,8 +44,8 @@ func CallbackToSettings(usr *models.User, call *tg.CallbackQuery) {
 	errors.Check(err)
 }
 
-func GetSettingsMenuKeyboard(usr *models.User) *tg.InlineKeyboardMarkup {
-	T, err := i18n.SwitchTo(usr.Language)
+func GetSettingsMenuKeyboard(user *models.User) *tg.InlineKeyboardMarkup {
+	T, err := i18n.SwitchTo(user.Locale)
 	errors.Check(err)
 
 	return tg.NewInlineKeyboardMarkup(

@@ -34,7 +34,7 @@ func callback(callback *tg.CallbackQuery) {
 		log.Println("Get user:", err.Error())
 	}
 
-	T, err := i18n.Tfunc(usr.Language)
+	T, err := i18n.Tfunc(user.Locale)
 	if err != nil {
 		log.Println(err.Error())
 	}
@@ -163,7 +163,7 @@ func callLanguage(usr *User, callback *tg.CallbackQuery, T i18n.TranslateFunc, d
 			log.Println(err.Error())
 		}
 
-		T, _ = i18n.Tfunc(usr.Language)
+		T, _ = i18n.Tfunc(user.Locale)
 
 		showSettingsMessage(usr, callback, T)
 		showSettingsKeyboard(usr, callback, T)
@@ -345,7 +345,7 @@ func showSettingsMessage(usr *User, callback *tg.CallbackQuery, T i18n.Translate
 	text := T("message_settings", map[string]interface{}{
 		"Language":  T("language_name"),
 		"Ratings":   ratings,
-		"Blacklist": strings.Join(usr.Blacklist, " "),
+		"Blacklist": strings.Join(user.Blacklist, " "),
 		"Whitelist": strings.Join(usr.Whitelist, " "),
 	})
 	edit := tg.NewEditMessageText(callback.Message.Chat.ID, callback.Message.MessageID, text)
@@ -480,7 +480,7 @@ func showTagListKeyboard(usr *User, callback *tg.CallbackQuery, T i18n.Translate
 	var list string
 	if black {
 		list = blacklist
-		tags = usr.Blacklist
+		tags = user.Blacklist
 	} else {
 		list = whitelist
 		tags = usr.Whitelist

@@ -6,38 +6,41 @@ import (
 
 	// log "github.com/kirillDanshin/dlog"
 	"github.com/HentaiDB/HentaiDBot/internal/bot"
-	"github.com/HentaiDB/HentaiDBot/internal/db"
+	"github.com/HentaiDB/HentaiDBot/internal/database"
 	"github.com/HentaiDB/HentaiDBot/internal/errors"
 	"github.com/HentaiDB/HentaiDBot/internal/i18n"
-	"github.com/HentaiDB/HentaiDBot/internal/models"
+	"github.com/HentaiDB/HentaiDBot/pkg/models"
 	tg "github.com/toby3d/telegram"
 )
 
-func CallbackToggleTypes(usr *models.User, call *tg.CallbackQuery, resultType string) {
+func CallbackToggleTypes(call *tg.CallbackQuery, resultType string) {
 	var err error
 	switch resultType {
-	case "image":
-		err = db.ToggleTypeImage(usr)
-	case "animation":
-		err = db.ToggleTypeAnimation(usr)
-	case "video":
-		err = db.ToggleTypeVideo(usr)
+	case models.TypeImage:
+		err = database.ToggleTypeImage(call.From)
+	case models.TypeAnimation:
+		err = database.ToggleTypeAnimation(call.From)
+	case models.TypeVideo:
+		err = database.ToggleTypeVideo(call.From)
 	}
 	errors.Check(err)
 
-	if !usr.ContentTypes.Animation &&
-		!usr.ContentTypes.Image &&
-		!usr.ContentTypes.Video {
-		db.ToggleTypeImage(usr)
-		db.ToggleTypeAnimation(usr)
-		db.ToggleTypeVideo(usr)
+	if !user.ContentTypes.Animation &&
+		!user.ContentTypes.Image &&
+		!user.ContentTypes.Video {
+		db.ToggleTypeImage(call.From)
+		db.ToggleTypeAnimation(call.From)
+		db.ToggleTypeVideo(call.From)
 	}
 
-	CallbackUpdateTypesKeyboard(usr, call)
+	CallbackUpdateTypesKeyboard(call)
 }
 
-func CallbackToTypes(usr *models.User, call *tg.CallbackQuery) {
-	T, err := i18n.SwitchTo(usr.Language, call.From.LanguageCode)
+func CallbackToTypes(call *tg.CallbackQuery) {
+	user, err := database.DB.GetUser(call.From)
+	errors.Check(err)
+
+	T, err := i18n.SwitchTo(user.Locale, call.From.LanguageCode)
 	errors.Check(err)
 
 	editText := tg.NewMessageText(T("message_types"))
@@ -50,15 +53,15 @@ func CallbackToTypes(usr *models.User, call *tg.CallbackQuery) {
 	errors.Check(err)
 }
 
-func GetTypesMenuKeyboard(usr *models.User) *tg.InlineKeyboardMarkup {
-	T, err := i18n.SwitchTo(usr.Language)
+func GetTypesMenuKeyboard(user *models.User) *tg.InlineKeyboardMarkup {
+	T, err := i18n.SwitchTo(user.Locale)
 	errors.Check(err)
 
 	return tg.NewInlineKeyboardMarkup(
 		tg.NewInlineKeyboardRow(
 			tg.NewInlineKeyboardButton(
 				fmt.Sprint(
-					toggleStatus[usr.ContentTypes.Image],
+					toggleStatus[user.ContentTypes.Image],
 					strings.Title(T("type_image")),
 				),
 				"toggle:type:image",
@@ -67,7 +70,7 @@ func GetTypesMenuKeyboard(usr *models.User) *tg.InlineKeyboardMarkup {
 		tg.NewInlineKeyboardRow(
 			tg.NewInlineKeyboardButton(
 				fmt.Sprint(
-					toggleStatus[usr.ContentTypes.Animation],
+					toggleStatus[user.ContentTypes.Animation],
 					strings.Title(T("type_animation")),
 				),
 				"toggle:type:animation",
@@ -76,7 +79,7 @@ func GetTypesMenuKeyboard(usr *models.User) *tg.InlineKeyboardMarkup {
 		tg.NewInlineKeyboardRow(
 			tg.NewInlineKeyboardButton(
 				fmt.Sprint(
-					toggleStatus[usr.ContentTypes.Video],
+					toggleStatus[user.ContentTypes.Video],
 					strings.Title(T("type_video")),
 				),
 				"toggle:type:video",
@@ -88,7 +91,7 @@ func GetTypesMenuKeyboard(usr *models.User) *tg.InlineKeyboardMarkup {
 	)
 }
 
-func CallbackUpdateTypesKeyboard(usr *models.User, call *tg.CallbackQuery) {
+func CallbackUpdateTypesKeyboard(call *tg.CallbackQuery) {
 	var editMarkup tg.EditMessageReplyMarkupParameters
 	editMarkup.ChatID = call.Message.Chat.ID
 	editMarkup.MessageID = call.Message.ID

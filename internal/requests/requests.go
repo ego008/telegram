@@ -5,8 +5,8 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/HentaiDB/HentaiDBot/internal/models"
 	"github.com/HentaiDB/HentaiDBot/internal/resources"
+	"github.com/HentaiDB/HentaiDBot/pkg/models"
 	log "github.com/kirillDanshin/dlog"
 	json "github.com/pquerna/ffjson/ffjson"
 	http "github.com/valyala/fasthttp"
@@ -19,15 +19,19 @@ type Params struct {
 	Tags string
 }
 
-var ErrNotOk = errors.New("Status code is not 200")
+var ErrNotOk = errors.New("status code is not 200")
 
 func Results(resource string, params *Params) ([]models.Result, error) {
-	res := resources.Resources[resource]
+	cfg := resources.Resources[resource]
 
-	var requestURL url.URL
-	requestURL.Scheme = res.UString("scheme", "http")
-	requestURL.Host = res.UString("host")
-	requestURL.Path = res.UString("path")
+	requestURL := url.URL{
+		Scheme: cfg.GetString("scheme"),
+		Host:   cfg.GetString("host"),
+		Path:   cfg.GetString("path"),
+	}
+	if requestURL.Scheme == "" {
+		requestURL.Scheme = "http"
+	}
 
 	args := requestURL.Query()
 	args.Add("page", "dapi")

@@ -6,15 +6,18 @@ import (
 
 	// log "github.com/kirillDanshin/dlog"
 	"github.com/HentaiDB/HentaiDBot/internal/bot"
-	"github.com/HentaiDB/HentaiDBot/internal/db"
+	"github.com/HentaiDB/HentaiDBot/internal/database"
 	"github.com/HentaiDB/HentaiDBot/internal/errors"
 	"github.com/HentaiDB/HentaiDBot/internal/i18n"
-	"github.com/HentaiDB/HentaiDBot/internal/models"
+	"github.com/HentaiDB/HentaiDBot/pkg/models"
 	tg "github.com/toby3d/telegram"
 )
 
-func CallbackSwitchLanguage(usr *models.User, call *tg.CallbackQuery, lang string) {
-	if lang == usr.Language {
+func CallbackSwitchLanguage(call *tg.CallbackQuery, lang string) {
+	user, err := database.DB.GetUser(call.From)
+	errors.Check(err)
+
+	if lang == user.Locale {
 		// Because we must answer on every callback request
 		_, err := bot.Bot.AnswerCallbackQuery(
 			tg.NewAnswerCallbackQuery(call.ID),
@@ -23,19 +26,22 @@ func CallbackSwitchLanguage(usr *models.User, call *tg.CallbackQuery, lang strin
 		return
 	}
 
-	err := db.SetLanguage(usr, lang)
+	err = database.DB.SetLocale(call.From, lang)
 	errors.Check(err)
 
-	T, err := i18n.SwitchTo(usr.Language, call.From.LanguageCode)
+	T, err := i18n.SwitchTo(user.Locale, call.From.LanguageCode)
 	errors.Check(err)
 
 	go CallbackAlert(call, T("message_language_selected"))
 
-	CallbackToLanguages(usr, call)
+	CallbackToLanguages(call)
 }
 
-func CallbackToLanguages(usr *models.User, call *tg.CallbackQuery) {
-	T, err := i18n.SwitchTo(usr.Language, call.From.LanguageCode)
+func CallbackToLanguages(call *tg.CallbackQuery) {
+	user, err := database.DB.GetUser(call.From)
+	errors.Check(err)
+
+	T, err := i18n.SwitchTo(user.Locale, call.From.LanguageCode)
 	errors.Check(err)
 
 	text := T("message_language", map[string]interface{}{
@@ -46,20 +52,20 @@ func CallbackToLanguages(usr *models.User, call *tg.CallbackQuery) {
 	editText.ChatID = call.Message.Chat.ID
 	editText.MessageID = call.Message.ID
 	editText.ParseMode = tg.ModeMarkdown
-	editText.ReplyMarkup = GetLanguagesMenuKeyboard(usr)
+	editText.ReplyMarkup = GetLanguagesMenuKeyboard(user)
 
 	_, err = bot.Bot.EditMessageText(editText)
 	errors.Check(err)
 }
 
-func GetLanguagesMenuKeyboard(usr *models.User) *tg.InlineKeyboardMarkup {
-	T, err := i18n.SwitchTo(usr.Language)
+func GetLanguagesMenuKeyboard(user *models.User) *tg.InlineKeyboardMarkup {
+	T, err := i18n.SwitchTo(user.Locale)
 	errors.Check(err)
 
 	var replyMarkup tg.InlineKeyboardMarkup
 	for _, tag := range i18n.Tags {
 		var this string
-		if usr.Language == tag {
+		if user.Locale == tag {
 			this = switcherStatus
 		}
 
@@ -83,12 +89,15 @@ func GetLanguagesMenuKeyboard(usr *models.User) *tg.InlineKeyboardMarkup {
 	return &replyMarkup
 }
 
-func callbackUpdateLanguagesKeyboard(usr *models.User, call *tg.CallbackQuery) {
+func callbackUpdateLanguagesKeyboard(call *tg.CallbackQuery) {
+	user, err := database.DB.GetUser(call.From)
+	errors.Check(err)
+
 	var editMarkup tg.EditMessageReplyMarkupParameters
 	editMarkup.ChatID = call.Message.Chat.ID
 	editMarkup.MessageID = call.Message.ID
-	editMarkup.ReplyMarkup = GetLanguagesMenuKeyboard(usr)
+	editMarkup.ReplyMarkup = GetLanguagesMenuKeyboard(user)
 
-	_, err := bot.Bot.EditMessageReplyMarkup(&editMarkup)
+	_, err = bot.Bot.EditMessageReplyMarkup(&editMarkup)
 	errors.Check(err)
 }

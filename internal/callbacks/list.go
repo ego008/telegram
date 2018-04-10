@@ -5,40 +5,47 @@ import (
 
 	// log "github.com/kirillDanshin/dlog"
 	"github.com/HentaiDB/HentaiDBot/internal/bot"
+	"github.com/HentaiDB/HentaiDBot/internal/database"
 	"github.com/HentaiDB/HentaiDBot/internal/errors"
 	"github.com/HentaiDB/HentaiDBot/internal/i18n"
-	"github.com/HentaiDB/HentaiDBot/internal/models"
+	"github.com/HentaiDB/HentaiDBot/pkg/models"
 	tg "github.com/toby3d/telegram"
 )
 
-func CallbackToList(usr *models.User, call *tg.CallbackQuery, listType string) {
-	T, err := i18n.SwitchTo(usr.Language, call.From.LanguageCode)
+func CallbackToList(call *tg.CallbackQuery, listType string) {
+	user, err := database.DB.GetUser(call.From)
+	errors.Check(err)
+
+	T, err := i18n.SwitchTo(user.Locale, call.From.LanguageCode)
 	errors.Check(err)
 
 	text := T(fmt.Sprint("message_", listType), map[string]interface{}{
-		"CommandCheatsheet": models.Cheatsheet,
+		"CommandCheatsheet": models.CommandCheatsheet,
 	})
 
 	editText := tg.NewMessageText(text)
 	editText.ChatID = call.Message.Chat.ID
 	editText.MessageID = call.Message.ID
 	editText.ParseMode = tg.ModeMarkdown
-	editText.ReplyMarkup = GetListMenuKeyboard(usr, listType)
+	editText.ReplyMarkup = GetListMenuKeyboard(call, listType)
 
 	_, err = bot.Bot.EditMessageText(editText)
 	errors.Check(err)
 }
 
-func GetListMenuKeyboard(usr *models.User, listType string) *tg.InlineKeyboardMarkup {
-	T, err := i18n.SwitchTo(usr.Language)
+func GetListMenuKeyboard(call *tg.CallbackQuery, listType string) *tg.InlineKeyboardMarkup {
+	user, err := database.DB.GetUser(call.From)
+	errors.Check(err)
+
+	T, err := i18n.SwitchTo(user.Locale)
 	errors.Check(err)
 
 	var tags []string
 	switch listType {
 	case models.BlackList:
-		tags = usr.Blacklist
+		tags = user.BlackTags()
 	case models.WhiteList:
-		tags = usr.Whitelist
+		tags = user.WhiteTags()
 	}
 
 	replyMarkup := tg.NewInlineKeyboardMarkup(
@@ -74,12 +81,15 @@ func GetListMenuKeyboard(usr *models.User, listType string) *tg.InlineKeyboardMa
 	return replyMarkup
 }
 
-func CallbackUpdateListKeyboard(usr *models.User, call *tg.CallbackQuery, listType string) {
+func CallbackUpdateListKeyboard(call *tg.CallbackQuery, listType string) {
+	user, err := database.DB.GetUser(call.From)
+	errors.Check(err)
+
 	var editMarkup tg.EditMessageReplyMarkupParameters
 	editMarkup.ChatID = call.Message.Chat.ID
 	editMarkup.MessageID = call.Message.ID
-	editMarkup.ReplyMarkup = GetListMenuKeyboard(usr, listType)
+	editMarkup.ReplyMarkup = GetListMenuKeyboard(call, listType)
 
-	_, err := bot.Bot.EditMessageReplyMarkup(&editMarkup)
+	_, err = bot.Bot.EditMessageReplyMarkup(&editMarkup)
 	errors.Check(err)
 }

@@ -6,38 +6,43 @@ import (
 
 	// log "github.com/kirillDanshin/dlog"
 	"github.com/HentaiDB/HentaiDBot/internal/bot"
-	"github.com/HentaiDB/HentaiDBot/internal/db"
+	"github.com/HentaiDB/HentaiDBot/internal/database"
 	"github.com/HentaiDB/HentaiDBot/internal/errors"
 	"github.com/HentaiDB/HentaiDBot/internal/i18n"
-	"github.com/HentaiDB/HentaiDBot/internal/models"
+	"github.com/HentaiDB/HentaiDBot/pkg/models"
 	tg "github.com/toby3d/telegram"
 )
 
-func CallbackToggleRating(usr *models.User, call *tg.CallbackQuery, rating string) {
-	var err error
+func CallbackToggleRating(call *tg.CallbackQuery, rating string) {
+	user, err := database.DB.GetUser(call.From)
+	errors.Check(err)
+
 	switch rating {
-	case "safe":
-		err = db.ToggleRatingSafe(usr)
-	case "questionable":
-		err = db.ToggleRatingQuestionable(usr)
-	case "explicit":
-		err = db.ToggleRatingExplicit(usr)
+	case models.RatingSafe:
+		err = database.DB.ToggleRatingSafe(call.From)
+	case models.RatingQuestionable:
+		err = database.DB.ToggleRatingQuestionable(call.From)
+	case models.RatingExplicit:
+		err = database.DB.ToggleRatingExplicit(call.From)
 	}
 	errors.Check(err)
 
-	if !usr.Ratings.Safe &&
-		!usr.Ratings.Questionable &&
-		!usr.Ratings.Exlplicit {
-		db.ToggleRatingSafe(usr)
-		db.ToggleRatingQuestionable(usr)
-		db.ToggleRatingExplicit(usr)
+	if !user.Ratings.Safe &&
+		!user.Ratings.Questionable &&
+		!user.Ratings.Exlplicit {
+		database.DB.ToggleRatingSafe(call.From)
+		database.DB.ToggleRatingQuestionable(call.From)
+		database.DB.ToggleRatingExplicit(call.From)
 	}
 
-	CallbackUpdateRatingsKeyboard(usr, call)
+	CallbackUpdateRatingsKeyboard(call)
 }
 
-func CallbackToRatings(usr *models.User, call *tg.CallbackQuery) {
-	T, err := i18n.SwitchTo(usr.Language, call.From.LanguageCode)
+func CallbackToRatings(call *tg.CallbackQuery) {
+	user, err := database.DB.GetUser(call.From)
+	errors.Check(err)
+
+	T, err := i18n.SwitchTo(user.Locale, call.From.LanguageCode)
 	errors.Check(err)
 
 	text := T("message_ratings", map[string]interface{}{
@@ -50,21 +55,24 @@ func CallbackToRatings(usr *models.User, call *tg.CallbackQuery) {
 	editText.ChatID = call.Message.Chat.ID
 	editText.MessageID = call.Message.ID
 	editText.ParseMode = tg.ModeMarkdown
-	editText.ReplyMarkup = GetRatingsMenuKeyboard(usr)
+	editText.ReplyMarkup = GetRatingsMenuKeyboard(call)
 
 	_, err = bot.Bot.EditMessageText(editText)
 	errors.Check(err)
 }
 
-func GetRatingsMenuKeyboard(usr *models.User) *tg.InlineKeyboardMarkup {
-	T, err := i18n.SwitchTo(usr.Language)
+func GetRatingsMenuKeyboard(call *tg.CallbackQuery) *tg.InlineKeyboardMarkup {
+	user, err := database.DB.GetUser(call.From)
+	errors.Check(err)
+
+	T, err := i18n.SwitchTo(user.Locale)
 	errors.Check(err)
 
 	return tg.NewInlineKeyboardMarkup(
 		tg.NewInlineKeyboardRow(
 			tg.NewInlineKeyboardButton(
 				fmt.Sprint(
-					toggleStatus[usr.Ratings.Safe],
+					toggleStatus[user.Ratings.Safe],
 					strings.Title(T("rating_safe")),
 				),
 				"toggle:rating:safe",
@@ -73,7 +81,7 @@ func GetRatingsMenuKeyboard(usr *models.User) *tg.InlineKeyboardMarkup {
 		tg.NewInlineKeyboardRow(
 			tg.NewInlineKeyboardButton(
 				fmt.Sprint(
-					toggleStatus[usr.Ratings.Questionable],
+					toggleStatus[user.Ratings.Questionable],
 					strings.Title(T("rating_questionable")),
 				),
 				"toggle:rating:questionable",
@@ -82,7 +90,7 @@ func GetRatingsMenuKeyboard(usr *models.User) *tg.InlineKeyboardMarkup {
 		tg.NewInlineKeyboardRow(
 			tg.NewInlineKeyboardButton(
 				fmt.Sprint(
-					toggleStatus[usr.Ratings.Exlplicit],
+					toggleStatus[user.Ratings.Exlplicit],
 					strings.Title(T("rating_explicit")),
 				),
 				"toggle:rating:explicit",
@@ -94,12 +102,15 @@ func GetRatingsMenuKeyboard(usr *models.User) *tg.InlineKeyboardMarkup {
 	)
 }
 
-func CallbackUpdateRatingsKeyboard(usr *models.User, call *tg.CallbackQuery) {
+func CallbackUpdateRatingsKeyboard(call *tg.CallbackQuery) {
+	user, err := database.DB.GetUser(call.From)
+	errors.Check(err)
+
 	var editMarkup tg.EditMessageReplyMarkupParameters
 	editMarkup.ChatID = call.Message.Chat.ID
 	editMarkup.MessageID = call.Message.ID
-	editMarkup.ReplyMarkup = GetRatingsMenuKeyboard(usr)
+	editMarkup.ReplyMarkup = GetRatingsMenuKeyboard(call)
 
-	_, err := bot.Bot.EditMessageReplyMarkup(&editMarkup)
+	_, err = bot.Bot.EditMessageReplyMarkup(&editMarkup)
 	errors.Check(err)
 }

@@ -5,21 +5,15 @@ import (
 	"strings"
 
 	"github.com/HentaiDB/HentaiDBot/internal/bot"
-	"github.com/HentaiDB/HentaiDBot/internal/db"
+	"github.com/HentaiDB/HentaiDBot/internal/database"
 	"github.com/HentaiDB/HentaiDBot/internal/errors"
 	"github.com/HentaiDB/HentaiDBot/internal/i18n"
-	"github.com/HentaiDB/HentaiDBot/internal/models"
+	"github.com/HentaiDB/HentaiDBot/pkg/models"
 	log "github.com/kirillDanshin/dlog"
 	tg "github.com/toby3d/telegram"
 )
 
-const (
-	menuLang   = "languages"
-	menuRating = "ratings"
-	menuRes    = "resources"
-
-	switcherStatus = " 👈🏻"
-)
+const switcherStatus = " 👈🏻"
 
 var toggleStatus = map[bool]string{
 	true:  "✅ ",
@@ -27,73 +21,73 @@ var toggleStatus = map[bool]string{
 }
 
 func CallbackQuery(call *tg.CallbackQuery) {
-	usr, err := db.GetUserElseAdd(call.From.ID, call.From.LanguageCode)
-	errors.Check(err)
-
 	data := strings.Split(call.Data, ":")
 	switch data[0] {
 	case "to":
-		CallbackTo(usr, call, data[1])
+		CallbackTo(call, data[1])
 	case "switch":
-		callbackSwitch(usr, call, data[1:])
+		callbackSwitch(call, data[1:])
 	case "toggle":
-		CallbackToggle(usr, call, data[1:])
+		CallbackToggle(call, data[1:])
 	case "add":
-		callbackAdd(usr, call, data[1:])
+		callbackAdd(call, data[1:])
 	case "remove":
-		callbackRemove(usr, call, data[1:])
+		callbackRemove(call, data[1:])
 	default:
 		CallbackAlert(call, "😱 Oh no!..")
 	}
 }
 
-func CallbackTo(usr *models.User, call *tg.CallbackQuery, option string) {
+func CallbackTo(call *tg.CallbackQuery, option string) {
 	log.Ln("CallbackTo", option)
 	switch option {
 	case "settings":
-		CallbackToSettings(usr, call)
+		CallbackToSettings(call)
 	case "languages":
-		CallbackToLanguages(usr, call)
+		CallbackToLanguages(call)
 	case "resources":
-		CallbackToResources(usr, call)
+		CallbackToResources(call)
 	case "ratings":
-		CallbackToRatings(usr, call)
+		CallbackToRatings(call)
 	case "types":
-		CallbackToTypes(usr, call)
+		CallbackToTypes(call)
 	case models.BlackList:
-		CallbackToList(usr, call, models.BlackList)
+		CallbackToList(call, models.BlackList)
 	case models.WhiteList:
-		CallbackToList(usr, call, models.WhiteList)
+		CallbackToList(call, models.WhiteList)
 	default:
 		CallbackAlert(call, "😱 Oh no!..")
 	}
 }
 
-func callbackSwitch(usr *models.User, call *tg.CallbackQuery, options []string) {
+func callbackSwitch(call *tg.CallbackQuery, options []string) {
 	log.Ln("callbackSwitch", options[0])
 	switch options[0] {
 	case "language":
-		CallbackSwitchLanguage(usr, call, options[1])
+		CallbackSwitchLanguage(call, options[1])
 	default:
 		CallbackAlert(call, "😱 Oh no!..")
 	}
 }
 
-func CallbackToggle(usr *models.User, call *tg.CallbackQuery, options []string) {
+func CallbackToggle(call *tg.CallbackQuery, options []string) {
 	log.Ln("CallbackToggle", options[0])
 	switch options[0] {
 	case "resource":
-		CallbackToggleResource(usr, call, options[1])
+		CallbackToggleResource(call, options[1])
 	case "rating":
-		CallbackToggleRating(usr, call, options[1])
+		CallbackToggleRating(call, options[1])
 	case "type":
-		CallbackToggleTypes(usr, call, options[1])
+		CallbackToggleTypes(call, options[1])
 	default:
 		CallbackAlert(call, "😱 Oh no!..")
 	}
 }
 
-func callbackAdd(usr *models.User, call *tg.CallbackQuery, options []string) {
+func callbackAdd(call *tg.CallbackQuery, options []string) {
+	user, err := database.DB.GetUser(call.From)
+	errors.Check(err)
+
 	switch options[0] {
 	case "tags":
 		go func() {
@@ -101,10 +95,10 @@ func callbackAdd(usr *models.User, call *tg.CallbackQuery, options []string) {
 			errors.Check(err)
 		}()
 
-		usr, err := db.GetUserElseAdd(call.From.ID, call.From.LanguageCode)
+		usr, err := database.DB.GetUser(call.From)
 		errors.Check(err)
 
-		T, err := i18n.SwitchTo(usr.Language, call.From.LanguageCode)
+		T, err := i18n.SwitchTo(user.Locale, call.From.LanguageCode)
 		errors.Check(err)
 
 		text := T(fmt.Sprint("message_input_", options[1], "_tags"), map[string]interface{}{
@@ -122,13 +116,19 @@ func callbackAdd(usr *models.User, call *tg.CallbackQuery, options []string) {
 	}
 }
 
-func callbackRemove(usr *models.User, call *tg.CallbackQuery, options []string) {
+func callbackRemove(call *tg.CallbackQuery, options []string) {
 	switch options[0] {
 	case models.BlackList, models.WhiteList:
-		err := db.RemoveListTag(usr, options[0], strings.Join(options[1:], ""))
+		var err error
+		switch options[0] {
+		case models.BlackList:
+			err = database.DB.RemoveBlackTag(call.From, strings.Join(options[1:], ""))
+		case models.WhiteList:
+			err = database.DB.RemoveWhiteTag(call.From, strings.Join(options[1:], ""))
+		}
 		errors.Check(err)
 
-		CallbackUpdateListKeyboard(usr, call, options[0])
+		CallbackUpdateListKeyboard(call, options[0])
 	default:
 		CallbackAlert(call, "😱 Oh no!..")
 	}

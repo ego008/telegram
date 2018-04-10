@@ -3,10 +3,10 @@ package messages
 import (
 	"github.com/HentaiDB/HentaiDBot/internal/bot"
 	"github.com/HentaiDB/HentaiDBot/internal/commands"
-	"github.com/HentaiDB/HentaiDBot/internal/db"
+	"github.com/HentaiDB/HentaiDBot/internal/database"
 	"github.com/HentaiDB/HentaiDBot/internal/errors"
 	"github.com/HentaiDB/HentaiDBot/internal/i18n"
-	"github.com/HentaiDB/HentaiDBot/internal/models"
+	"github.com/HentaiDB/HentaiDBot/pkg/models"
 	log "github.com/kirillDanshin/dlog"
 	tg "github.com/toby3d/telegram"
 	"strings"
@@ -26,10 +26,10 @@ func Message(msg *tg.Message) {
 
 	if msg.IsText() && bot.Bot.IsReplyToMe(msg) {
 		log.D(msg.ReplyToMessage)
-		usr, err := db.GetUserElseAdd(msg.From.ID, msg.From.LanguageCode)
+		usr, err := database.GetUserElseAdd(msg.From.ID, msg.From.LanguageCode)
 		errors.Check(err)
 
-		T, err := i18n.SwitchTo(usr.Language, msg.From.LanguageCode)
+		T, err := i18n.SwitchTo(user.Locale, msg.From.LanguageCode)
 		errors.Check(err)
 
 		var listType string
@@ -49,7 +49,7 @@ func Message(msg *tg.Message) {
 		}
 
 		tags := strings.Split(strings.ToLower(msg.Text), " ")
-		err = db.AddListTags(usr, listType, tags...)
+		err = database.AddListTags(usr, listType, tags...)
 		errors.Check(err)
 
 		reply := tg.NewMessage(msg.Chat.ID, "OK")

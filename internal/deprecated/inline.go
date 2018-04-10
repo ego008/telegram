@@ -32,7 +32,7 @@ func inline(inline *tg.InlineQuery) {
 		log.Println("Create user:", err.Error())
 	}
 
-	T, err := i18n.Tfunc(usr.Language)
+	T, err := i18n.Tfunc(user.Locale)
 	if err != nil {
 		log.Println(err.Error())
 	}
@@ -59,7 +59,7 @@ func inline(inline *tg.InlineQuery) {
 				T, err = i18n.Tfunc(op[1])
 				if err != nil {
 					log.Println(err.Error())
-					T, _ = i18n.Tfunc(usr.Language)
+					T, _ = i18n.Tfunc(user.Locale)
 				}
 			}
 
@@ -76,8 +76,8 @@ func inline(inline *tg.InlineQuery) {
 		req.Tags += fmt.Sprint(" ", strings.Join(usr.Whitelist, " "))
 	}
 
-	if len(usr.Blacklist) > 0 {
-		req.Tags += fmt.Sprint(" -", strings.Join(usr.Blacklist, " -"))
+	if len(user.Blacklist) > 0 {
+		req.Tags += fmt.Sprint(" -", strings.Join(user.Blacklist, " -"))
 	}
 
 	rt := usr.Ratings

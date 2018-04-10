@@ -1,31 +1,31 @@
 package init
 
 import (
-	"flag"
-
 	"github.com/HentaiDB/HentaiDBot/internal/bot"
 	"github.com/HentaiDB/HentaiDBot/internal/config"
-	"github.com/HentaiDB/HentaiDBot/internal/db"
+	"github.com/HentaiDB/HentaiDBot/internal/database"
+	"github.com/HentaiDB/HentaiDBot/internal/errors"
 	"github.com/HentaiDB/HentaiDBot/internal/i18n"
 	"github.com/HentaiDB/HentaiDBot/internal/resources"
+	"github.com/HentaiDB/HentaiDBot/pkg/models"
 	log "github.com/kirillDanshin/dlog"
 )
 
-const ver = `4.0 "Dark Dream"`
-
-var (
-	verHash, verTimeStamp string
-
-	flagWebhook = flag.Bool("webhook", false, "activate getting updates via webhook")
-)
-
 func init() {
-	flag.Parse()
-	log.Ln("Running", ver, "version...")
+	log.Ln("Running", models.Version, "version...")
 
-	config.Initialize("./configs/config.yaml", *flagWebhook)
+	var err error
+	config.Config, err = config.Open("./configs/config.yaml")
+	errors.Check(err)
+
 	resources.Initialize("./configs/resources")
-	i18n.Initialize("./configs/translations")
-	db.Initialize()
-	bot.Initialize()
+
+	i18n.I18N, err = i18n.Open("./configs/translations")
+	errors.Check(err)
+
+	database.DB, err = database.Open("./hentai.db")
+	errors.Check(err)
+
+	bot.Bot, err = bot.New(config.Config.GetString("telegram.token"))
+	errors.Check(err)
 }

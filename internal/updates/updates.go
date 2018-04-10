@@ -2,13 +2,13 @@ package updates
 
 import (
 	"github.com/HentaiDB/HentaiDBot/internal/callbacks"
-	"github.com/HentaiDB/HentaiDBot/internal/db"
+	"github.com/HentaiDB/HentaiDBot/internal/database"
 	"github.com/HentaiDB/HentaiDBot/internal/inline"
 	"github.com/HentaiDB/HentaiDBot/internal/messages"
 )
 
 func Updates() {
-	defer db.Close()
+	defer database.Close()
 
 	updatesChannel := getUpdatesChannel()
 	for update := range updatesChannel {
@@ -17,11 +17,11 @@ func Updates() {
 			messages.Message(update.Message)
 		case update.InlineQuery != nil &&
 			len(update.InlineQuery.Query) <= 255:
-			inline.InlineQuery(update.InlineQuery)
+			// inline.InlineQuery(update.InlineQuery)
 		case update.ChosenInlineResult != nil:
 			// ChosenInlineResult(update.ChosenInlineResult)
 		case update.CallbackQuery != nil:
-			callbacks.CallbackQuery(update.CallbackQuery)
+			// callbacks.CallbackQuery(update.CallbackQuery)
 		case update.ChannelPost != nil:
 			// channelPost(update.ChannelPost)
 		}

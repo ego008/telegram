@@ -3,54 +3,55 @@ package resources
 import (
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/HentaiDB/HentaiDBot/internal/errors"
 	log "github.com/kirillDanshin/dlog"
-	"github.com/olebedev/config"
+	"github.com/spf13/viper"
 )
 
 var (
-	Resources = make(map[string]*config.Config)
+	Resources = make(map[string]*viper.Viper)
 
 	Tags []string
 )
 
 func Initialize(pathToConfigs string) {
+	filesMap := make(map[string]string)
+
 	err := filepath.Walk(pathToConfigs, func(path string, file os.FileInfo, err error) error {
 		log.Ln("Walk to", path)
 		if !strings.HasSuffix(file.Name(), ".yaml") {
-			return nil
-		}
-
-		res, err := config.ParseYamlFile(path)
-		if err != nil {
 			return err
 		}
 
-		Resources[res.UString("name")] = res
+		cfg := viper.New()
+		cfg.AddConfigPath(path)
+		cfg.SetConfigFile(file.Name())
+
+		if err = cfg.ReadInConfig(); err != nil {
+			return err
+		}
+
+		name := cfg.GetString("name")
+		Resources[name] = cfg
+		filesMap[name] = file.Name()
+
 		return nil
 	})
 	errors.Check(err)
 
-	log.Ln("Resources before:")
-	log.D(Resources)
-
-	for res, conf := range Resources {
-		template := conf.UString("template")
-		if template == "" {
-			log.Ln("Resource:", res, "template: none")
+	for _, cfg := range Resources {
+		tpl := cfg.GetString("template")
+		if tpl == "" {
 			continue
 		}
 
-		Resources[res], err = Resources[template].Extend(conf)
-		errors.Check(err)
-
-		Tags = append(Tags, res)
+		cfg.SetConfigFile(filesMap[tpl])
+		if err = cfg.MergeInConfig(); err != nil {
+			continue
+		}
 	}
-
-	sort.Strings(Tags)
 
 	log.Ln("Resources after:")
 	log.D(Resources)

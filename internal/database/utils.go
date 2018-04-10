@@ -1,17 +1,18 @@
-package db
+package database
 
+/*
 import (
 	"fmt"
 	"sort"
 	"strconv"
 	"strings"
 
-	"github.com/HentaiDB/HentaiDBot/internal/models"
+	"github.com/HentaiDB/HentaiDBot/pkg/models"
 	log "github.com/kirillDanshin/dlog"
 	"github.com/tidwall/buntdb"
 )
 
-func Destroy(userID int) error {
+func (db *DataBase) Destroy(userID int) error {
 	log.Ln("db:user:destroy")
 
 	return DB.Update(func(tx *buntdb.Tx) error {
@@ -27,7 +28,7 @@ func Destroy(userID int) error {
 	})
 }
 
-func ToggleRatingSafe(usr *models.User) error {
+func (db *DataBase) ToggleRatingSafe(user *models.User) error {
 	log.Ln("db:user:toggle:safe")
 
 	if err := DB.Update(func(tx *buntdb.Tx) error {
@@ -44,7 +45,7 @@ func ToggleRatingSafe(usr *models.User) error {
 	return nil
 }
 
-func ToggleRatingQuestionable(usr *models.User) error {
+func (db *DataBase) ToggleRatingQuestionable(user *models.User) error {
 	log.Ln("db:user:toggle:questionable")
 
 	err := DB.Update(func(tx *buntdb.Tx) error {
@@ -62,7 +63,7 @@ func ToggleRatingQuestionable(usr *models.User) error {
 	return nil
 }
 
-func ToggleRatingExplicit(usr *models.User) error {
+func (db *DataBase) ToggleRatingExplicit(user *models.User) error {
 	log.Ln("db:user:toggle:explicit")
 
 	if err := DB.Update(func(tx *buntdb.Tx) error {
@@ -79,7 +80,7 @@ func ToggleRatingExplicit(usr *models.User) error {
 	return nil
 }
 
-func ToggleTypeImage(usr *models.User) error {
+func (db *DataBase) ToggleTypeImage(user *models.User) error {
 	log.Ln("db:user:toggle:image")
 
 	if err := DB.Update(func(tx *buntdb.Tx) error {
@@ -96,7 +97,7 @@ func ToggleTypeImage(usr *models.User) error {
 	return nil
 }
 
-func ToggleTypeAnimation(usr *models.User) error {
+func (db *DataBase) ToggleTypeAnimation(user *models.User) error {
 	log.Ln("db:user:toggle:animation")
 
 	if err := DB.Update(func(tx *buntdb.Tx) error {
@@ -113,7 +114,7 @@ func ToggleTypeAnimation(usr *models.User) error {
 	return nil
 }
 
-func ToggleTypeVideo(usr *models.User) error {
+func (db *DataBase) ToggleTypeVideo(user *models.User) error {
 	log.Ln("db:user:toggle:video")
 
 	if err := DB.Update(func(tx *buntdb.Tx) error {
@@ -130,7 +131,7 @@ func ToggleTypeVideo(usr *models.User) error {
 	return nil
 }
 
-func ToggleResource(usr *models.User, resource string) error {
+func (db *DataBase) ToggleResource(user *models.User, resource string) error {
 	log.Ln("db:user:toggle:resource")
 
 	if err := DB.Update(func(tx *buntdb.Tx) error {
@@ -147,7 +148,7 @@ func ToggleResource(usr *models.User, resource string) error {
 	return nil
 }
 
-func SetLanguage(usr *models.User, lang string) error {
+func (db *DataBase) SetLanguage(user *models.User, lang string) error {
 	log.Ln("db:user:set:language")
 
 	if err := DB.Update(func(tx *buntdb.Tx) error {
@@ -160,11 +161,11 @@ func SetLanguage(usr *models.User, lang string) error {
 		return err
 	}
 
-	usr.Language = lang
+	user.Locale = lang
 	return nil
 }
 
-func AddListTags(usr *models.User, listType string, tags ...string) error {
+func (db *DataBase) AddListTags(user *models.User, listType string, tags ...string) error {
 	log.Ln("db:user:add:" + listType + ":tags")
 
 	if err := DB.Update(func(tx *buntdb.Tx) error {
@@ -183,7 +184,7 @@ func AddListTags(usr *models.User, listType string, tags ...string) error {
 	}
 
 	switch listType {
-	case whiteList:
+	case models.WhiteList:
 		for i := range tags {
 			for j := range usr.Whitelist {
 				if usr.Whitelist[j] == tags[i] {
@@ -193,14 +194,14 @@ func AddListTags(usr *models.User, listType string, tags ...string) error {
 				usr.Whitelist = append(usr.Whitelist, tags[i])
 			}
 		}
-	case blackList:
+	case models.BlackList:
 		for i := range tags {
-			for j := range usr.Blacklist {
-				if usr.Blacklist[j] == tags[i] {
+			for j := range user.Blacklist {
+				if user.Blacklist[j] == tags[i] {
 					continue
 				}
 
-				usr.Blacklist = append(usr.Blacklist, tags[i])
+				user.Blacklist = append(user.Blacklist, tags[i])
 			}
 		}
 	}
@@ -208,7 +209,7 @@ func AddListTags(usr *models.User, listType string, tags ...string) error {
 	return nil
 }
 
-func RemoveListTag(usr *models.User, listType string, tag string) error {
+func (db *DataBase) RemoveListTag(user *models.User, listType string, tag string) error {
 	log.Ln("db:user:remove:" + listType + ":tags")
 	pattern := fmt.Sprint("user:", usr.ID, ":", listType, ":")
 
@@ -245,16 +246,17 @@ func RemoveListTag(usr *models.User, listType string, tag string) error {
 		}
 		sort.Strings(usr.Whitelist)
 	case blackList:
-		for i := range usr.Blacklist {
-			if usr.Blacklist[i] != tag {
+		for i := range user.Blacklist {
+			if user.Blacklist[i] != tag {
 				continue
 			}
 
-			usr.Blacklist = append(usr.Blacklist[:i], usr.Blacklist[i+1:]...)
+			user.Blacklist = append(user.Blacklist[:i], user.Blacklist[i+1:]...)
 			break
 		}
-		sort.Strings(usr.Blacklist)
+		sort.Strings(user.Blacklist)
 	}
 
 	return nil
 }
+*/

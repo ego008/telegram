@@ -7,22 +7,21 @@ import (
 	"sync"
 
 	"github.com/HentaiDB/HentaiDBot/internal/bot"
-	"github.com/HentaiDB/HentaiDBot/internal/db"
+	"github.com/HentaiDB/HentaiDBot/internal/database"
 	"github.com/HentaiDB/HentaiDBot/internal/errors"
 	"github.com/HentaiDB/HentaiDBot/internal/i18n"
-	"github.com/HentaiDB/HentaiDBot/internal/models"
 	"github.com/HentaiDB/HentaiDBot/internal/requests"
 	"github.com/HentaiDB/HentaiDBot/internal/resources"
+	"github.com/HentaiDB/HentaiDBot/pkg/models"
 	log "github.com/kirillDanshin/dlog"
 	tg "github.com/toby3d/telegram"
 )
 
 func InlineQuery(query *tg.InlineQuery) {
-	usr, err := db.GetUserElseAdd(query.From.ID, query.From.LanguageCode)
+	user, err := database.DB.GetUser(query.From)
 	errors.Check(err)
 
-	T, err := i18n.SwitchTo(usr.Language, query.From.LanguageCode)
-	errors.Check(err)
+	localizer := i18n.I18N.NewLocalizer(user.Locale, query.From.LanguageCode)
 
 	if query.Offset == "" {
 		query.Offset = "-1"
@@ -37,12 +36,14 @@ func InlineQuery(query *tg.InlineQuery) {
 	answer := tg.NewAnswerInlineQuery(query.ID)
 	answer.CacheTime = 1
 	answer.IsPersonal = true
-	answer.SwitchPrivateMessageText = T("inline_button_dashboard")
+	answer.SwitchPrivateMessageText = localizer.MustLocalize(&i18n.LocalizeConfig{
+		MessageID: "inline_button_dashboard",
+	})
 	answer.SwitchPrivateMessageParameter = "settings"
 
 	results := getResults(
 		query,
-		usr,
+		user,
 		&requests.Params{
 			PageID: offset,
 			Tags:   query.Query,
@@ -52,7 +53,9 @@ func InlineQuery(query *tg.InlineQuery) {
 	switch {
 	case offset <= 0 &&
 		len(results) <= 0:
-		answer.SwitchPrivateMessageText = T("inline_no_result")
+		answer.SwitchPrivateMessageText = localizer.MustLocalize(&i18n.LocalizeConfig{
+			MessageID: "inline_no_result",
+		})
 		answer.SwitchPrivateMessageParameter = "settings"
 	case offset > 0 &&
 		len(results) <= 0:
@@ -67,41 +70,41 @@ func InlineQuery(query *tg.InlineQuery) {
 	}
 }
 
-func getResults(query *tg.InlineQuery, usr *models.User, p *requests.Params) (results []interface{}) {
-	if len(usr.Whitelist) > 0 {
-		p.Tags += fmt.Sprint(" ", strings.Join(usr.Whitelist, " "))
+func getResults(query *tg.InlineQuery, user *models.User, p *requests.Params) (results []interface{}) {
+	if len(user.WhiteList) > 0 {
+		p.Tags += fmt.Sprint(" ", strings.Join(user.WhiteTags(), " "))
 	}
 
-	if len(usr.Blacklist) > 0 {
-		p.Tags += fmt.Sprint(" -", strings.Join(usr.Blacklist, " -"))
+	if len(user.BlackList) > 0 {
+		p.Tags += fmt.Sprint(" -", strings.Join(user.BlackTags(), " -"))
 	}
 
-	filters := usr.GetRatingsFilter()
+	filters := user.GetRatingsFilter()
 	if filters != "" {
-		p.Tags += fmt.Sprint(" ", usr.GetRatingsFilter())
+		p.Tags += fmt.Sprint(" ", user.GetRatingsFilter())
 	}
 
 	log.Ln("getResults")
-	var res []string
-	for key, on := range usr.Resources {
-		if on &&
-			resources.Resources[key] != nil {
-			res = append(res, key)
+	var resNames []string
+	for _, res := range user.Resources {
+		if resources.Resources[res.Name] == nil {
+			continue
 		}
+		resNames = append(resNames, res.Name)
 	}
 
-	if len(res) <= 0 {
+	if len(resNames) <= 0 {
 		return nil
 	}
 
-	p.Limit = 50 / len(res)
+	p.Limit = 50 / len(resNames)
 
 	log.Ln("getResults after resources")
 	var wg sync.WaitGroup
-	wg.Add(len(res))
+	wg.Add(len(resNames))
 
 	log.Ln("getResults preparing res")
-	for i := range res {
+	for _, res := range resNames {
 		go func(res string, p *requests.Params) {
 			defer wg.Done()
 			log.Ln("Getted", p.Limit, "results from", res, "...")
@@ -115,12 +118,12 @@ func getResults(query *tg.InlineQuery, usr *models.User, p *requests.Params) (re
 
 			log.Ln("Getted", len(posts), "results from", res)
 			for j := range posts {
-				result := getResultByPost(query, usr, res, &posts[j])
+				result := getResultByPost(query, user, res, &posts[j])
 				if result != nil {
 					results = append(results, result)
 				}
 			}
-		}(res[i], p)
+		}(res, p)
 	}
 
 	wg.Wait()
@@ -128,14 +131,14 @@ func getResults(query *tg.InlineQuery, usr *models.User, p *requests.Params) (re
 	return results
 }
 
-func getResultByPost(query *tg.InlineQuery, usr *models.User, res string, post *models.Result) interface{} {
-	T, err := i18n.SwitchTo(usr.Language, query.From.LanguageCode)
+func getResultByPost(query *tg.InlineQuery, user *models.User, res string, post *models.Result) interface{} {
+	T, err := i18n.SwitchTo(user.Locale, query.From.LanguageCode)
 	errors.Check(err)
 
 	replyMarkup := tg.NewInlineKeyboardMarkup(
 		tg.NewInlineKeyboardRow(
 			tg.NewInlineKeyboardButtonURL(
-				T("button_original"), post.FileURL(res).String(),
+				T("button_original"), post.FileURL(resNames).String(),
 			),
 		),
 	)
@@ -151,21 +154,26 @@ func getResultByPost(query *tg.InlineQuery, usr *models.User, res string, post *
 
 	switch {
 	case strings.HasSuffix(post.FileURL(res).Path, "webm"):
-		if !usr.ContentTypes.Video {
+		if !user.ContentTypes.Video {
 			return nil
 		}
 
 		inputMessageContent := tg.NewInputTextMessageContent(
-			T("message_blushboard", map[string]interface{}{
-				"Type":  strings.Title(T("type_video")),
-				"Owner": post.Owner,
-				"URL": fmt.Sprint(
-					resources.Resources[res].UString("scheme", "http"),
-					"://",
-					resources.Resources[res].UString("host"),
-					resources.Resources[res].UString("result"),
-					post.ID,
-				),
+			localize.MustLocalize(&i18n.LocalizeConfig{
+				MessageID: "message_blushboard",
+				TemplateData: map[string]string{
+					"Type": strings.Title(localize.MustLocalize(&i18n.LocalizeConfig{
+						MessageID: "type_video",
+					})),
+					"Owner": post.Owner,
+					"URL": fmt.Sprint(
+						resources.Resources[res].UString("scheme", "http"),
+						"://",
+						resources.Resources[res].UString("host"),
+						resources.Resources[res].UString("result"),
+						post.ID,
+					),
+				},
 			}),
 		)
 		inputMessageContent.ParseMode = tg.ModeMarkdown
@@ -176,22 +184,30 @@ func getResultByPost(query *tg.InlineQuery, usr *models.User, res string, post *
 			post.FileURL(res).String(),
 			tg.MimeHTML,
 			post.PreviewURL(res).String(),
-			T("inline_title", map[string]interface{}{
-				"Type":  strings.Title(T("type_video")),
-				"Owner": post.Owner,
+			localize.MustLocalize(&i18n.LocalizeConfig{
+				MessageID: "inline_title",
+				TemplateData: map[string]string{
+					"Type": strings.Title(localize.MustLocalize(&i18n.LocalizeConfig{
+						MessageID: "type_video",
+					})),
+					"Owner": post.Owner,
+				},
 			}),
 		)
 		video.VideoWidth = post.Width
 		video.VideoHeight = post.Height
-		video.Description = T("inline_description", map[string]interface{}{
-			"Rating": post.Rating,
-			"Tags":   post.Tags,
+		video.Description = localizer.MustLocalize(&i18n.LocalizeConfig{
+			MessageID: "inline_description",
+			TemplateData: map[string]string{
+				"Rating": post.Rating,
+				"Tags":   post.Tags,
+			},
 		})
 		video.InputMessageContent = inputMessageContent
 		video.ReplyMarkup = replyMarkup
 		return video
 	case strings.HasSuffix(post.FileURL(res).Path, "gif"):
-		if !usr.ContentTypes.Animation {
+		if !user.ContentTypes.Animation {
 			return nil
 		}
 
@@ -202,14 +218,19 @@ func getResultByPost(query *tg.InlineQuery, usr *models.User, res string, post *
 		)
 		gif.GifWidth = post.Width
 		gif.GifHeight = post.Height
-		gif.Title = T("inline_title", map[string]interface{}{
-			"Type":  strings.Title(T("type_animation")),
-			"Owner": post.Owner,
+		gif.Title = localizer.MustLocalize(&i18n.LocalizeConfig{
+			MessageID: "inline_title",
+			TemplateData: map[string]string{
+				"Type": strings.Title(localize.MustLocalize(&i18n.LocalizeConfig{
+					MessageID: "type_animation",
+				})),
+				"Owner": post.Owner,
+			},
 		})
 		gif.ReplyMarkup = replyMarkup
 		return gif
 	default:
-		if !usr.ContentTypes.Image {
+		if !user.ContentTypes.Image {
 			return nil
 		}
 
@@ -227,13 +248,21 @@ func getResultByPost(query *tg.InlineQuery, usr *models.User, res string, post *
 			photo.PhotoHeight = post.SampleHeight
 		}
 
-		photo.Title = T("inline_title", map[string]interface{}{
-			"Type":  strings.Title(T("type_image")),
-			"Owner": post.Owner,
+		photo.Title = localizer.MustLocalize(&i18n.LocalizeConfig{
+			MessageID: "inline_title",
+			TemplateData: map[string]string{
+				"Type": strings.Title(localize.MustLocalize(&i18n.LocalizeConfig{
+					MessageID: "type_image",
+				})),
+				"Owner": post.Owner,
+			},
 		})
-		photo.Description = T("inline_description", map[string]interface{}{
-			"Rating": post.Rating,
-			"Tags":   post.Tags,
+		photo.Description = localizer.MustLocalize(&i18n.LocalizeConfig{
+			MessageID: "inline_description",
+			TemplateData: map[string]string{
+				"Rating": post.Rating,
+				"Tags":   post.Tags,
+			},
 		})
 		photo.ReplyMarkup = replyMarkup
 		return photo

@@ -36,7 +36,7 @@ func message(msg *tg.Message) {
 		return
 	}
 
-	T, err := i18n.Tfunc(usr.Language)
+	T, err := i18n.Tfunc(user.Locale)
 	if err != nil {
 		trackMessage(msg, "Message")
 		log.Println(err.Error())
@@ -305,7 +305,7 @@ func cmdSettings(usr *User, msg *tg.Message, T i18n.TranslateFunc) {
 	text := T("message_settings", map[string]interface{}{
 		"Language":  T("language_name"),
 		"Ratings":   ratings,
-		"Blacklist": strings.Join(usr.Blacklist, " "),
+		"Blacklist": strings.Join(user.Blacklist, " "),
 		"Whitelist": strings.Join(usr.Whitelist, " "),
 	})
 	reply := tg.NewMessage(msg.Chat.ID, text)

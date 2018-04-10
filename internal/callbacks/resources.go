@@ -5,23 +5,23 @@ import (
 
 	// log "github.com/kirillDanshin/dlog"
 	"github.com/HentaiDB/HentaiDBot/internal/bot"
-	"github.com/HentaiDB/HentaiDBot/internal/db"
+	"github.com/HentaiDB/HentaiDBot/internal/database"
 	"github.com/HentaiDB/HentaiDBot/internal/errors"
 	"github.com/HentaiDB/HentaiDBot/internal/i18n"
-	"github.com/HentaiDB/HentaiDBot/internal/models"
 	"github.com/HentaiDB/HentaiDBot/internal/resources"
+	"github.com/HentaiDB/HentaiDBot/pkg/models"
 	tg "github.com/toby3d/telegram"
 )
 
-func CallbackToggleResource(usr *models.User, call *tg.CallbackQuery, res string) {
-	err := db.ToggleResource(usr, res)
+func CallbackToggleResource(call *tg.CallbackQuery, res string) {
+	err := database.ToggleResource(user, res)
 	errors.Check(err)
 
-	CallbackUpdateResourcesKeyboard(usr, call)
+	CallbackUpdateResourcesKeyboard(user, call)
 }
 
-func CallbackToResources(usr *models.User, call *tg.CallbackQuery) {
-	T, err := i18n.SwitchTo(usr.Language, call.From.LanguageCode)
+func CallbackToResources(call *tg.CallbackQuery) {
+	T, err := i18n.SwitchTo(user.Locale, call.From.LanguageCode)
 	errors.Check(err)
 
 	text := T("message_resources")
@@ -36,8 +36,8 @@ func CallbackToResources(usr *models.User, call *tg.CallbackQuery) {
 	errors.Check(err)
 }
 
-func getResourcesMenuKeyboard(usr *models.User) *tg.InlineKeyboardMarkup {
-	T, err := i18n.SwitchTo(usr.Language)
+func getResourcesMenuKeyboard(user *models.User) *tg.InlineKeyboardMarkup {
+	T, err := i18n.SwitchTo(user.Locale)
 	errors.Check(err)
 
 	var row int
@@ -54,7 +54,7 @@ func getResourcesMenuKeyboard(usr *models.User) *tg.InlineKeyboardMarkup {
 			replyMarkup.InlineKeyboard[row-1],
 			tg.NewInlineKeyboardButton(
 				fmt.Sprint(
-					toggleStatus[usr.Resources[tag]],
+					toggleStatus[user.Resources[tag]],
 					resources.Resources[tag].UString("title"),
 				),
 				fmt.Sprint("toggle:resource:", tag),
@@ -73,11 +73,11 @@ func getResourcesMenuKeyboard(usr *models.User) *tg.InlineKeyboardMarkup {
 	return &replyMarkup
 }
 
-func CallbackUpdateResourcesKeyboard(usr *models.User, call *tg.CallbackQuery) {
+func CallbackUpdateResourcesKeyboard(call *tg.CallbackQuery) {
 	var editMarkup tg.EditMessageReplyMarkupParameters
 	editMarkup.ChatID = call.Message.Chat.ID
 	editMarkup.MessageID = call.Message.ID
-	editMarkup.ReplyMarkup = getResourcesMenuKeyboard(usr)
+	editMarkup.ReplyMarkup = getResourcesMenuKeyboard(call)
 
 	_, err := bot.Bot.EditMessageReplyMarkup(&editMarkup)
 	errors.Check(err)
